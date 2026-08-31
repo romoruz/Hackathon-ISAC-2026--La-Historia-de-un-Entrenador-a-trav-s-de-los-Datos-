@@ -7,8 +7,6 @@ data/processed/*
 data/processed_cruzazul/*
 !data/**/.gitkeep
 
-# el entregable con datos embebidos — decision pendiente, docs/14 §7.2
-reporte.html
 
 # regenerable
 reports/*

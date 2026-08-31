@@ -5,7 +5,7 @@ sobre eventos Hudl StatsBomb de Liga MX.
 
 **Reto**: ISAC 2026, *"La historia de un entrenador a través de los datos"*.
 
-### ▶ [Ver el reporte interactivo](https://romoruz.github.io/Hackathon-ISAC-2026--La-Historia-de-un-Entrenador-a-trav-s-de-los-Datos-/reporte_demo.html)
+### ▶ [![Vista del reporte](docs/img/portada.png)](https://romoruz.github.io/Hackathon-ISAC-2026--La-Historia-de-un-Entrenador-a-trav-s-de-los-Datos-/reporte.html)
 
 Reporte generado con datos sintéticos (`synth.py`), sin ningún dato licenciado.
 El reporte con datos reales se entrega a los organizadores del ISAC y no se
