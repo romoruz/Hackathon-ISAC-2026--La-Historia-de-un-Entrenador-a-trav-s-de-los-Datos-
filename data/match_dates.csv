@@ -1,0 +1,176 @@
+match_id,match_date,torneo,bloque,fuente,frontera_riesgosa
+3799357,2021-07-23,Apertura 2021,0,derivada,false
+3799390,2021-07-31,Apertura 2021,0,derivada,false
+3799402,2021-08-07,Apertura 2021,0,derivada,false
+3799411,2021-08-15,Apertura 2021,0,derivada,false
+3799416,2021-08-22,Apertura 2021,0,derivada,false
+3799417,2021-08-30,Apertura 2021,0,derivada,false
+3799429,2021-09-06,Apertura 2021,0,derivada,false
+3799444,2021-09-14,Apertura 2021,0,derivada,false
+3799448,2021-09-21,Apertura 2021,0,derivada,false
+3799449,2021-09-29,Apertura 2021,0,derivada,false
+3799452,2021-10-07,Apertura 2021,0,derivada,false
+3799455,2021-10-14,Apertura 2021,0,derivada,false
+3799462,2021-10-22,Apertura 2021,0,derivada,false
+3799481,2021-10-29,Apertura 2021,0,derivada,false
+3799489,2021-11-06,Apertura 2021,0,derivada,false
+3799493,2021-11-13,Apertura 2021,0,derivada,false
+3799494,2021-11-21,Apertura 2021,0,derivada,false
+3815231,2022-01-07,Clausura 2022,1,derivada,false
+3815234,2022-01-13,Clausura 2022,1,derivada,false
+3816664,2022-01-19,Clausura 2022,1,derivada,false
+3816668,2022-01-25,Clausura 2022,1,derivada,false
+3816673,2022-01-31,Clausura 2022,1,derivada,false
+3816681,2022-02-06,Clausura 2022,1,derivada,false
+3816717,2022-02-12,Clausura 2022,1,derivada,false
+3816730,2022-02-18,Clausura 2022,1,derivada,false
+3816737,2022-02-24,Clausura 2022,1,derivada,false
+3816746,2022-03-02,Clausura 2022,1,derivada,false
+3816749,2022-03-07,Clausura 2022,1,derivada,false
+3816752,2022-03-13,Clausura 2022,1,derivada,false
+3816758,2022-03-19,Clausura 2022,1,derivada,false
+3816768,2022-03-25,Clausura 2022,1,derivada,false
+3816769,2022-03-31,Clausura 2022,1,derivada,false
+3816798,2022-04-06,Clausura 2022,1,derivada,false
+3816805,2022-04-12,Clausura 2022,1,derivada,false
+3816809,2022-04-18,Clausura 2022,1,derivada,false
+3816810,2022-04-24,Clausura 2022,1,derivada,false
+3831920,2022-05-01,Clausura 2022 (liguilla),2,derivada,false
+3831924,2022-05-08,Clausura 2022 (liguilla),2,derivada,false
+3832382,2022-05-15,Clausura 2022 (liguilla),2,derivada,false
+3832384,2022-05-22,Clausura 2022 (liguilla),2,derivada,false
+3835105,2022-07-01,Apertura 2022,3,derivada,true
+3835114,2022-07-08,Apertura 2022,3,derivada,true
+3835119,2022-07-14,Apertura 2022,3,derivada,true
+3835133,2022-07-21,Apertura 2022,3,derivada,true
+3835152,2022-07-28,Apertura 2022,3,derivada,true
+3835162,2022-08-03,Apertura 2022,3,derivada,true
+3835169,2022-08-10,Apertura 2022,3,derivada,true
+3835177,2022-08-17,Apertura 2022,3,derivada,true
+3835187,2022-08-24,Apertura 2022,3,derivada,true
+3835191,2022-08-30,Apertura 2022,3,derivada,true
+3835198,2022-09-06,Apertura 2022,3,derivada,true
+3835213,2022-09-13,Apertura 2022,3,derivada,true
+3835218,2022-09-19,Apertura 2022,3,derivada,true
+3835225,2022-09-26,Apertura 2022,3,derivada,true
+3835234,2022-10-03,Apertura 2022,3,derivada,true
+3835237,2022-10-09,Apertura 2022,3,derivada,true
+3835245,2022-10-16,Apertura 2022,3,derivada,true
+3864712,2022-10-23,Apertura 2022 (liguilla),4,derivada,false
+3864713,2022-10-30,Apertura 2022 (liguilla),4,derivada,false
+3865780,2022-11-06,Apertura 2022 (liguilla),4,derivada,false
+3865781,2022-11-13,Apertura 2022 (liguilla),4,derivada,false
+3870379,2023-01-06,Clausura 2023,5,derivada,false
+3870389,2023-01-13,Clausura 2023,5,derivada,false
+3870395,2023-01-19,Clausura 2023,5,derivada,false
+3870409,2023-01-26,Clausura 2023,5,derivada,false
+3870416,2023-02-02,Clausura 2023,5,derivada,false
+3870426,2023-02-08,Clausura 2023,5,derivada,false
+3870431,2023-02-15,Clausura 2023,5,derivada,false
+3870443,2023-02-22,Clausura 2023,5,derivada,false
+3870451,2023-03-01,Clausura 2023,5,derivada,false
+3870462,2023-03-07,Clausura 2023,5,derivada,false
+3870470,2023-03-14,Clausura 2023,5,derivada,false
+3870479,2023-03-21,Clausura 2023,5,derivada,false
+3870489,2023-03-27,Clausura 2023,5,derivada,false
+3870495,2023-04-03,Clausura 2023,5,derivada,false
+3870504,2023-04-10,Clausura 2023,5,derivada,false
+3870516,2023-04-16,Clausura 2023,5,derivada,false
+3870520,2023-04-23,Clausura 2023,5,derivada,false
+3886180,2023-04-30,Clausura 2023 (liguilla),6,derivada,false
+3886185,2023-05-07,Clausura 2023 (liguilla),6,derivada,false
+3886545,2023-05-14,Clausura 2023 (liguilla),6,derivada,false
+3886547,2023-05-21,Clausura 2023 (liguilla),6,derivada,false
+3889637,2023-06-30,Apertura 2023,7,derivada,false
+3889653,2023-07-07,Apertura 2023,7,derivada,false
+3889660,2023-07-14,Apertura 2023,7,derivada,false
+3889669,2023-07-21,Apertura 2023,7,derivada,false
+3889681,2023-07-28,Apertura 2023,7,derivada,false
+3889685,2023-08-05,Apertura 2023,7,derivada,false
+3889699,2023-08-12,Apertura 2023,7,derivada,false
+3889702,2023-08-19,Apertura 2023,7,derivada,false
+3889715,2023-08-26,Apertura 2023,7,derivada,false
+3889725,2023-09-02,Apertura 2023,7,derivada,false
+3889728,2023-09-09,Apertura 2023,7,derivada,false
+3889732,2023-09-16,Apertura 2023,7,derivada,false
+3889744,2023-09-24,Apertura 2023,7,derivada,false
+3889758,2023-10-01,Apertura 2023,7,derivada,false
+3889769,2023-10-08,Apertura 2023,7,derivada,false
+3889775,2023-10-15,Apertura 2023,7,derivada,false
+3889786,2023-10-22,Apertura 2023,7,derivada,false
+3917452,2024-01-12,Clausura 2024,8,derivada,false
+3917453,2024-01-17,Clausura 2024,8,derivada,false
+3917856,2024-01-22,Clausura 2024,8,derivada,false
+3917858,2024-01-27,Clausura 2024,8,derivada,false
+3918374,2024-01-31,Clausura 2024,8,derivada,false
+3918375,2024-02-05,Clausura 2024,8,derivada,false
+3918957,2024-02-10,Clausura 2024,8,derivada,false
+3918969,2024-02-15,Clausura 2024,8,derivada,false
+3918974,2024-02-20,Clausura 2024,8,derivada,false
+3918991,2024-02-25,Clausura 2024,8,derivada,false
+3919001,2024-03-01,Clausura 2024,8,derivada,false
+3919008,2024-03-06,Clausura 2024,8,derivada,false
+3919016,2024-03-10,Clausura 2024,8,derivada,false
+3919022,2024-03-15,Clausura 2024,8,derivada,false
+3919036,2024-03-20,Clausura 2024,8,derivada,false
+3919045,2024-03-25,Clausura 2024,8,derivada,false
+3919055,2024-03-30,Clausura 2024,8,derivada,false
+3919062,2024-04-04,Clausura 2024,8,derivada,false
+3919069,2024-04-09,Clausura 2024,8,derivada,false
+3919081,2024-04-13,Clausura 2024,8,derivada,false
+3919088,2024-04-18,Clausura 2024,8,derivada,false
+3919094,2024-04-23,Clausura 2024,8,derivada,false
+3919103,2024-04-28,Clausura 2024,8,derivada,false
+3936617,2024-05-05,Clausura 2024 (liguilla),9,derivada,false
+3936618,2024-05-09,Clausura 2024 (liguilla),9,derivada,false
+3937184,2024-05-13,Clausura 2024 (liguilla),9,derivada,false
+3937186,2024-05-18,Clausura 2024 (liguilla),9,derivada,false
+3937694,2024-05-22,Clausura 2024 (liguilla),9,derivada,false
+3937695,2024-05-26,Clausura 2024 (liguilla),9,derivada,false
+3939819,2024-07-05,Apertura 2024,10,derivada,false
+3939825,2024-07-12,Apertura 2024,10,derivada,false
+3939841,2024-07-18,Apertura 2024,10,derivada,false
+3939848,2024-07-25,Apertura 2024,10,derivada,false
+3939859,2024-08-01,Apertura 2024,10,derivada,false
+3939867,2024-08-07,Apertura 2024,10,derivada,false
+3939876,2024-08-14,Apertura 2024,10,derivada,false
+3939883,2024-08-21,Apertura 2024,10,derivada,false
+3939892,2024-08-28,Apertura 2024,10,derivada,false
+3939905,2024-09-03,Apertura 2024,10,derivada,false
+3939911,2024-09-10,Apertura 2024,10,derivada,false
+3939915,2024-09-17,Apertura 2024,10,derivada,false
+3939923,2024-09-23,Apertura 2024,10,derivada,false
+3939933,2024-09-30,Apertura 2024,10,derivada,false
+3939941,2024-10-07,Apertura 2024,10,derivada,false
+3939943,2024-10-13,Apertura 2024,10,derivada,false
+3939959,2024-10-20,Apertura 2024,10,derivada,false
+3968407,2025-01-10,Clausura 2025,11,derivada,false
+3969391,2025-01-15,Clausura 2025,11,derivada,false
+3969395,2025-01-19,Clausura 2025,11,derivada,false
+3970307,2025-01-24,Clausura 2025,11,derivada,false
+3970308,2025-01-29,Clausura 2025,11,derivada,false
+3971432,2025-02-02,Clausura 2025,11,derivada,false
+3971433,2025-02-07,Clausura 2025,11,derivada,false
+3972016,2025-02-12,Clausura 2025,11,derivada,false
+3972023,2025-02-16,Clausura 2025,11,derivada,false
+3972039,2025-02-21,Clausura 2025,11,derivada,false
+3972043,2025-02-26,Clausura 2025,11,derivada,false
+3972053,2025-03-02,Clausura 2025,11,derivada,false
+3972062,2025-03-07,Clausura 2025,11,derivada,false
+3972074,2025-03-11,Clausura 2025,11,derivada,false
+3972080,2025-03-16,Clausura 2025,11,derivada,false
+3972087,2025-03-21,Clausura 2025,11,derivada,false
+3972100,2025-03-25,Clausura 2025,11,derivada,false
+3972111,2025-03-30,Clausura 2025,11,derivada,false
+3972118,2025-04-04,Clausura 2025,11,derivada,false
+3972127,2025-04-08,Clausura 2025,11,derivada,false
+3972136,2025-04-13,Clausura 2025,11,derivada,false
+3972145,2025-04-18,Clausura 2025,11,derivada,false
+3972155,2025-04-22,Clausura 2025,11,derivada,false
+3972162,2025-04-27,Clausura 2025,11,derivada,false
+3993382,2025-05-04,Clausura 2025 (liguilla),12,derivada,false
+3993383,2025-05-08,Clausura 2025 (liguilla),12,derivada,false
+3994837,2025-05-12,Clausura 2025 (liguilla),12,derivada,false
+3994839,2025-05-17,Clausura 2025 (liguilla),12,derivada,false
+3995373,2025-05-21,Clausura 2025 (liguilla),12,derivada,false
+3995374,2025-05-25,Clausura 2025 (liguilla),12,derivada,false

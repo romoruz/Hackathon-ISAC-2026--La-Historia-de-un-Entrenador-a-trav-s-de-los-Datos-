@@ -1,0 +1,36 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --frozen --all-extras
+      - run: uv run ruff check src tests
+      - run: uv run pytest -q
+
+      # La documentacion tambien se verifica: llego a decir tres cifras
+      # distintas para el numero de bugs sin que nada fallara.
+      - run: uv run python docs/verificar_docs.py
+
+      # El HTML: que compile y que declare todas sus variables CSS.
+      - run: uv run python scripts/verifica_reporte.py
+
+      # El paso importante: pipeline de extremo a extremo sobre datos
+      # sinteticos. Es lo que habria detectado los bugs silenciosos.
+      - run: uv run dtdecoder demo --n-matches 20 --n-boot 50
+
+  reporte:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm install jsdom
+      - run: uv sync --frozen --all-extras
+      # Renderiza la pagina en un DOM real con datos sinteticos.
+      - run: uv run python scripts/humo_reporte.py

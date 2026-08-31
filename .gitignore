@@ -1,0 +1,42 @@
+# datos licenciados de Hudl StatsBomb — NUNCA
+eventos_completos_*.csv
+*.csv.gz
+data/raw/*
+data/interim/*
+data/processed/*
+data/processed_cruzazul/*
+!data/**/.gitkeep
+
+# el entregable con datos embebidos — decision pendiente, docs/14 §7.2
+reporte.html
+
+# regenerable
+reports/*
+!reports/.gitkeep
+_cuarentena/
+node_modules/
+_inventario.md
+_antes_*.txt
+_despues_*.txt
+
+# entorno y basura
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+*.orig
+*.rej
+*.bak
+*.tmp
+*~
+.DS_Store
+
+# historial y respaldos que no se publican
+.git_viejo_backup/
+docs_respaldo_*/
+*.anterior
+*.anterior_*

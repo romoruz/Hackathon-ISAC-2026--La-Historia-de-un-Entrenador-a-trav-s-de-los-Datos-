@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: "dtdecoder: decodificacion tactica de entrenadores mediante cadenas de Markov absorbentes"
+message: "Si usas este software, citalo asi."
+type: software
+authors:
+  - family-names: Moreno
+    given-names: Rodrigo
+    affiliation: "Instituto Tecnologico Autonomo de Mexico (ITAM)"
+version: 0.6.0
+date-released: 2026-08-26
+license: MIT
+repository-code: "https://github.com/USUARIO/dt-decoder"
+abstract: >-
+  Modela el estilo de un entrenador de futbol como la matriz de transicion de
+  una cadena de Markov absorbente sobre estados (zona del campo x fase de
+  origen de la posesion), estimada a partir de datos de eventos de Hudl
+  StatsBomb de la Liga MX. Produce tres cantidades con significado
+  futbolistico -duracion esperada de posesion, distribucion de visitas por
+  zona y probabilidad de absorcion en gol- cada una con intervalo de confianza
+  validado por cobertura empirica. Incluye un bloque defensivo sobre la cadena
+  conjugada del rival. Validado sobre dos clubes independientes.
+keywords:
+  - football analytics
+  - absorbing Markov chain
+  - expected threat
+  - shrinkage estimation
+  - bootstrap
