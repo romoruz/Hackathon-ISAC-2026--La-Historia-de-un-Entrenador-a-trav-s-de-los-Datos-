@@ -71,7 +71,7 @@ Genera `_inventario.md` en la raíz con esta información y **para ahí**. No
 muevas nada hasta que el humano lo lea.
 
 ```bash
-cd "/home/rodrigo/Rodrigo Moreno/Codigos Deportes/Hackathon2026"
+cd "~/Hackathon2026"
 
 {
   echo "# Inventario del repositorio — $(date +%F)"
@@ -226,7 +226,7 @@ cada afirmación.
 **Antes** de mover nada, y **después**, exactamente lo mismo:
 
 ```bash
-cd "/home/rodrigo/Rodrigo Moreno/Codigos Deportes/Hackathon2026"
+cd "~/Hackathon2026"
 source .venv/bin/activate
 
 pytest -q                                    | tee _antes_tests.txt

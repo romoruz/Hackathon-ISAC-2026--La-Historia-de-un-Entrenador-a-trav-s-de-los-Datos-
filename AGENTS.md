@@ -70,7 +70,7 @@ las retractaciones. Citar un número retirado es el peor error posible aquí.
 ## 3. Flujo obligatorio
 
 ```bash
-cd "/home/rodrigo/Rodrigo Moreno/Codigos Deportes/Hackathon2026"
+cd "~/Hackathon2026"
 source .venv/bin/activate     # el python del sistema es 3.14 y no tiene deps
 pytest -q                     # debe estar en verde ANTES de tocar nada
 ```

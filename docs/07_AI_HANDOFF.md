@@ -85,7 +85,7 @@ Arch Linux, kernel 7.1.x · Intel i7-1165G7 · 32 GiB RAM · sin CUDA ·
 Python 3.12 vía `uv`.
 
 ```
-/home/rodrigo/Rodrigo Moreno/Codigos Deportes/Hackathon2026/
+~/Hackathon2026/
 ├── .venv/                              ← Python 3.12, YA CONFIGURADO
 ├── eventos_completos_america.csv       ← dataset (NO se versiona)
 ├── eventos_completos_cruz_azul.csv     ← dataset (NO se versiona)
@@ -119,7 +119,7 @@ Dos advertencias que ya causaron problemas:
 
 ### Antes de tocar nada
 ```bash
-cd "/home/rodrigo/Rodrigo Moreno/Codigos Deportes/Hackathon2026"
+cd "~/Hackathon2026"
 source .venv/bin/activate
 pytest -q          # 135 en verde
 ```

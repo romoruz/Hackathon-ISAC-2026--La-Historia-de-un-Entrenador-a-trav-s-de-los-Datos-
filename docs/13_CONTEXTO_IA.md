@@ -180,7 +180,7 @@ data/processed/transitions.parquet     ← el artefacto central
 ## 8. Cómo trabajar
 
 ```bash
-cd "/home/rodrigo/Rodrigo Moreno/Codigos Deportes/Hackathon2026"
+cd "~/Hackathon2026"
 source .venv/bin/activate
 pytest -q          # deben pasar todos antes de tocar nada
 ```
