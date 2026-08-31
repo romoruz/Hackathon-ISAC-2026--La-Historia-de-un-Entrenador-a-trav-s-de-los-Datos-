@@ -1,6 +1,15 @@
-# dt-decoder — Decodificador Táctico de Entrenadores
+# dt-decoder
 
-Decodificador táctico de entrenadores mediante cadenas de Markov absorbentes sobre eventos Hudl StatsBomb de Liga MX.
+Decodificador táctico de entrenadores mediante cadenas de Markov absorbentes
+sobre eventos Hudl StatsBomb de Liga MX.
+
+**Reto**: ISAC 2026, *"La historia de un entrenador a través de los datos"*.
+
+### ▶ [Ver el reporte interactivo](https://romoruz.github.io/Hackathon-ISAC-2026--La-Historia-de-un-Entrenador-a-trav-s-de-los-Datos-/reporte_demo.html)
+
+Reporte generado con datos sintéticos (`synth.py`), sin ningún dato licenciado.
+El reporte con datos reales se entrega a los organizadores del ISAC y no se
+publica aquí por la licencia de Hudl StatsBomb.
 
 > **Reto**: ISAC 2026, *"La historia de un entrenador a través de los datos"*.
 >
