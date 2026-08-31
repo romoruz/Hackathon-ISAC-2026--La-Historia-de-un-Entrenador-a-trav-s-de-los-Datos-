@@ -138,8 +138,8 @@ python scripts/12_reporte_html.py     # -> genera reporte.html
 
 ---
 
-## 6. Licencia y Reporte Demo (`reporte_demo.html`)
+## 6. Licencia y Reporte Demo (`reporte.html`)
 
 > 🔒 **Nota sobre los datos licenciados**: Los eventos crudos de Hudl StatsBomb (`eventos_completos_*.csv`) están bajo propiedad intelectual licenciada y **NUNCA** se redistribuyen ni se versionan en este repositorio git.
 >
-> 📊 **Reporte público**: Para permitir la inspección completa del entregable interactivo sin violar licencias, este repositorio incluye **[reporte_demo.html](reporte_demo.html)**. Se genera mediante datos sintéticos (`make demo` o `python scripts/humo_reporte.py`) y demuestra el funcionamiento exacto de la interfaz y las visualizaciones.
+> 📊 **Reporte público**: Para permitir la inspección completa del entregable interactivo sin violar licencias, este repositorio incluye **[reporte.html](reporte.html)**. Se genera mediante datos sintéticos (`make demo` o `python scripts/humo_reporte.py`) y demuestra el funcionamiento exacto de la interfaz y las visualizaciones.
