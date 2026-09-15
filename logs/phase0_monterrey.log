@@ -1,0 +1,159 @@
+[exclusiones] 0 partidos fuera para 'Monterrey': []
+{
+  "n_transitions": 216399,
+  "n_possessions": 33932,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7287493713135921,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7256724216953137,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 102658,
+    "n_possessions": 17694,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.20851513813742903
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Monterrey",
+    "coverage": [
+      {
+        "coach": "Victor Manuel Vucetich",
+        "matches": 45,
+        "possessions": 4252,
+        "transitions": 26147,
+        "pct_matches": 26.5,
+        "suficiente": true
+      },
+      {
+        "coach": "Fernando Ortiz",
+        "matches": 38,
+        "possessions": 3641,
+        "transitions": 27504,
+        "pct_matches": 22.4,
+        "suficiente": true
+      },
+      {
+        "coach": "Martin Demichelis",
+        "matches": 29,
+        "possessions": 2910,
+        "transitions": 21033,
+        "pct_matches": 17.1,
+        "suficiente": true
+      },
+      {
+        "coach": "Domenec Torrent",
+        "matches": 25,
+        "possessions": 2316,
+        "transitions": 18745,
+        "pct_matches": 14.7,
+        "suficiente": true
+      },
+      {
+        "coach": "Javier Aguirre Onaindia",
+        "matches": 23,
+        "possessions": 2195,
+        "transitions": 12965,
+        "pct_matches": 13.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Nicolas Gabriel Sanchez II",
+        "matches": 9,
+        "possessions": 844,
+        "transitions": 6269,
+        "pct_matches": 5.3,
+        "suficiente": false
+      },
+      {
+        "coach": "Nicolas Gabriel Sanchez I",
+        "matches": 1,
+        "possessions": 80,
+        "transitions": 1078,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Monterrey",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 101639
+    },
+    {
+      "score_state": "losing",
+      "len": 62321
+    },
+    {
+      "score_state": "winning",
+      "len": 52439
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "set_piece",
+      "len": 36886
+    },
+    {
+      "phase": "restart",
+      "len": 56572
+    },
+    {
+      "phase": "transition",
+      "len": 9302
+    },
+    {
+      "phase": "open",
+      "len": 113639
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (7, 6)
+┌────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                      ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                        ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                        ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Victor Manuel Vucetich     ┆ 45      ┆ 4252        ┆ 26147       ┆ 26.5        ┆ true       │
+│ Fernando Ortiz             ┆ 38      ┆ 3641        ┆ 27504       ┆ 22.4        ┆ true       │
+│ Martin Demichelis          ┆ 29      ┆ 2910        ┆ 21033       ┆ 17.1        ┆ true       │
+│ Domenec Torrent            ┆ 25      ┆ 2316        ┆ 18745       ┆ 14.7        ┆ true       │
+│ Javier Aguirre Onaindia    ┆ 23      ┆ 2195        ┆ 12965       ┆ 13.5        ┆ false      │
+│ Nicolas Gabriel Sanchez II ┆ 9       ┆ 844         ┆ 6269        ┆ 5.3         ┆ false      │
+│ Nicolas Gabriel Sanchez I  ┆ 1       ┆ 80          ┆ 1078        ┆ 0.6         ┆ false      │
+└────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

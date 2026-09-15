@@ -1,0 +1,159 @@
+[exclusiones] 0 partidos fuera para 'Pumas UNAM': []
+{
+  "n_transitions": 211413,
+  "n_possessions": 34659,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.719730705147277,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.722314677105329,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 107710,
+    "n_possessions": 18617,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.21352508400521175
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Pumas UNAM",
+    "coverage": [
+      {
+        "coach": "Andres Lillini",
+        "matches": 51,
+        "possessions": 4774,
+        "transitions": 29332,
+        "pct_matches": 30.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Gustavo Lema",
+        "matches": 43,
+        "possessions": 4084,
+        "transitions": 27302,
+        "pct_matches": 25.3,
+        "suficiente": true
+      },
+      {
+        "coach": "Efrain Valdez",
+        "matches": 41,
+        "possessions": 3656,
+        "transitions": 26711,
+        "pct_matches": 24.1,
+        "suficiente": true
+      },
+      {
+        "coach": "Antonio Mohamed",
+        "matches": 21,
+        "possessions": 2103,
+        "transitions": 12101,
+        "pct_matches": 12.4,
+        "suficiente": false
+      },
+      {
+        "coach": "Rafael Puente del Rio",
+        "matches": 12,
+        "possessions": 1234,
+        "transitions": 7188,
+        "pct_matches": 7.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Raul Alpizar I",
+        "matches": 1,
+        "possessions": 98,
+        "transitions": 536,
+        "pct_matches": 0.6,
+        "suficiente": false
+      },
+      {
+        "coach": "Raul Alpizar II",
+        "matches": 1,
+        "possessions": 93,
+        "transitions": 533,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Pumas UNAM",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "winning",
+      "len": 41289
+    },
+    {
+      "score_state": "losing",
+      "len": 57359
+    },
+    {
+      "score_state": "drawing",
+      "len": 112765
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "open",
+      "len": 109768
+    },
+    {
+      "phase": "set_piece",
+      "len": 34321
+    },
+    {
+      "phase": "restart",
+      "len": 58658
+    },
+    {
+      "phase": "transition",
+      "len": 8666
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (7, 6)
+┌───────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                 ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                   ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                   ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═══════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Andres Lillini        ┆ 51      ┆ 4774        ┆ 29332       ┆ 30.0        ┆ true       │
+│ Gustavo Lema          ┆ 43      ┆ 4084        ┆ 27302       ┆ 25.3        ┆ true       │
+│ Efrain Valdez         ┆ 41      ┆ 3656        ┆ 26711       ┆ 24.1        ┆ true       │
+│ Antonio Mohamed       ┆ 21      ┆ 2103        ┆ 12101       ┆ 12.4        ┆ false      │
+│ Rafael Puente del Rio ┆ 12      ┆ 1234        ┆ 7188        ┆ 7.1         ┆ false      │
+│ Raul Alpizar II       ┆ 1       ┆ 93          ┆ 533         ┆ 0.6         ┆ false      │
+│ Raul Alpizar I        ┆ 1       ┆ 98          ┆ 536         ┆ 0.6         ┆ false      │
+└───────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

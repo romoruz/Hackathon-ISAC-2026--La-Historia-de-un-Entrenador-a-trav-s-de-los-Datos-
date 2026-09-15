@@ -1,0 +1,150 @@
+[exclusiones] 0 partidos fuera para 'Atlético San Luis': []
+{
+  "n_transitions": 213373,
+  "n_possessions": 33817,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7195530627899057,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7170794593108369,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 110508,
+    "n_possessions": 17882,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.1949829503899089
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Atl\u00e9tico San Luis",
+    "coverage": [
+      {
+        "coach": "Andre Jardine",
+        "matches": 48,
+        "possessions": 4355,
+        "transitions": 25094,
+        "pct_matches": 28.2,
+        "suficiente": true
+      },
+      {
+        "coach": "Domenec Torrent",
+        "matches": 34,
+        "possessions": 3444,
+        "transitions": 24621,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Gustavo Leal",
+        "matches": 34,
+        "possessions": 3153,
+        "transitions": 24431,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Guillermo Abascal",
+        "matches": 29,
+        "possessions": 2658,
+        "transitions": 16951,
+        "pct_matches": 17.1,
+        "suficiente": true
+      },
+      {
+        "coach": "Marcelo Fabian Mendez Russo",
+        "matches": 20,
+        "possessions": 1872,
+        "transitions": 9063,
+        "pct_matches": 11.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Raul Chabrand Manrique",
+        "matches": 5,
+        "possessions": 453,
+        "transitions": 2705,
+        "pct_matches": 2.9,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Atl\u00e9tico San Luis",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "winning",
+      "len": 45596
+    },
+    {
+      "score_state": "drawing",
+      "len": 106797
+    },
+    {
+      "score_state": "losing",
+      "len": 60980
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "set_piece",
+      "len": 35313
+    },
+    {
+      "phase": "open",
+      "len": 110435
+    },
+    {
+      "phase": "restart",
+      "len": 59802
+    },
+    {
+      "phase": "transition",
+      "len": 7823
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (6, 6)
+┌─────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                       ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                         ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                         ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Andre Jardine               ┆ 48      ┆ 4355        ┆ 25094       ┆ 28.2        ┆ true       │
+│ Domenec Torrent             ┆ 34      ┆ 3444        ┆ 24621       ┆ 20.0        ┆ true       │
+│ Gustavo Leal                ┆ 34      ┆ 3153        ┆ 24431       ┆ 20.0        ┆ true       │
+│ Guillermo Abascal           ┆ 29      ┆ 2658        ┆ 16951       ┆ 17.1        ┆ true       │
+│ Marcelo Fabian Mendez Russo ┆ 20      ┆ 1872        ┆ 9063        ┆ 11.8        ┆ false      │
+│ Raul Chabrand Manrique      ┆ 5       ┆ 453         ┆ 2705        ┆ 2.9         ┆ false      │
+└─────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

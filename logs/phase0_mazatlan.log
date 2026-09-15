@@ -1,0 +1,186 @@
+[exclusiones] 0 partidos fuera para 'Mazatlán': []
+{
+  "n_transitions": 209436,
+  "n_possessions": 33781,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7210362465036163,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7227949861128351,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 114487,
+    "n_possessions": 18148,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.20277956150811852
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Mazatl\u00e1n",
+    "coverage": [
+      {
+        "coach": "Victor Manuel Vucetich",
+        "matches": 34,
+        "possessions": 3279,
+        "transitions": 20596,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Ismael Rescalvo",
+        "matches": 31,
+        "possessions": 2931,
+        "transitions": 19374,
+        "pct_matches": 18.2,
+        "suficiente": true
+      },
+      {
+        "coach": "Gabriel Caballero",
+        "matches": 28,
+        "possessions": 2553,
+        "transitions": 14697,
+        "pct_matches": 16.5,
+        "suficiente": true
+      },
+      {
+        "coach": "Benat San Jose",
+        "matches": 26,
+        "possessions": 2245,
+        "transitions": 12069,
+        "pct_matches": 15.3,
+        "suficiente": true
+      },
+      {
+        "coach": "Robert Siboldi",
+        "matches": 19,
+        "possessions": 1593,
+        "transitions": 9863,
+        "pct_matches": 11.2,
+        "suficiente": false
+      },
+      {
+        "coach": "Sergio Rodriguez",
+        "matches": 14,
+        "possessions": 1239,
+        "transitions": 7276,
+        "pct_matches": 8.2,
+        "suficiente": false
+      },
+      {
+        "coach": "Ruben Romano",
+        "matches": 13,
+        "possessions": 1313,
+        "transitions": 8051,
+        "pct_matches": 7.6,
+        "suficiente": false
+      },
+      {
+        "coach": "Gilberto Adame Soltero",
+        "matches": 3,
+        "possessions": 296,
+        "transitions": 1851,
+        "pct_matches": 1.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Christian Ramirez Diaz II",
+        "matches": 1,
+        "possessions": 76,
+        "transitions": 452,
+        "pct_matches": 0.6,
+        "suficiente": false
+      },
+      {
+        "coach": "Christian Ramirez Diaz I",
+        "matches": 1,
+        "possessions": 108,
+        "transitions": 720,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Mazatl\u00e1n",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 105389
+    },
+    {
+      "score_state": "winning",
+      "len": 48130
+    },
+    {
+      "score_state": "losing",
+      "len": 55917
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "restart",
+      "len": 54624
+    },
+    {
+      "phase": "transition",
+      "len": 8158
+    },
+    {
+      "phase": "open",
+      "len": 111468
+    },
+    {
+      "phase": "set_piece",
+      "len": 35186
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (10, 6)
+┌───────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                     ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                       ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                       ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═══════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Victor Manuel Vucetich    ┆ 34      ┆ 3279        ┆ 20596       ┆ 20.0        ┆ true       │
+│ Ismael Rescalvo           ┆ 31      ┆ 2931        ┆ 19374       ┆ 18.2        ┆ true       │
+│ Gabriel Caballero         ┆ 28      ┆ 2553        ┆ 14697       ┆ 16.5        ┆ true       │
+│ Benat San Jose            ┆ 26      ┆ 2245        ┆ 12069       ┆ 15.3        ┆ true       │
+│ Robert Siboldi            ┆ 19      ┆ 1593        ┆ 9863        ┆ 11.2        ┆ false      │
+│ Sergio Rodriguez          ┆ 14      ┆ 1239        ┆ 7276        ┆ 8.2         ┆ false      │
+│ Ruben Romano              ┆ 13      ┆ 1313        ┆ 8051        ┆ 7.6         ┆ false      │
+│ Gilberto Adame Soltero    ┆ 3       ┆ 296         ┆ 1851        ┆ 1.8         ┆ false      │
+│ Christian Ramirez Diaz II ┆ 1       ┆ 76          ┆ 452         ┆ 0.6         ┆ false      │
+│ Christian Ramirez Diaz I  ┆ 1       ┆ 108         ┆ 720         ┆ 0.6         ┆ false      │
+└───────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

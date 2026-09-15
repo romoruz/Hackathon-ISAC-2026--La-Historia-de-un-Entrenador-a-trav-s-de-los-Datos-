@@ -38,3 +38,12 @@ __pycache__/
 docs_respaldo_*/
 *.anterior
 *.anterior_*
+data/raw_api/
+.venv-sb/
+.env
+data/api/
+data/raw_api/events/
+data/raw_api/lineups/
+data/raw_api/frames/
+data/prior_liga/
+data/processed_*/

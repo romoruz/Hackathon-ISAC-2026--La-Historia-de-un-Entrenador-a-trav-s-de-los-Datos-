@@ -1,0 +1,186 @@
+[exclusiones] 0 partidos fuera para 'Cruz Azul': []
+{
+  "n_transitions": 212726,
+  "n_possessions": 34734,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7279889795695504,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7270648819420803,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 100188,
+    "n_possessions": 18168,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.22106509626465645
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Cruz Azul",
+    "coverage": [
+      {
+        "coach": "Martin Anselmi",
+        "matches": 37,
+        "possessions": 3824,
+        "transitions": 29660,
+        "pct_matches": 21.8,
+        "suficiente": true
+      },
+      {
+        "coach": "Juan Reynoso",
+        "matches": 34,
+        "possessions": 3050,
+        "transitions": 18998,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Nicolas Larcamon",
+        "matches": 33,
+        "possessions": 3274,
+        "transitions": 22173,
+        "pct_matches": 19.4,
+        "suficiente": true
+      },
+      {
+        "coach": "Joaquin Moreno Garduno II",
+        "matches": 14,
+        "possessions": 1415,
+        "transitions": 9622,
+        "pct_matches": 8.2,
+        "suficiente": false
+      },
+      {
+        "coach": "Vicente Sanchez",
+        "matches": 14,
+        "possessions": 1380,
+        "transitions": 9180,
+        "pct_matches": 8.2,
+        "suficiente": false
+      },
+      {
+        "coach": "Ricardo Ferretti",
+        "matches": 13,
+        "possessions": 1228,
+        "transitions": 8099,
+        "pct_matches": 7.6,
+        "suficiente": false
+      },
+      {
+        "coach": "Raul Erasto Gutierrez Jacobo",
+        "matches": 12,
+        "possessions": 1207,
+        "transitions": 7690,
+        "pct_matches": 7.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Diego Vicente Aguirre Camblor",
+        "matches": 10,
+        "possessions": 902,
+        "transitions": 5235,
+        "pct_matches": 5.9,
+        "suficiente": false
+      },
+      {
+        "coach": "Joaquin Moreno Garduno I",
+        "matches": 2,
+        "possessions": 205,
+        "transitions": 1205,
+        "pct_matches": 1.2,
+        "suficiente": false
+      },
+      {
+        "coach": "Joel Huiqui",
+        "matches": 1,
+        "possessions": 81,
+        "transitions": 676,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Cruz Azul",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "losing",
+      "len": 59934
+    },
+    {
+      "score_state": "winning",
+      "len": 45953
+    },
+    {
+      "score_state": "drawing",
+      "len": 106839
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "open",
+      "len": 110231
+    },
+    {
+      "phase": "set_piece",
+      "len": 34784
+    },
+    {
+      "phase": "restart",
+      "len": 60001
+    },
+    {
+      "phase": "transition",
+      "len": 7710
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (10, 6)
+┌───────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                         ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                           ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                           ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═══════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Martin Anselmi                ┆ 37      ┆ 3824        ┆ 29660       ┆ 21.8        ┆ true       │
+│ Juan Reynoso                  ┆ 34      ┆ 3050        ┆ 18998       ┆ 20.0        ┆ true       │
+│ Nicolas Larcamon              ┆ 33      ┆ 3274        ┆ 22173       ┆ 19.4        ┆ true       │
+│ Joaquin Moreno Garduno II     ┆ 14      ┆ 1415        ┆ 9622        ┆ 8.2         ┆ false      │
+│ Vicente Sanchez               ┆ 14      ┆ 1380        ┆ 9180        ┆ 8.2         ┆ false      │
+│ Ricardo Ferretti              ┆ 13      ┆ 1228        ┆ 8099        ┆ 7.6         ┆ false      │
+│ Raul Erasto Gutierrez Jacobo  ┆ 12      ┆ 1207        ┆ 7690        ┆ 7.1         ┆ false      │
+│ Diego Vicente Aguirre Camblor ┆ 10      ┆ 902         ┆ 5235        ┆ 5.9         ┆ false      │
+│ Joaquin Moreno Garduno I      ┆ 2       ┆ 205         ┆ 1205        ┆ 1.2         ┆ false      │
+│ Joel Huiqui                   ┆ 1       ┆ 81          ┆ 676         ┆ 0.6         ┆ false      │
+└───────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

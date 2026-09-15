@@ -1,0 +1,177 @@
+[exclusiones] 0 partidos fuera para 'León': []
+{
+  "n_transitions": 209833,
+  "n_possessions": 33889,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7193708659384016,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7209458191083482,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 102049,
+    "n_possessions": 17853,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.21853130540263133
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Le\u00f3n",
+    "coverage": [
+      {
+        "coach": "Eduardo Berizzo",
+        "matches": 40,
+        "possessions": 3718,
+        "transitions": 24773,
+        "pct_matches": 23.5,
+        "suficiente": true
+      },
+      {
+        "coach": "Nicolas Larcamon",
+        "matches": 34,
+        "possessions": 3463,
+        "transitions": 23172,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Ariel Holan",
+        "matches": 32,
+        "possessions": 2984,
+        "transitions": 20658,
+        "pct_matches": 18.8,
+        "suficiente": true
+      },
+      {
+        "coach": "Jorge Rodrigo Bava",
+        "matches": 23,
+        "possessions": 2167,
+        "transitions": 12887,
+        "pct_matches": 13.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Renato Paiva",
+        "matches": 17,
+        "possessions": 1486,
+        "transitions": 9910,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Ignacio Ambriz",
+        "matches": 15,
+        "possessions": 1389,
+        "transitions": 10477,
+        "pct_matches": 8.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Javier Marcelo Gandolfi",
+        "matches": 6,
+        "possessions": 582,
+        "transitions": 4264,
+        "pct_matches": 3.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Christian Martinez Cedillo",
+        "matches": 2,
+        "possessions": 181,
+        "transitions": 1307,
+        "pct_matches": 1.2,
+        "suficiente": false
+      },
+      {
+        "coach": "Alejandro Corona",
+        "matches": 1,
+        "possessions": 66,
+        "transitions": 336,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Le\u00f3n",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "winning",
+      "len": 45140
+    },
+    {
+      "score_state": "losing",
+      "len": 57746
+    },
+    {
+      "score_state": "drawing",
+      "len": 106947
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "transition",
+      "len": 8535
+    },
+    {
+      "phase": "set_piece",
+      "len": 37684
+    },
+    {
+      "phase": "restart",
+      "len": 57762
+    },
+    {
+      "phase": "open",
+      "len": 105852
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (9, 6)
+┌────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                      ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                        ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                        ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Eduardo Berizzo            ┆ 40      ┆ 3718        ┆ 24773       ┆ 23.5        ┆ true       │
+│ Nicolas Larcamon           ┆ 34      ┆ 3463        ┆ 23172       ┆ 20.0        ┆ true       │
+│ Ariel Holan                ┆ 32      ┆ 2984        ┆ 20658       ┆ 18.8        ┆ true       │
+│ Jorge Rodrigo Bava         ┆ 23      ┆ 2167        ┆ 12887       ┆ 13.5        ┆ false      │
+│ Renato Paiva               ┆ 17      ┆ 1486        ┆ 9910        ┆ 10.0        ┆ false      │
+│ Ignacio Ambriz             ┆ 15      ┆ 1389        ┆ 10477       ┆ 8.8         ┆ false      │
+│ Javier Marcelo Gandolfi    ┆ 6       ┆ 582         ┆ 4264        ┆ 3.5         ┆ false      │
+│ Christian Martinez Cedillo ┆ 2       ┆ 181         ┆ 1307        ┆ 1.2         ┆ false      │
+│ Alejandro Corona           ┆ 1       ┆ 66          ┆ 336         ┆ 0.6         ┆ false      │
+└────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

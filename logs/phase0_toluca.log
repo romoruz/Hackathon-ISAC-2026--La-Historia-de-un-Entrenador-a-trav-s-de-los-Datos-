@@ -1,0 +1,141 @@
+[exclusiones] 0 partidos fuera para 'Toluca': []
+{
+  "n_transitions": 218562,
+  "n_possessions": 33603,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7239510043004951,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7240809482435788,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 99878,
+    "n_possessions": 17664,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.21937953263497179
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Toluca",
+    "coverage": [
+      {
+        "coach": "Ignacio Ambriz",
+        "matches": 64,
+        "possessions": 5959,
+        "transitions": 45084,
+        "pct_matches": 37.6,
+        "suficiente": true
+      },
+      {
+        "coach": "Antonio Mohamed",
+        "matches": 51,
+        "possessions": 4867,
+        "transitions": 37124,
+        "pct_matches": 30.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Renato Paiva",
+        "matches": 34,
+        "possessions": 3184,
+        "transitions": 24141,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Hernan Cristante",
+        "matches": 17,
+        "possessions": 1533,
+        "transitions": 9194,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Carlos Maria Morales Maeso",
+        "matches": 4,
+        "possessions": 396,
+        "transitions": 3141,
+        "pct_matches": 2.4,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Toluca",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 102904
+    },
+    {
+      "score_state": "winning",
+      "len": 51926
+    },
+    {
+      "score_state": "losing",
+      "len": 63732
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "restart",
+      "len": 58673
+    },
+    {
+      "phase": "set_piece",
+      "len": 36105
+    },
+    {
+      "phase": "transition",
+      "len": 8281
+    },
+    {
+      "phase": "open",
+      "len": 115503
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (5, 6)
+┌────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                      ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                        ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                        ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Ignacio Ambriz             ┆ 64      ┆ 5959        ┆ 45084       ┆ 37.6        ┆ true       │
+│ Antonio Mohamed            ┆ 51      ┆ 4867        ┆ 37124       ┆ 30.0        ┆ true       │
+│ Renato Paiva               ┆ 34      ┆ 3184        ┆ 24141       ┆ 20.0        ┆ true       │
+│ Hernan Cristante           ┆ 17      ┆ 1533        ┆ 9194        ┆ 10.0        ┆ false      │
+│ Carlos Maria Morales Maeso ┆ 4       ┆ 396         ┆ 3141        ┆ 2.4         ┆ false      │
+└────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

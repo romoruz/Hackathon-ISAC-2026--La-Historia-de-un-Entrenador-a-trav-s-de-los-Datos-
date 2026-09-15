@@ -1,0 +1,162 @@
+[exclusiones] 2 partidos fuera para 'Tigres UANL': [3919090, 4038911]
+{
+  "n_transitions": 217485,
+  "n_possessions": 34028,
+  "n_matches": 168,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7231095887877133,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7187145759700992,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 98733,
+    "n_possessions": 17519,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.2222889950099265
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Tigres UANL",
+    "coverage": [
+      {
+        "coach": "Miguel Herrera",
+        "matches": 51,
+        "possessions": 4948,
+        "transitions": 34116,
+        "pct_matches": 30.4,
+        "suficiente": true
+      },
+      {
+        "coach": "Guido Pizarro",
+        "matches": 40,
+        "possessions": 3740,
+        "transitions": 29267,
+        "pct_matches": 23.8,
+        "suficiente": true
+      },
+      {
+        "coach": "Robert Siboldi",
+        "matches": 36,
+        "possessions": 3572,
+        "transitions": 26659,
+        "pct_matches": 21.4,
+        "suficiente": true
+      },
+      {
+        "coach": "Veljko Paunovic",
+        "matches": 27,
+        "possessions": 2740,
+        "transitions": 18179,
+        "pct_matches": 16.1,
+        "suficiente": true
+      },
+      {
+        "coach": "Marco Antonio Ruiz Garcia",
+        "matches": 8,
+        "possessions": 860,
+        "transitions": 6025,
+        "pct_matches": 4.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Diego Cocca",
+        "matches": 5,
+        "possessions": 528,
+        "transitions": 3758,
+        "pct_matches": 3.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Mario Dominguez Sosa",
+        "matches": 1,
+        "possessions": 121,
+        "transitions": 748,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Tigres UANL",
+    "match_ids": [
+      3919090,
+      4038911
+    ],
+    "n": 2
+  },
+  "by_score_state": [
+    {
+      "score_state": "winning",
+      "len": 48538
+    },
+    {
+      "score_state": "drawing",
+      "len": 108958
+    },
+    {
+      "score_state": "losing",
+      "len": 59989
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "open",
+      "len": 114422
+    },
+    {
+      "phase": "set_piece",
+      "len": 38291
+    },
+    {
+      "phase": "restart",
+      "len": 56578
+    },
+    {
+      "phase": "transition",
+      "len": 8194
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (7, 6)
+┌───────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                     ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                       ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                       ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═══════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Miguel Herrera            ┆ 51      ┆ 4948        ┆ 34116       ┆ 30.4        ┆ true       │
+│ Guido Pizarro             ┆ 40      ┆ 3740        ┆ 29267       ┆ 23.8        ┆ true       │
+│ Robert Siboldi            ┆ 36      ┆ 3572        ┆ 26659       ┆ 21.4        ┆ true       │
+│ Veljko Paunovic           ┆ 27      ┆ 2740        ┆ 18179       ┆ 16.1        ┆ true       │
+│ Marco Antonio Ruiz Garcia ┆ 8       ┆ 860         ┆ 6025        ┆ 4.8         ┆ false      │
+│ Diego Cocca               ┆ 5       ┆ 528         ┆ 3758        ┆ 3.0         ┆ false      │
+│ Mario Dominguez Sosa      ┆ 1       ┆ 121         ┆ 748         ┆ 0.6         ┆ false      │
+└───────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

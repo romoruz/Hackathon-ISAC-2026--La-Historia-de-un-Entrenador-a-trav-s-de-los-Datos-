@@ -1,0 +1,168 @@
+[exclusiones] 0 partidos fuera para 'Juárez': []
+{
+  "n_transitions": 209555,
+  "n_possessions": 34417,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7229902528959373,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7268985634295447,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 108286,
+    "n_possessions": 18205,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.20969526397515528
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Ju\u00e1rez",
+    "coverage": [
+      {
+        "coach": "Martin Varini",
+        "matches": 34,
+        "possessions": 3277,
+        "transitions": 21358,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Ricardo Ferretti",
+        "matches": 34,
+        "possessions": 3102,
+        "transitions": 19116,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Hernan Cristante",
+        "matches": 31,
+        "possessions": 3020,
+        "transitions": 18811,
+        "pct_matches": 18.2,
+        "suficiente": true
+      },
+      {
+        "coach": "Mauricio Barbieri",
+        "matches": 26,
+        "possessions": 2573,
+        "transitions": 16092,
+        "pct_matches": 15.3,
+        "suficiente": true
+      },
+      {
+        "coach": "Diego Andrei Mejia Campo",
+        "matches": 24,
+        "possessions": 2267,
+        "transitions": 14198,
+        "pct_matches": 14.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Pedro Caixinha",
+        "matches": 17,
+        "possessions": 1592,
+        "transitions": 9407,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Salvador Valero",
+        "matches": 3,
+        "possessions": 267,
+        "transitions": 1546,
+        "pct_matches": 1.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Juan Torres",
+        "matches": 1,
+        "possessions": 114,
+        "transitions": 741,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Ju\u00e1rez",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 101896
+    },
+    {
+      "score_state": "winning",
+      "len": 46068
+    },
+    {
+      "score_state": "losing",
+      "len": 61591
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "transition",
+      "len": 7173
+    },
+    {
+      "phase": "restart",
+      "len": 58976
+    },
+    {
+      "phase": "set_piece",
+      "len": 33368
+    },
+    {
+      "phase": "open",
+      "len": 110038
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (8, 6)
+┌──────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                    ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                      ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                      ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞══════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Ricardo Ferretti         ┆ 34      ┆ 3102        ┆ 19116       ┆ 20.0        ┆ true       │
+│ Martin Varini            ┆ 34      ┆ 3277        ┆ 21358       ┆ 20.0        ┆ true       │
+│ Hernan Cristante         ┆ 31      ┆ 3020        ┆ 18811       ┆ 18.2        ┆ true       │
+│ Mauricio Barbieri        ┆ 26      ┆ 2573        ┆ 16092       ┆ 15.3        ┆ true       │
+│ Diego Andrei Mejia Campo ┆ 24      ┆ 2267        ┆ 14198       ┆ 14.1        ┆ false      │
+│ Pedro Caixinha           ┆ 17      ┆ 1592        ┆ 9407        ┆ 10.0        ┆ false      │
+│ Salvador Valero          ┆ 3       ┆ 267         ┆ 1546        ┆ 1.8         ┆ false      │
+│ Juan Torres              ┆ 1       ┆ 114         ┆ 741         ┆ 0.6         ┆ false      │
+└──────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

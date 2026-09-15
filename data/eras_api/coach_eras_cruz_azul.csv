@@ -1,0 +1,11 @@
+club,coach,coach_full,coach_id,start_date,end_date,n_partidos,n_en_rango,n_absorbidos,torneos,analizable,banderas
+"Cruz Azul","Juan Reynoso","Juan Máximo Reynoso Guzmán","3294","2021-07-27","2022-05-01","34","34","0","A2021|C2022","1","PRIMERA_DE_VENTANA"
+"Cruz Azul","Diego Vicente Aguirre Camblor","Diego Vicente Aguirre Camblor","6294","2022-07-03","2022-08-21","10","10","0","A2022","0","CORTA"
+"Cruz Azul","Raul Erasto Gutierrez Jacobo","Raúl Erasto Gutiérrez Jacobo","1002038","2022-08-27","2023-02-12","12","12","0","A2022|C2023","0","CORTA"
+"Cruz Azul","Joaquin Moreno Garduno I","Joaquín Moreno Garduño","1002764","2023-02-18","2023-02-23","2","2","0","C2023","0","CORTA;NO_CONTIGUA"
+"Cruz Azul","Ricardo Ferretti","Ricardo Ferretti","3391","2023-02-25","2023-07-15","13","13","0","A2023|C2023","0","CORTA"
+"Cruz Azul","Joaquin Moreno Garduno II","Joaquín Moreno Garduño","1002764","2023-08-20","2023-11-13","14","14","0","A2023","0","CORTA;NO_CONTIGUA"
+"Cruz Azul","Martin Anselmi","Martin Anselmi","1001074","2024-01-14","2025-01-25","37","37","0","A2024|C2024|C2025","1",""
+"Cruz Azul","Vicente Sanchez","Vicente Martín Sánchez Bragunde","1006349","2025-01-29","2025-04-20","14","14","0","C2025","0","CORTA"
+"Cruz Azul","Nicolas Larcamon","Nicolás Ricardo Larcamón","3629","2025-07-13","2026-04-22","33","33","0","A2025|C2026","1",""
+"Cruz Azul","Joel Huiqui","Joel Adrián Huiqui Andrade","1009494","2026-04-27","2026-04-27","1","1","0","C2026","0","CORTA"

@@ -1,0 +1,11 @@
+club,coach,coach_full,coach_id,start_date,end_date,n_partidos,n_en_rango,n_absorbidos,torneos,analizable,banderas
+"Mazatlán","Benat San Jose","Beñat San José Gil","2790","2021-07-27","2022-03-13","26","26","0","A2021|C2022","1","PRIMERA_DE_VENTANA"
+"Mazatlán","Gabriel Caballero","Gabriel Esteban Caballero Schiker","3497","2022-03-21","2023-01-29","28","28","0","A2022|C2022|C2023","1",""
+"Mazatlán","Christian Ramirez Diaz I","Christian Ramírez Diaz","1001217","2023-02-04","2023-02-04","1","1","0","C2023","0","CORTA;NO_CONTIGUA"
+"Mazatlán","Ruben Romano","Rubén Omar Romano Cachía","1002737","2023-02-11","2023-04-30","13","13","0","C2023","0","CORTA"
+"Mazatlán","Ismael Rescalvo","Ismael Rescalvo Sánchez","3488","2023-07-01","2024-04-06","31","31","0","A2023|C2024","1",""
+"Mazatlán","Gilberto Adame Soltero","Gilberto Adame Soltero","1004746","2024-04-13","2024-04-28","3","3","0","C2024","0","CORTA"
+"Mazatlán","Victor Manuel Vucetich","Víctor Manuel Vucetich Rojas","3746","2024-07-07","2025-04-19","34","34","0","A2024|C2025","1",""
+"Mazatlán","Robert Siboldi","Robert Dante Siboldi Badiola","3109","2025-07-13","2026-01-13","19","19","0","A2025|C2026","0","CORTA"
+"Mazatlán","Christian Ramirez Diaz II","Christian Ramírez Diaz","1001217","2026-01-17","2026-01-17","1","1","0","C2026","0","CORTA;NO_CONTIGUA"
+"Mazatlán","Sergio Rodriguez","Sergio Bueno Rodríguez","1008783","2026-01-31","2026-04-25","14","14","0","C2026","0","CORTA"

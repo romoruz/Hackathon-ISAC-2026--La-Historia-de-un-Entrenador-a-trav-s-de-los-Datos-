@@ -1,0 +1,5 @@
+club,coach,coach_full,coach_id,start_date,end_date,n_partidos,n_en_rango,n_absorbidos,torneos,analizable,banderas
+"Pachuca","Paulo Cesar Pezzolano Suarez","Paulo César Pezzolano Suárez","2985","2021-07-24","2021-11-07","17","17","0","A2021","0","PRIMERA_DE_VENTANA;CORTA"
+"Pachuca","Guillermo Almada","Jorge Guillermo Almada Álves","2947","2022-01-07","2025-04-21","119","119","0","A2022|A2023|A2024|C2022|C2023|C2024|C2025","1","MULTI_MANAGER(1)"
+"Pachuca","Jaime Lozano","Jaime Arturo Lozano Espín","1000115","2025-07-13","2025-11-09","17","17","0","A2025","0","CORTA"
+"Pachuca","Esteban Andres Solari Poggio","Esteban Andrés Solari Poggio","1004576","2026-01-10","2026-04-25","17","17","0","C2026","0","CORTA"

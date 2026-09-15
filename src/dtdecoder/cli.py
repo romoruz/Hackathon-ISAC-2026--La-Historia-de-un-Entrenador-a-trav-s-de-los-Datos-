@@ -153,7 +153,14 @@ def _space(cfg: Config) -> StateSpace:
                       phases=phases)
 
 
-def _read_trans(indir: str) -> pl.DataFrame:
+PRIOR_MARKER = "prior_report.json"
+
+
+def _es_artefacto_prior(indir: str | Path) -> bool:
+    return (Path(indir) / PRIOR_MARKER).exists()
+
+
+def _read_trans(indir: str, permitir_prior: bool = False) -> pl.DataFrame:
     """Lee transitions.parquet, con respaldo al directorio padre.
 
     La conjugada escribe sus artefactos en un subdirectorio
@@ -162,6 +169,17 @@ def _read_trans(indir: str) -> pl.DataFrame:
     que duplicarlo, y dos copias que pueden divergir son justo lo que este
     parche evita.
     """
+    if not permitir_prior and _es_artefacto_prior(indir):
+        raise SystemExit(
+            f"{indir} es un artefacto SOLO-PRIOR (`dtdecoder prior`) y no sirve "
+            "como foco.\n"
+            "  Le faltan por construccion `score_state_club` y el filtro "
+            "asimetrico de\n"
+            "  min_actions, que dependen de saber cual es el club focal, y ahi "
+            "no lo hay.\n"
+            "  Usa el artefacto del club como --indir y este como "
+            "--prior-from."
+        )
     p = Path(indir) / "transitions.parquet"
     if not p.exists():
         alt = Path(indir).parent / "transitions.parquet"
@@ -297,11 +315,50 @@ def cmd_eras_template(args) -> int:
 def cmd_phase0(args) -> int:
     cfg = Config.load(args.config)
     space = _space(cfg)
-    trans = build_transitions(
-        ingest.load(args.src), space, cfg.raw, team=None, club=args.club
-    )
+
+    lf = ingest.load(args.src)
+
+    # --- exclusion de partidos, ANTES de construir nada -------------------
+    # El filtro va aqui, al nivel mas alto posible, y no dentro de
+    # `possessions.py`: excluir un partido no tiene nada que ver con la logica
+    # de posesiones. Es seguro precisamente porque se quitan partidos ENTEROS
+    # -- `add_score_state` reconstruye el marcador dentro de cada partido, asi
+    # que quitar uno completo no altera el marcador de ningun otro. Si se
+    # borraran eventos sueltos habria que mirar adentro.
+    excl_info: dict = {"aplicadas": False}
+    if getattr(args, "exclusiones", None):
+        if not args.club:
+            raise SystemExit(
+                "--exclusiones requiere --club: la clave es (club, match_id) y "
+                "sin el club\n  se borrarian partidos legitimos del rival."
+            )
+        ids = eras_mod.load_exclusions(args.exclusiones, args.club)
+        if ids:
+            lf = lf.filter(~pl.col("match_id").cast(pl.Int64).is_in(ids))
+        excl_info = {
+            "aplicadas": True,
+            "archivo": str(args.exclusiones),
+            "club": args.club,
+            "match_ids": ids,
+            "n": len(ids),
+        }
+        print(f"[exclusiones] {len(ids)} partidos fuera para {args.club!r}: {ids}")
+
+    trans = build_transitions(lf, space, cfg.raw, team=None, club=args.club)
     if trans.height == 0:
         raise SystemExit("Cero transiciones. Revisa el esquema del archivo fuente.")
+
+    if excl_info["aplicadas"]:
+        quedan = sorted(
+            set(int(x) for x in trans["match_id"].unique().to_list())
+            & set(excl_info["match_ids"])
+        )
+        if quedan:
+            raise SystemExit(
+                f"El filtro de exclusiones no surtio efecto: {quedan} siguen en "
+                "las transiciones.\n  Probablemente `match_id` no es Int64 en "
+                "el archivo fuente."
+            )
 
     coach_info: dict = {"attached": False}
     if args.eras and args.match_dates:
@@ -309,6 +366,9 @@ def cmd_phase0(args) -> int:
             raise SystemExit("--club es obligatorio cuando pasas --eras")
         eras = eras_mod.load_eras(args.eras)
         md = eras_mod.load_match_dates(args.match_dates)
+        # Invariante asimetrico: todo partido con eventos tiene que tener
+        # fecha. Fechas de sobra son legales.
+        eras_mod.check_dates_cover(trans, md)
         mc = eras_mod.match_coach_table(md, eras, args.club)
         trans = eras_mod.attach_coach(trans, mc, args.club)
         # `coach` (ejecutante, null en rivales) y `coach_faced` (DT del club
@@ -374,6 +434,7 @@ def cmd_phase0(args) -> int:
         "coordinate_sanity_defense": sanity_def,
         "defense": defense_info,
         "coaches": coach_info,
+        "exclusiones": excl_info,
         "by_score_state": trans.group_by("score_state").len().to_dicts(),
         "by_phase": trans.group_by("phase").len().to_dicts(),
         "provenance": _provenance(args.config),
@@ -415,6 +476,78 @@ def cmd_phase0(args) -> int:
     return 0
 
 
+def cmd_prior(args) -> int:
+    """Artefacto de LIGA, util SOLO como prior `q` del encogimiento.
+
+    POR QUE UN COMANDO PROPIO Y NO UN FLAG DE phase0
+    ------------------------------------------------
+    `phase0` construye el artefacto de un club: `score_state_club` esta referido
+    a ese club y `min_actions` se aplica asimetrico segun quien posee. Las dos
+    cosas necesitan saber cual es el foco. En un archivo de liga no hay foco:
+    cada partido tiene dos clubes y ninguno es "el" club.
+
+    Meterlo en `phase0` con un flag produciria un artefacto que cumple a medias
+    el contrato de `phase0` y que hay que recordar no usar como foco. Recordar
+    no es un mecanismo. Como comando aparte, el artefacto lleva su propio
+    `prior_report.json` y `_read_trans` lo rechaza en cualquier comando de
+    analisis.
+
+    QUE SI RESUELVE
+    ---------------
+    El prior deja de ser "los 17 rivales que este club enfrento" y pasa a ser la
+    liga. Muere la amenaza 4.3 de 05_VALIDATION, y la fuga de prior (ADR-06) se
+    vuelve marginal: hoy Jardine es el 53% de las transiciones del America; con
+    prior de liga cualquier DT es ~3% del suyo.
+
+    OJO con lo que NO resuelve: lambda* cambia de significado y la lectura
+    "el America se parece a sus rivales" no sobrevive. Hay que reescribirla.
+    """
+    cfg = Config.load(args.config)
+    space = _space(cfg)
+    trans = build_transitions(
+        ingest.load(args.src), space, cfg.raw, team=None, club=None
+    )
+    if trans.height == 0:
+        raise SystemExit("Cero transiciones. Revisa el esquema del archivo fuente.")
+
+    md = eras_mod.load_match_dates(args.match_dates)
+    eras_mod.check_dates_cover(trans, md)
+    equipos = sorted(trans["team"].unique().drop_nulls().to_list())
+    mc = eras_mod.match_coach_table_multi(md, args.eras_dir, equipos)
+    trans = eras_mod.attach_coach(trans, mc, club=None)
+
+    outdir = Path(args.outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    trans.write_parquet(outdir / "transitions.parquet")
+
+    sin_coach = int(trans["coach"].is_null().sum())
+    rep = {
+        "kind": "prior_only",
+        "n_transitions": trans.height,
+        "n_possessions": trans["poss_uid"].n_unique(),
+        "n_matches": trans["match_id"].n_unique(),
+        "teams": len(equipos),
+        "n_coaches": int(trans["coach"].drop_nulls().n_unique()),
+        "frac_sin_coach": round(sin_coach / max(trans.height, 1), 4),
+        "coordinate_sanity": coordinate_sanity(trans, space),
+        "state_space": {
+            "n_transient": space.n_transient, "n_absorbing": space.n_absorbing,
+            "nx": space.nx, "ny": space.ny, "phases": list(space.phases),
+        },
+        "provenance": _provenance(args.config),
+        "aviso": (
+            "SOLO PRIOR. Sin score_state_club y sin min_actions asimetrico: "
+            "no usar como --indir de phase1/2/3/compare."
+        ),
+    }
+    (outdir / PRIOR_MARKER).write_text(json.dumps(rep, indent=2, default=str))
+    print(json.dumps(rep, indent=2, default=str))
+    if not rep["coordinate_sanity"]["ok"]:
+        print("\n[AVISO] coordinate_sanity no pasa sobre la liga. Para.",
+              file=sys.stderr)
+    return 0
+
+
 def cmd_regimes(args) -> int:
     cfg = Config.load(args.config)
     space = _space(cfg)
@@ -434,9 +567,40 @@ def cmd_phase1(args) -> int:
     trans = _read_trans(args.indir)
     trans = _apply_perspective(trans, args)
     focus, base = eras_mod.select_units(trans, args.unit, args.value, args.baseline, args.club)
-    prior_src = base if args.prior == "baseline" else _not_focus(
-        trans, args.unit, args.value)
-    prior = _build_prior(trans, space, args.prior, prior_src)
+
+    prior_from = getattr(args, "prior_from", None)
+    if prior_from:
+        # El prior sale de la LIGA, no del archivo del club. Se excluye al foco
+        # por (coach, team): el mismo apellido puede dirigir a dos clubes -- hay
+        # ocho casos en la ventana -- y excluir solo por nombre borraria del
+        # prior las eras del otro club, que son datos buenos.
+        if args.prior != "exclude_focus":
+            raise SystemExit(
+                "--prior-from solo tiene sentido con --prior exclude_focus."
+            )
+        liga = _read_trans(prior_from, permitir_prior=True)
+        cond = pl.col("coach") == args.value
+        if args.club:
+            cond = cond & (pl.col("team") == args.club)
+        liga_sin_foco = liga.filter(~cond.fill_null(False))
+        quitadas = liga.height - liga_sin_foco.height
+        if liga_sin_foco.height == 0:
+            raise SystemExit("El prior de liga quedo vacio tras excluir al foco.")
+        if quitadas == 0:
+            print(
+                f"\n[AVISO] el foco ({args.value}, {args.club}) no aparece en el "
+                f"prior de liga:\n  no se quito ninguna transicion. O el "
+                f"artefacto de prior no cubre a este club,\n  o la etiqueta del "
+                f"DT no coincide entre eras_compat y eras_api.",
+                file=sys.stderr,
+            )
+        prior = _build_prior(liga_sin_foco, space, "exclude_focus", liga_sin_foco)
+        print(f"prior: liga ({prior_from}), {liga_sin_foco.height:,} "
+              f"transiciones, {quitadas:,} del foco excluidas")
+    else:
+        prior_src = base if args.prior == "baseline" else _not_focus(
+            trans, args.unit, args.value)
+        prior = _build_prior(trans, space, args.prior, prior_src)
 
     ecfg = cfg["estimation"]
     cv = cv_lambda(focus, space, prior, ecfg["lambda_grid"],
@@ -472,6 +636,7 @@ def cmd_phase1(args) -> int:
     rep = {
         "unit": args.unit, "value": args.value, "baseline": args.baseline,
         "prior": args.prior,
+        "prior_from": str(prior_from) if prior_from else None,
         "lambda_star": cv.lam_star,
         "n_transitions_focus": int(C_focus.sum()),
         "n_transitions_base": int(C_base.sum()),
@@ -549,6 +714,10 @@ def cmd_phase2(args) -> int:
 def cmd_phase3(args) -> int:
     cfg = Config.load(args.config)
     space = _space(cfg)
+    # Candado: `phase3` produce el resultado que se reporta. Una era marcada
+    # PRIMERA_DE_VENTANA sin verificar no llega al reporte por descuido.
+    if args.unit in ("coach", "coach_faced"):
+        eras_mod.check_verificada(args.club, args.value)
     trans = _read_trans(args.indir)
     trans = _apply_perspective(trans, args)
     focus, base = eras_mod.select_units(trans, args.unit, args.value, args.baseline, args.club)
@@ -595,6 +764,9 @@ def cmd_compare(args) -> int:
     """Compara dos eras entre si. El entregable central con datos de un club."""
     cfg = Config.load(args.config)
     space = _space(cfg)
+    if args.unit == "coach":
+        eras_mod.check_verificada(args.club, args.a)
+        eras_mod.check_verificada(args.club, args.b)
     trans = _read_trans(args.indir)
     trans = _apply_perspective(trans, args)
     # El prior debe ser neutral a las DOS unidades comparadas: si contuviera a
@@ -672,7 +844,7 @@ def cmd_demo(args) -> int:
         config=args.config, src=str(src), outdir=str(outdir), indir=str(outdir),
         unit="team", value="Club A", baseline="rest", club="Club A",
         prior="exclude_focus", eras=None, match_dates=None, n_boot=args.n_boot,
-        perspective="attack",
+        perspective="attack", exclusiones=None, prior_from=None,
     )
     for fn in (cmd_phase0, cmd_phase1, cmd_phase2, cmd_phase3):
         print(f"\n{'=' * 70}\n>>> {fn.__name__}\n{'=' * 70}")
@@ -693,7 +865,11 @@ def main(argv: list[str] | None = None) -> int:
                        choices=["team", "coach", "coach_faced"])
         p.add_argument("--value", required=True, help="nombre del DT o del equipo")
         p.add_argument("--baseline", default="other_coaches",
-                       choices=["rest", "other_coaches", "opponents"])
+                       choices=["rest", "other_coaches",
+                                "other_coaches_same_club", "opponents"],
+                       help="other_coaches_same_club es other_coaches "
+                            "restringido al club focal: identico sobre un "
+                            "artefacto de un club, distinto sobre uno de liga")
         p.add_argument("--club", default=None, help="equipo del DT focal")
         p.add_argument("--perspective", default="attack",
                        choices=["attack", "defense"],
@@ -723,7 +899,19 @@ def main(argv: list[str] | None = None) -> int:
                     help="club focal. Necesario para score_state_club, para "
                          "min_actions asimetrico y para coach_faced. Pasalo "
                          "SIEMPRE, tambien sin --eras.")
+    p0.add_argument("--exclusiones", default=None,
+                    help="CSV con (club, match_id) de partidos a EXCLUIR. "
+                         "Tipicamente data/eras_api/absorbidos.csv. Requiere "
+                         "--club: la clave es la tupla, no el match_id")
     p0.set_defaults(func=cmd_phase0)
+
+    pr = sub.add_parser("prior", help="artefacto de LIGA, solo como prior q")
+    pr.add_argument("--src", required=True,
+                    help="eventos de la liga completa (data/api/eventos_api_ligamx.parquet)")
+    pr.add_argument("--match-dates", required=True, dest="match_dates")
+    pr.add_argument("--eras-dir", default="data/eras_compat", dest="eras_dir")
+    pr.add_argument("--outdir", default="data/prior_liga")
+    pr.set_defaults(func=cmd_prior)
 
     rg = sub.add_parser("regimes", help="verifica fronteras de era empiricamente")
     rg.add_argument("--indir", default="data/processed")
@@ -736,6 +924,10 @@ def main(argv: list[str] | None = None) -> int:
     p1.add_argument("--indir", default="data/processed")
     p1.add_argument("--outdir", default="data/processed")
     add_unit_args(p1)
+    p1.add_argument("--prior-from", default=None, dest="prior_from",
+                    help="directorio de `dtdecoder prior`: q sale de la liga "
+                         "en vez de los rivales de este club. Excluye al foco "
+                         "por (coach, club)")
     p1.set_defaults(func=cmd_phase1)
 
     p2 = sub.add_parser("phase2", help="cadena absorbente: N, B, xT, visitas")

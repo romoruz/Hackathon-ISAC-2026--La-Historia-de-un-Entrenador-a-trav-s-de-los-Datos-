@@ -1,0 +1,150 @@
+[exclusiones] 0 partidos fuera para 'Querétaro': []
+{
+  "n_transitions": 206431,
+  "n_possessions": 34210,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7243131414970357,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7237068845367086,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 122490,
+    "n_possessions": 18566,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.19406252137629112
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Quer\u00e9taro",
+    "coverage": [
+      {
+        "coach": "Mauro Gerk",
+        "matches": 85,
+        "possessions": 8019,
+        "transitions": 42826,
+        "pct_matches": 50.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Benjamin Mora",
+        "matches": 34,
+        "possessions": 2913,
+        "transitions": 16166,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Esteban Gonzalez",
+        "matches": 17,
+        "possessions": 1566,
+        "transitions": 7707,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Leonardo Alfredo Ramos Giro",
+        "matches": 14,
+        "possessions": 1289,
+        "transitions": 6297,
+        "pct_matches": 8.2,
+        "suficiente": false
+      },
+      {
+        "coach": "Hernan Cristante",
+        "matches": 13,
+        "possessions": 1181,
+        "transitions": 7199,
+        "pct_matches": 7.6,
+        "suficiente": false
+      },
+      {
+        "coach": "Hector Altamirano Escudero",
+        "matches": 7,
+        "possessions": 676,
+        "transitions": 3746,
+        "pct_matches": 4.1,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Quer\u00e9taro",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "winning",
+      "len": 48930
+    },
+    {
+      "score_state": "drawing",
+      "len": 99353
+    },
+    {
+      "score_state": "losing",
+      "len": 58148
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "set_piece",
+      "len": 33922
+    },
+    {
+      "phase": "restart",
+      "len": 56379
+    },
+    {
+      "phase": "transition",
+      "len": 7480
+    },
+    {
+      "phase": "open",
+      "len": 108650
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (6, 6)
+┌─────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                       ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                         ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                         ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Mauro Gerk                  ┆ 85      ┆ 8019        ┆ 42826       ┆ 50.0        ┆ true       │
+│ Benjamin Mora               ┆ 34      ┆ 2913        ┆ 16166       ┆ 20.0        ┆ true       │
+│ Esteban Gonzalez            ┆ 17      ┆ 1566        ┆ 7707        ┆ 10.0        ┆ false      │
+│ Leonardo Alfredo Ramos Giro ┆ 14      ┆ 1289        ┆ 6297        ┆ 8.2         ┆ false      │
+│ Hernan Cristante            ┆ 13      ┆ 1181        ┆ 7199        ┆ 7.6         ┆ false      │
+│ Hector Altamirano Escudero  ┆ 7       ┆ 676         ┆ 3746        ┆ 4.1         ┆ false      │
+└─────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

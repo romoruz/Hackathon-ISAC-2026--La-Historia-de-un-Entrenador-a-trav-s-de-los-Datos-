@@ -1,0 +1,189 @@
+[exclusiones] 2 partidos fuera para 'Guadalajara': [3972072, 3972119]
+{
+  "n_transitions": 211177,
+  "n_possessions": 34766,
+  "n_matches": 168,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7203974304150494,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7230297720848619,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 100777,
+    "n_possessions": 18238,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.22514807528431507
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Guadalajara",
+    "coverage": [
+      {
+        "coach": "Veljko Paunovic",
+        "matches": 34,
+        "possessions": 3451,
+        "transitions": 20695,
+        "pct_matches": 20.2,
+        "suficiente": true
+      },
+      {
+        "coach": "Gabriel Milito",
+        "matches": 34,
+        "possessions": 3210,
+        "transitions": 24589,
+        "pct_matches": 20.2,
+        "suficiente": true
+      },
+      {
+        "coach": "Fernando Gago",
+        "matches": 28,
+        "possessions": 2876,
+        "transitions": 19199,
+        "pct_matches": 16.7,
+        "suficiente": true
+      },
+      {
+        "coach": "Ricardo Cadena Martinez",
+        "matches": 22,
+        "possessions": 2046,
+        "transitions": 12995,
+        "pct_matches": 13.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Marcelo Michel Leano",
+        "matches": 20,
+        "possessions": 2018,
+        "transitions": 13488,
+        "pct_matches": 11.9,
+        "suficiente": false
+      },
+      {
+        "coach": "Victor Manuel Vucetich",
+        "matches": 9,
+        "possessions": 866,
+        "transitions": 5692,
+        "pct_matches": 5.4,
+        "suficiente": false
+      },
+      {
+        "coach": "Oscar Garcia",
+        "matches": 8,
+        "possessions": 768,
+        "transitions": 4886,
+        "pct_matches": 4.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Gerardo Espinoza Ahumada",
+        "matches": 6,
+        "possessions": 549,
+        "transitions": 3735,
+        "pct_matches": 3.6,
+        "suficiente": false
+      },
+      {
+        "coach": "Arturo Ortega Juarez",
+        "matches": 6,
+        "possessions": 639,
+        "transitions": 4328,
+        "pct_matches": 3.6,
+        "suficiente": false
+      },
+      {
+        "coach": "Jose Luis Melendez Galindo",
+        "matches": 1,
+        "possessions": 105,
+        "transitions": 793,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Guadalajara",
+    "match_ids": [
+      3972072,
+      3972119
+    ],
+    "n": 2
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 109438
+    },
+    {
+      "score_state": "losing",
+      "len": 58960
+    },
+    {
+      "score_state": "winning",
+      "len": 42779
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "restart",
+      "len": 58461
+    },
+    {
+      "phase": "open",
+      "len": 111289
+    },
+    {
+      "phase": "transition",
+      "len": 7586
+    },
+    {
+      "phase": "set_piece",
+      "len": 33841
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (10, 6)
+┌────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                      ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                        ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                        ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Gabriel Milito             ┆ 34      ┆ 3210        ┆ 24589       ┆ 20.2        ┆ true       │
+│ Veljko Paunovic            ┆ 34      ┆ 3451        ┆ 20695       ┆ 20.2        ┆ true       │
+│ Fernando Gago              ┆ 28      ┆ 2876        ┆ 19199       ┆ 16.7        ┆ true       │
+│ Ricardo Cadena Martinez    ┆ 22      ┆ 2046        ┆ 12995       ┆ 13.1        ┆ false      │
+│ Marcelo Michel Leano       ┆ 20      ┆ 2018        ┆ 13488       ┆ 11.9        ┆ false      │
+│ Victor Manuel Vucetich     ┆ 9       ┆ 866         ┆ 5692        ┆ 5.4         ┆ false      │
+│ Oscar Garcia               ┆ 8       ┆ 768         ┆ 4886        ┆ 4.8         ┆ false      │
+│ Arturo Ortega Juarez       ┆ 6       ┆ 639         ┆ 4328        ┆ 3.6         ┆ false      │
+│ Gerardo Espinoza Ahumada   ┆ 6       ┆ 549         ┆ 3735        ┆ 3.6         ┆ false      │
+│ Jose Luis Melendez Galindo ┆ 1       ┆ 105         ┆ 793         ┆ 0.6         ┆ false      │
+└────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

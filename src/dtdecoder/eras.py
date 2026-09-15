@@ -97,37 +97,100 @@ def match_coach_table(
 
 
 def attach_coach(
-    trans: pl.DataFrame, mc: pl.DataFrame, club: str
+    trans: pl.DataFrame, mc: pl.DataFrame, club: str | None = None
 ) -> pl.DataFrame:
     """Anade `coach` a las transiciones del club; los rivales quedan en null.
 
     El null es deliberado y significativo: identifica las filas que sirven como
     linea base externa sin contaminarse con eras del propio club.
+
+    Con `club=None` el mapeo se hace por `(match_id, club)` usando la columna
+    `club` de `mc`, que es lo que necesita un artefacto de LIGA: ahi cada
+    partido tiene dos entrenadores y "el club" no existe. El resultado en un
+    artefacto de un solo club es EXACTAMENTE el mismo por las dos vias, y
+    `tests/test_coach_faced.py` lo comprueba.
     """
-    mc = mc.select("match_id", "coach", "match_date")
-    out = trans.join(mc, on="match_id", how="left")
-    return out.with_columns(
-        pl.when(pl.col("team") == club).then(pl.col("coach")).otherwise(None).alias("coach")
+    if club is not None:
+        mc1 = mc.select("match_id", "coach", "match_date")
+        out = trans.join(mc1, on="match_id", how="left")
+        return out.with_columns(
+            pl.when(pl.col("team") == club)
+            .then(pl.col("coach"))
+            .otherwise(None)
+            .alias("coach")
+        )
+
+    if "club" not in mc.columns:
+        raise KeyError(
+            "attach_coach(club=None) necesita la columna `club` en la tabla de "
+            "eras: es la que dice a QUE equipo dirigia cada DT."
+        )
+    mc1 = mc.select(
+        "match_id", pl.col("club").alias("team"), "coach", "match_date"
     )
+    # `match_date` es por partido, no por equipo: se pega aparte para que un
+    # partido cuyo club no tiene era no pierda la fecha.
+    fechas = mc.select("match_id", "match_date").unique(subset=["match_id"])
+    out = trans.join(mc1.drop("match_date"), on=["match_id", "team"], how="left")
+    return out.join(fechas, on="match_id", how="left")
 
 
 def attach_coach_faced(trans: pl.DataFrame, mc: pl.DataFrame) -> pl.DataFrame:
-    """Anade `coach_faced`: el DT del club en ese partido, para TODAS las filas.
+    """Anade `coach_faced`: el DT del equipo que NO ejecuta la accion.
 
-    `coach`        responde "quien dirigia al EJECUTANTE?" -> null en rivales.
-    `coach_faced`  responde "contra que DT se jugo este partido?" -> aplica a
-                   todas las filas del partido, incluidas las del rival.
+    `coach`        responde "quien dirigia al EJECUTANTE?"
+    `coach_faced`  responde "contra que DT se jugo esta accion?"
 
     Son dos preguntas distintas y necesitan dos columnas. Colapsarlas hacia que
     `select_units(unit='coach')` devolviera VACIO sobre transiciones defensivas,
     con un ValueError que decia "Sin transiciones para coach='Andre Jardine'" y
     apuntaba al lugar equivocado.
 
-    Contrato verificable: sobre las filas del club, `coach` y `coach_faced`
-    deben coincidir exactamente. Lo comprueba tests/test_coach_faced.py.
+    CAMBIO DE DEFINICION (2026-09-14)
+    ---------------------------------
+    La version anterior asignaba "el DT del club focal" a TODAS las filas del
+    partido, incluidas las del propio club. Sobre un artefacto de un solo club
+    eso hacia que en las filas del club `coach_faced == coach`, que es una
+    tautologia con un nombre que promete otra cosa.
+
+    Sobre un artefacto de LIGA la definicion vieja ni siquiera esta definida:
+    cada partido tiene dos entrenadores y ninguno es "el del club".
+
+    La definicion nueva es la general y se calcula de la MISMA forma en los dos
+    casos: se identifica el equipo rival dentro del propio partido y se busca su
+    DT. Consecuencias, y hay que verificarlas, no suponerlas:
+
+      * filas de RIVALES (team != club): el rival es el club, asi que
+        `coach_faced` = DT del club. IDENTICO a antes. La cadena conjugada y
+        todo el bloque D1 leen solo estas filas.
+      * filas del CLUB: antes = DT del club (redundante con `coach`); ahora =
+        DT del rival, que en un artefacto de un solo club es NULL porque no se
+        cargaron las eras de los 17 rivales.
+
+    El rival se deriva de `trans`, no de `mc`: asi funciona aunque solo se
+    conozcan las eras de un club.
     """
-    mc = mc.select("match_id", pl.col("coach").alias("coach_faced"))
-    return trans.join(mc, on="match_id", how="left")
+    if "team" not in trans.columns:
+        raise KeyError("attach_coach_faced necesita la columna `team`")
+
+    equipos = trans.select("match_id", "team").unique()
+    # (match_id, team) -> equipo rival en ese mismo partido
+    rivales = (
+        equipos.join(equipos, on="match_id", suffix="_rival")
+        .filter(pl.col("team") != pl.col("team_rival"))
+        .select("match_id", "team", "team_rival")
+        .unique(subset=["match_id", "team"])
+    )
+    mc_t = mc.select(
+        "match_id",
+        pl.col("club").alias("team_rival") if "club" in mc.columns
+        else pl.col("team").alias("team_rival"),
+        pl.col("coach").alias("coach_faced"),
+    )
+    puente = rivales.join(mc_t, on=["match_id", "team_rival"], how="left").select(
+        "match_id", "team", "coach_faced"
+    )
+    return trans.join(puente, on=["match_id", "team"], how="left")
 
 
 def select_units(
@@ -156,6 +219,34 @@ def select_units(
         base = trans.filter(
             pl.col(coach_col).is_not_null() & (pl.col(coach_col) != value)
         )
+    elif baseline == "other_coaches_same_club":
+        # Igual que `other_coaches`, pero restringido al club focal.
+        #
+        # POR QUE HACE FALTA UNA ETIQUETA PROPIA
+        # --------------------------------------
+        # Sobre un artefacto de un solo club, `other_coaches` YA significa
+        # "otras eras del mismo club", porque `coach` es null fuera del club.
+        # Sobre un artefacto de liga significa "todos los demas entrenadores de
+        # la liga", que es un contraste distinto y que NO es el diseno fuerte de
+        # ADR-16: comparar dentro del mismo club es lo que controla plantel,
+        # presupuesto, cantera, estadio y calendario.
+        #
+        # El cambio de significado seria SILENCIOSO. Por eso existe esta
+        # etiqueta: sobre un artefacto de un club da exactamente lo mismo que
+        # `other_coaches` -- lo comprueba tests/test_baseline_same_club.py --
+        # y sobre uno de liga dice lo que uno queria decir.
+        if club is None:
+            raise ValueError("baseline='other_coaches_same_club' requiere --club")
+        coach_col = unit if unit in ("coach", "coach_faced") else "coach"
+        mismo_club = (
+            (pl.col("team") != club) if unit == "coach_faced"
+            else (pl.col("team") == club)
+        )
+        base = trans.filter(
+            pl.col(coach_col).is_not_null()
+            & (pl.col(coach_col) != value)
+            & mismo_club
+        )
     elif baseline == "opponents":
         if club is None:
             raise ValueError("baseline='opponents' requiere --club")
@@ -172,6 +263,212 @@ def select_units(
     if base.height == 0:
         raise ValueError(f"La linea base '{baseline}' quedo vacia.")
     return focus, base
+
+
+def _slug_club(nombre: str) -> str:
+    """Misma normalizacion que usa `scripts/01_construir_eras.py` al nombrar."""
+    import unicodedata
+
+    s = "".join(
+        c for c in unicodedata.normalize("NFD", nombre)
+        if unicodedata.category(c) != "Mn"
+    )
+    return s.lower().replace(" ", "_")
+
+
+def match_coach_table_multi(
+    match_dates: pl.DataFrame, eras_dir: str | Path, equipos: list[str]
+) -> pl.DataFrame:
+    """(match_id, coach, match_date, club) para VARIOS clubes a la vez.
+
+    Lee `coach_eras_<slug>.csv` de `eras_dir` y lo empareja contra los equipos
+    presentes en los datos. El emparejamiento es por slug -- la normalizacion
+    que usa el script que escribe esos archivos -- y NO por el nombre del
+    archivo tal cual: `"Tigres UANL"` vive en `coach_eras_tigres_uanl.csv`.
+
+    Un equipo sin archivo de eras NO es un error: sus filas quedan con `coach`
+    nulo, que es exactamente lo que el prior necesita para no contaminarse.
+    Se avisa, eso si, porque un club entero sin eras suele ser un archivo mal
+    nombrado y no una decision.
+    """
+    d = Path(eras_dir)
+    if not d.is_dir():
+        raise NotADirectoryError(f"No es un directorio de eras: {d}")
+    por_slug = {_slug_club(t): t for t in equipos}
+    partes, sin_archivo = [], []
+    for slug, equipo in sorted(por_slug.items()):
+        f = d / f"coach_eras_{slug}.csv"
+        if not f.exists():
+            sin_archivo.append(equipo)
+            continue
+        partes.append(match_coach_table(match_dates, load_eras(f), equipo))
+    if sin_archivo:
+        print(
+            f"  [aviso] {len(sin_archivo)} equipo(s) sin CSV de eras en {d}: "
+            f"{sin_archivo}. Sus filas quedan con coach nulo."
+        )
+    if not partes:
+        raise FileNotFoundError(f"Ningun coach_eras_*.csv utilizable en {d}")
+    return pl.concat(partes, how="vertical")
+
+
+# --------------------------------------------------------------------------
+# Exclusion de partidos
+# --------------------------------------------------------------------------
+def load_exclusions(
+    path: str | Path, club: str, solo_absorbidos: bool = True
+) -> list[int]:
+    """Partidos a EXCLUIR del artefacto de un club. Clave: (club, match_id).
+
+    POR QUE LA CLAVE ES LA TUPLA Y NO EL `match_id`
+    -----------------------------------------------
+    El caso que la motiva: el 11 y el 17 de enero de 2025 al Club America lo
+    dirigio Diego Cervantes, no Andre Jardine, pero esos dos partidos caen
+    dentro del rango de la era de Jardine porque el fusionador de interinatos
+    los absorbio (`scripts/01_construir_eras.py --dump-asignacion`).
+
+    Hay que sacarlos del artefacto del America. Pero en esos mismos partidos el
+    RIVAL tenia a su propio entrenador, legitimamente: borrar el `match_id` de
+    forma global mutilaria la era del rival y quitaria del prior de liga un
+    partido perfectamente bueno.
+
+    El partido se cae del artefacto del club afectado y COMPLETO -- tambien las
+    filas del rival, porque en ese partido esas posesiones se jugaron contra
+    Cervantes y no contra Jardine, asi que su `coach_faced` tambien seria falso.
+
+    `solo_absorbidos=True` usa unicamente las filas con `dirigio_la_era == 0`
+    cuando esa columna existe, que es el formato que emite el dump.
+    """
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"No existe el archivo de exclusiones: {p}")
+    df = pl.read_csv(p)
+    for c in ("club", "match_id"):
+        if c not in df.columns:
+            raise KeyError(f"El CSV de exclusiones necesita la columna '{c}'")
+    if solo_absorbidos and "dirigio_la_era" in df.columns:
+        df = df.filter(pl.col("dirigio_la_era").cast(pl.Int64, strict=False) == 0)
+    ids = (
+        df.filter(pl.col("club") == club)["match_id"]
+        .cast(pl.Int64, strict=False)
+        .drop_nulls()
+        .unique()
+        .sort()
+        .to_list()
+    )
+    return [int(x) for x in ids]
+
+
+def check_dates_cover(trans: pl.DataFrame, match_dates: pl.DataFrame) -> None:
+    """Invariante ASIMETRICO: todo partido con eventos debe tener fecha.
+
+    Fechas de sobra son legales -- un `match_dates` de liga sirve para los 18
+    clubes y va a traer miles de partidos que no estan en este parquet. Exigir
+    igualdad de conjuntos seria un error logico.
+
+    Lo que NO es legal es un partido sin fecha: el join de `attach_coach` es
+    `left`, asi que ese partido saldria con `coach` nulo, indistinguible de un
+    hueco real del CSV de eras. Es la clase de fallo que este proyecto lleva
+    catorce casos documentando: no falla, miente.
+    """
+    con_eventos = set(trans["match_id"].unique().to_list())
+    con_fecha = set(match_dates["match_id"].to_list())
+    faltan = sorted(con_eventos - con_fecha)
+    if faltan:
+        raise ValueError(
+            f"{len(faltan)} partidos tienen eventos pero NO tienen fecha en el "
+            f"CSV de match_dates: {faltan[:10]}"
+            + (" ..." if len(faltan) > 10 else "")
+            + "\n  Sin fecha no hay mapeo de era y esos partidos saldrian con "
+            "`coach` nulo,\n  indistinguible de un hueco real entre eras.\n"
+            "  El CSV lo emite `scripts/02_adaptar_eventos.py` en la misma "
+            "corrida que el parquet:\n  si no cuadran, uno de los dos es de "
+            "otra corrida con otro alcance."
+        )
+
+
+# --------------------------------------------------------------------------
+# Candado de verificacion de fronteras
+# --------------------------------------------------------------------------
+VERIFICADAS_COLUMNS = ["club", "coach", "n_esperado", "fuente", "fecha"]
+
+
+def check_verificada(
+    club: str | None,
+    coach: str,
+    eras_api: str | Path = "data/eras_api/eras_todas.csv",
+    verificadas: str | Path = "data/eras_verificadas.csv",
+) -> None:
+    """Aborta si la era esta marcada PRIMERA_DE_VENTANA y nadie la verifico.
+
+    POR QUE
+    -------
+    `01_construir_eras.py` marca la primera era de cada club en la ventana:
+    es la unica frontera que ninguna evidencia interna puede confirmar, porque
+    no hay un partido anterior contra el que contrastar el cambio de DT. Son 18
+    marcadas, 9 de ellas analizables, y al cierre de esta sesion 3 estaban
+    verificadas contra fuentes externas.
+
+    El riesgo no es teorico: bug #14 fue exactamente una frontera de era mal
+    puesta en un dato de entrada investigado a mano, y ningun test podia
+    atraparlo porque el pipeline hacia lo que se le pidio.
+
+    Este candado no verifica nada -- eso lo hace un humano con una fuente
+    externa y aritmetica de conteo de partidos. Lo que hace es impedir que una
+    frontera sin verificar llegue a un resultado reportado por descuido.
+
+    INACTIVO si no existe `eras_api`: la demo con datos sinteticos, los tests y
+    cualquier artefacto anterior a la migracion no tienen ese archivo y no
+    deben romperse.
+    """
+    pe = Path(eras_api)
+    if not pe.exists():
+        return
+    eras = pl.read_csv(pe)
+    if "banderas" not in eras.columns:
+        return
+    fila = eras.filter(pl.col("coach") == coach)
+    if club is not None and "club" in eras.columns:
+        fila = fila.filter(pl.col("club") == club)
+    if fila.height == 0:
+        return
+    banderas = str(fila["banderas"][0] or "")
+    if "PRIMERA_DE_VENTANA" not in banderas:
+        return
+
+    pv = Path(verificadas)
+    if pv.exists():
+        ver = pl.read_csv(pv)
+        if "coach" in ver.columns:
+            hit = ver.filter(pl.col("coach") == coach)
+            if club is not None and "club" in ver.columns:
+                hit = hit.filter(pl.col("club") == club)
+            if "fuente" in hit.columns:
+                hit = hit.filter(
+                    pl.col("fuente").is_not_null()
+                    & (pl.col("fuente").cast(pl.Utf8).str.strip_chars() != "")
+                )
+            if hit.height > 0:
+                return
+
+    n = fila["n_partidos"][0] if "n_partidos" in fila.columns else "?"
+    raise SystemExit(
+        f"\n[CANDADO] La era '{coach}' ({club}) esta marcada PRIMERA_DE_VENTANA "
+        f"y no esta verificada.\n"
+        f"  Es la primera era del club en la ventana: si el API arrastro hacia "
+        f"atras al DT\n"
+        f"  siguiente, estos {n} partidos son de otro entrenador y el resultado "
+        f"describiria\n"
+        f"  a quien no es. Paso con Herrera/Solari (bug #14).\n\n"
+        f"  Verificacion: contar los partidos de fase regular que una fuente "
+        f"externa le da\n"
+        f"  a este DT en la ventana y contrastarlos contra los {n} del API. La "
+        f"aritmetica es\n"
+        f"  mas dificil de falsear por accidente que una fecha.\n\n"
+        f"  Cuando cuadre, anade una fila a {verificadas}:\n"
+        f"      club,coach,n_esperado,fuente,fecha\n"
+        f'      "{club}","{coach}",{n},"<url o referencia>","<AAAA-MM-DD>"\n'
+    )
 
 
 # --------------------------------------------------------------------------

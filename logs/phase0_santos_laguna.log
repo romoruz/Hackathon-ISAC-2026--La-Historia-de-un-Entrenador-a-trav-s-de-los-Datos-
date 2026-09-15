@@ -1,0 +1,168 @@
+[exclusiones] 0 partidos fuera para 'Santos Laguna': []
+{
+  "n_transitions": 203920,
+  "n_possessions": 34942,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7214212657051237,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7242745963157451,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 108956,
+    "n_possessions": 18566,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.21820516285984592
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Santos Laguna",
+    "coverage": [
+      {
+        "coach": "Eduardo Fentanes",
+        "matches": 41,
+        "possessions": 3934,
+        "transitions": 22138,
+        "pct_matches": 24.1,
+        "suficiente": true
+      },
+      {
+        "coach": "Ignacio Ambriz",
+        "matches": 28,
+        "possessions": 2727,
+        "transitions": 18494,
+        "pct_matches": 16.5,
+        "suficiente": true
+      },
+      {
+        "coach": "Pablo Eduardo Repetto Aquino",
+        "matches": 24,
+        "possessions": 2254,
+        "transitions": 13015,
+        "pct_matches": 14.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Francisco",
+        "matches": 23,
+        "possessions": 2022,
+        "transitions": 11338,
+        "pct_matches": 13.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Guillermo Almada",
+        "matches": 17,
+        "possessions": 1798,
+        "transitions": 9883,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Fernando Ortiz",
+        "matches": 17,
+        "possessions": 1675,
+        "transitions": 10160,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Roberto Jaramillo",
+        "matches": 11,
+        "possessions": 1043,
+        "transitions": 5546,
+        "pct_matches": 6.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Pedro Caixinha",
+        "matches": 9,
+        "possessions": 923,
+        "transitions": 4390,
+        "pct_matches": 5.3,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Santos Laguna",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "losing",
+      "len": 58324
+    },
+    {
+      "score_state": "winning",
+      "len": 45715
+    },
+    {
+      "score_state": "drawing",
+      "len": 99881
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "open",
+      "len": 107575
+    },
+    {
+      "phase": "set_piece",
+      "len": 34741
+    },
+    {
+      "phase": "restart",
+      "len": 54373
+    },
+    {
+      "phase": "transition",
+      "len": 7231
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (8, 6)
+┌──────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                        ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                          ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                          ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞══════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Eduardo Fentanes             ┆ 41      ┆ 3934        ┆ 22138       ┆ 24.1        ┆ true       │
+│ Ignacio Ambriz               ┆ 28      ┆ 2727        ┆ 18494       ┆ 16.5        ┆ true       │
+│ Pablo Eduardo Repetto Aquino ┆ 24      ┆ 2254        ┆ 13015       ┆ 14.1        ┆ false      │
+│ Francisco                    ┆ 23      ┆ 2022        ┆ 11338       ┆ 13.5        ┆ false      │
+│ Guillermo Almada             ┆ 17      ┆ 1798        ┆ 9883        ┆ 10.0        ┆ false      │
+│ Fernando Ortiz               ┆ 17      ┆ 1675        ┆ 10160       ┆ 10.0        ┆ false      │
+│ Roberto Jaramillo            ┆ 11      ┆ 1043        ┆ 5546        ┆ 6.5         ┆ false      │
+│ Pedro Caixinha               ┆ 9       ┆ 923         ┆ 4390        ┆ 5.3         ┆ false      │
+└──────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

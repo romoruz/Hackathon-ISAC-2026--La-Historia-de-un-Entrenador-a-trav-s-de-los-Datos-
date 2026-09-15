@@ -1,0 +1,114 @@
+{
+  "n_transitions": 224288,
+  "n_possessions": 34319,
+  "n_matches": 175,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7204148423126878,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.727638109306483,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 103588,
+    "n_possessions": 17814,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.21036244123812042
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Am\u00e9rica",
+    "coverage": [
+      {
+        "coach": "Andre Jardine",
+        "matches": 93,
+        "possessions": 8694,
+        "transitions": 67492,
+        "pct_matches": 53.1,
+        "suficiente": true
+      },
+      {
+        "coach": "Santiago Solari",
+        "matches": 39,
+        "possessions": 3680,
+        "transitions": 23913,
+        "pct_matches": 22.3,
+        "suficiente": true
+      },
+      {
+        "coach": "Fernando Ortiz",
+        "matches": 26,
+        "possessions": 2551,
+        "transitions": 18917,
+        "pct_matches": 14.9,
+        "suficiente": true
+      },
+      {
+        "coach": "Miguel Herrera",
+        "matches": 17,
+        "possessions": 1580,
+        "transitions": 10378,
+        "pct_matches": 9.7,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": false
+  },
+  "by_score_state": [
+    {
+      "score_state": "losing",
+      "len": 58702
+    },
+    {
+      "score_state": "winning",
+      "len": 48299
+    },
+    {
+      "score_state": "drawing",
+      "len": 117287
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "set_piece",
+      "len": 33567
+    },
+    {
+      "phase": "open",
+      "len": 124675
+    },
+    {
+      "phase": "restart",
+      "len": 58747
+    },
+    {
+      "phase": "transition",
+      "len": 7299
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}

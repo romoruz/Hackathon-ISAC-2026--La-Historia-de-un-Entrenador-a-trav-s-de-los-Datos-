@@ -1,0 +1,168 @@
+[exclusiones] 0 partidos fuera para 'Tijuana': []
+{
+  "n_transitions": 211115,
+  "n_possessions": 35495,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7255784661606781,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7279058488855431,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 107544,
+    "n_possessions": 18930,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.22229884830990218
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Tijuana",
+    "coverage": [
+      {
+        "coach": "Miguel Herrera",
+        "matches": 45,
+        "possessions": 4682,
+        "transitions": 27043,
+        "pct_matches": 26.5,
+        "suficiente": true
+      },
+      {
+        "coach": "Sebastian Abreu",
+        "matches": 34,
+        "possessions": 2953,
+        "transitions": 19357,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Juan Carlos Osorio",
+        "matches": 28,
+        "possessions": 2873,
+        "transitions": 22595,
+        "pct_matches": 16.5,
+        "suficiente": true
+      },
+      {
+        "coach": "Ricardo Alfredo Valino",
+        "matches": 22,
+        "possessions": 2188,
+        "transitions": 11974,
+        "pct_matches": 12.9,
+        "suficiente": false
+      },
+      {
+        "coach": "Sebastian Ariel Mendez Pardinas",
+        "matches": 22,
+        "possessions": 2056,
+        "transitions": 12133,
+        "pct_matches": 12.9,
+        "suficiente": false
+      },
+      {
+        "coach": "Robert Siboldi",
+        "matches": 12,
+        "possessions": 1203,
+        "transitions": 6716,
+        "pct_matches": 7.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Cirilo Saucedo Najera II",
+        "matches": 6,
+        "possessions": 499,
+        "transitions": 2927,
+        "pct_matches": 3.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Cirilo Saucedo Najera I",
+        "matches": 1,
+        "possessions": 111,
+        "transitions": 826,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Tijuana",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 112260
+    },
+    {
+      "score_state": "losing",
+      "len": 55270
+    },
+    {
+      "score_state": "winning",
+      "len": 43585
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "restart",
+      "len": 55644
+    },
+    {
+      "phase": "transition",
+      "len": 7786
+    },
+    {
+      "phase": "set_piece",
+      "len": 35800
+    },
+    {
+      "phase": "open",
+      "len": 111885
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (8, 6)
+┌─────────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                           ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                             ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                             ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═════════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Miguel Herrera                  ┆ 45      ┆ 4682        ┆ 27043       ┆ 26.5        ┆ true       │
+│ Sebastian Abreu                 ┆ 34      ┆ 2953        ┆ 19357       ┆ 20.0        ┆ true       │
+│ Juan Carlos Osorio              ┆ 28      ┆ 2873        ┆ 22595       ┆ 16.5        ┆ true       │
+│ Sebastian Ariel Mendez Pardina… ┆ 22      ┆ 2056        ┆ 12133       ┆ 12.9        ┆ false      │
+│ Ricardo Alfredo Valino          ┆ 22      ┆ 2188        ┆ 11974       ┆ 12.9        ┆ false      │
+│ Robert Siboldi                  ┆ 12      ┆ 1203        ┆ 6716        ┆ 7.1         ┆ false      │
+│ Cirilo Saucedo Najera II        ┆ 6       ┆ 499         ┆ 2927        ┆ 3.5         ┆ false      │
+│ Cirilo Saucedo Najera I         ┆ 1       ┆ 111         ┆ 826         ┆ 0.6         ┆ false      │
+└─────────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

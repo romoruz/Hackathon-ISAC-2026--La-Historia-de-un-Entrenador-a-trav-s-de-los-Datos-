@@ -1,0 +1,132 @@
+[exclusiones] 0 partidos fuera para 'Pachuca': []
+{
+  "n_transitions": 210458,
+  "n_possessions": 37418,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.733362920876658,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.73109010165215,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 102614,
+    "n_possessions": 19579,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.2315188970763014
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Pachuca",
+    "coverage": [
+      {
+        "coach": "Guillermo Almada",
+        "matches": 119,
+        "possessions": 12888,
+        "transitions": 76525,
+        "pct_matches": 70.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Esteban Andres Solari Poggio",
+        "matches": 17,
+        "possessions": 1593,
+        "transitions": 10046,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Paulo Cesar Pezzolano Suarez",
+        "matches": 17,
+        "possessions": 1712,
+        "transitions": 9906,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Jaime Lozano",
+        "matches": 17,
+        "possessions": 1646,
+        "transitions": 11367,
+        "pct_matches": 10.0,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Pachuca",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 101274
+    },
+    {
+      "score_state": "winning",
+      "len": 48467
+    },
+    {
+      "score_state": "losing",
+      "len": 60717
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "restart",
+      "len": 58175
+    },
+    {
+      "phase": "set_piece",
+      "len": 33806
+    },
+    {
+      "phase": "open",
+      "len": 110979
+    },
+    {
+      "phase": "transition",
+      "len": 7498
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (4, 6)
+┌──────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                        ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                          ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                          ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞══════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Guillermo Almada             ┆ 119     ┆ 12888       ┆ 76525       ┆ 70.0        ┆ true       │
+│ Jaime Lozano                 ┆ 17      ┆ 1646        ┆ 11367       ┆ 10.0        ┆ false      │
+│ Esteban Andres Solari Poggio ┆ 17      ┆ 1593        ┆ 10046       ┆ 10.0        ┆ false      │
+│ Paulo Cesar Pezzolano Suarez ┆ 17      ┆ 1712        ┆ 9906        ┆ 10.0        ┆ false      │
+└──────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

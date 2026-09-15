@@ -1,0 +1,150 @@
+[exclusiones] 0 partidos fuera para 'Atlas': []
+{
+  "n_transitions": 203662,
+  "n_possessions": 34091,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7266375305356095,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7275419032766048,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 106855,
+    "n_possessions": 18241,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.21569246556419466
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Atlas",
+    "coverage": [
+      {
+        "coach": "Diego Cocca I",
+        "matches": 51,
+        "possessions": 4786,
+        "transitions": 28273,
+        "pct_matches": 30.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Benat San Jose",
+        "matches": 34,
+        "possessions": 3238,
+        "transitions": 20092,
+        "pct_matches": 20.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Benjamin Mora",
+        "matches": 31,
+        "possessions": 2979,
+        "transitions": 19854,
+        "pct_matches": 18.2,
+        "suficiente": true
+      },
+      {
+        "coach": "Diego Cocca II",
+        "matches": 30,
+        "possessions": 2563,
+        "transitions": 15883,
+        "pct_matches": 17.6,
+        "suficiente": true
+      },
+      {
+        "coach": "Gonzalo Pineda Reyes",
+        "matches": 21,
+        "possessions": 1954,
+        "transitions": 10764,
+        "pct_matches": 12.4,
+        "suficiente": false
+      },
+      {
+        "coach": "Omar Alejandro Flores Serrano",
+        "matches": 3,
+        "possessions": 330,
+        "transitions": 1941,
+        "pct_matches": 1.8,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Atlas",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "losing",
+      "len": 55631
+    },
+    {
+      "score_state": "winning",
+      "len": 42645
+    },
+    {
+      "score_state": "drawing",
+      "len": 105386
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "open",
+      "len": 108373
+    },
+    {
+      "phase": "restart",
+      "len": 54899
+    },
+    {
+      "phase": "set_piece",
+      "len": 33251
+    },
+    {
+      "phase": "transition",
+      "len": 7139
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (6, 6)
+┌───────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                         ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                           ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                           ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═══════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Diego Cocca I                 ┆ 51      ┆ 4786        ┆ 28273       ┆ 30.0        ┆ true       │
+│ Benat San Jose                ┆ 34      ┆ 3238        ┆ 20092       ┆ 20.0        ┆ true       │
+│ Benjamin Mora                 ┆ 31      ┆ 2979        ┆ 19854       ┆ 18.2        ┆ true       │
+│ Diego Cocca II                ┆ 30      ┆ 2563        ┆ 15883       ┆ 17.6        ┆ true       │
+│ Gonzalo Pineda Reyes          ┆ 21      ┆ 1954        ┆ 10764       ┆ 12.4        ┆ false      │
+│ Omar Alejandro Flores Serrano ┆ 3       ┆ 330         ┆ 1941        ┆ 1.8         ┆ false      │
+└───────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

@@ -1,0 +1,8 @@
+club,coach,coach_full,coach_id,start_date,end_date,n_partidos,n_en_rango,n_absorbidos,torneos,analizable,banderas
+"Pumas UNAM","Andres Lillini","Andrés Luciano Lillini","4870","2021-07-25","2022-10-01","51","51","0","A2021|A2022|C2022","1","PRIMERA_DE_VENTANA"
+"Pumas UNAM","Rafael Puente del Rio","Rafael Puente del Río","3228","2023-01-08","2023-03-19","12","12","0","C2023","0","CORTA"
+"Pumas UNAM","Raul Alpizar I","Raúl Alpízar","1001899","2023-04-03","2023-04-03","1","1","0","C2023","0","CORTA;NO_CONTIGUA"
+"Pumas UNAM","Antonio Mohamed","Antonio Ricardo Mohamed Matijevich","560","2023-04-09","2023-11-12","21","21","0","A2023|C2023","0","CORTA"
+"Pumas UNAM","Gustavo Lema","Gustavo Alberto Lema","794","2024-01-14","2025-02-26","43","43","0","A2024|C2024|C2025","1","MULTI_MANAGER(1)"
+"Pumas UNAM","Raul Alpizar II","Raúl Alpízar","1001899","2025-03-02","2025-03-02","1","1","0","C2025","0","CORTA;NO_CONTIGUA"
+"Pumas UNAM","Efrain Valdez","Efraín Juárez Váldez","1005267","2025-03-08","2026-04-25","41","41","0","A2025|C2025|C2026","1",""

@@ -1,0 +1,177 @@
+[exclusiones] 0 partidos fuera para 'Puebla': []
+{
+  "n_transitions": 208523,
+  "n_possessions": 34407,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7237828875463622,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.726512816969757,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 112487,
+    "n_possessions": 18435,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.2103923568547821
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Puebla",
+    "coverage": [
+      {
+        "coach": "Nicolas Larcamon",
+        "matches": 51,
+        "possessions": 4776,
+        "transitions": 27212,
+        "pct_matches": 30.0,
+        "suficiente": true
+      },
+      {
+        "coach": "Pablo Adrian Guede Barriero",
+        "matches": 22,
+        "possessions": 2141,
+        "transitions": 11939,
+        "pct_matches": 12.9,
+        "suficiente": false
+      },
+      {
+        "coach": "Eduardo Arce Pena",
+        "matches": 22,
+        "possessions": 1988,
+        "transitions": 13693,
+        "pct_matches": 12.9,
+        "suficiente": false
+      },
+      {
+        "coach": "Ricardo Carbajal",
+        "matches": 20,
+        "possessions": 2015,
+        "transitions": 12522,
+        "pct_matches": 11.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Albert Espigares",
+        "matches": 17,
+        "possessions": 1511,
+        "transitions": 9738,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Jose Manuel de la Torre Menchaca",
+        "matches": 17,
+        "possessions": 1577,
+        "transitions": 8625,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Hernan Cristante",
+        "matches": 12,
+        "possessions": 1094,
+        "transitions": 7121,
+        "pct_matches": 7.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Andres Jose Carevic Ghelfi",
+        "matches": 7,
+        "possessions": 691,
+        "transitions": 4135,
+        "pct_matches": 4.1,
+        "suficiente": false
+      },
+      {
+        "coach": "Fernando Luis Aristeguieta de Luca",
+        "matches": 2,
+        "possessions": 179,
+        "transitions": 1051,
+        "pct_matches": 1.2,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Puebla",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "winning",
+      "len": 46983
+    },
+    {
+      "score_state": "losing",
+      "len": 60023
+    },
+    {
+      "score_state": "drawing",
+      "len": 101517
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "set_piece",
+      "len": 34631
+    },
+    {
+      "phase": "open",
+      "len": 107392
+    },
+    {
+      "phase": "restart",
+      "len": 58834
+    },
+    {
+      "phase": "transition",
+      "len": 7666
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (9, 6)
+┌─────────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                           ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                             ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                             ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═════════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Nicolas Larcamon                ┆ 51      ┆ 4776        ┆ 27212       ┆ 30.0        ┆ true       │
+│ Eduardo Arce Pena               ┆ 22      ┆ 1988        ┆ 13693       ┆ 12.9        ┆ false      │
+│ Pablo Adrian Guede Barriero     ┆ 22      ┆ 2141        ┆ 11939       ┆ 12.9        ┆ false      │
+│ Ricardo Carbajal                ┆ 20      ┆ 2015        ┆ 12522       ┆ 11.8        ┆ false      │
+│ Jose Manuel de la Torre Mencha… ┆ 17      ┆ 1577        ┆ 8625        ┆ 10.0        ┆ false      │
+│ Albert Espigares                ┆ 17      ┆ 1511        ┆ 9738        ┆ 10.0        ┆ false      │
+│ Hernan Cristante                ┆ 12      ┆ 1094        ┆ 7121        ┆ 7.1         ┆ false      │
+│ Andres Jose Carevic Ghelfi      ┆ 7       ┆ 691         ┆ 4135        ┆ 4.1         ┆ false      │
+│ Fernando Luis Aristeguieta de … ┆ 2       ┆ 179         ┆ 1051        ┆ 1.2         ┆ false      │
+└─────────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

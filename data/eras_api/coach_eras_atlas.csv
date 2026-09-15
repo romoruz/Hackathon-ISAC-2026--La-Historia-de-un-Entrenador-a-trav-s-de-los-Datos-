@@ -1,0 +1,7 @@
+club,coach,coach_full,coach_id,start_date,end_date,n_partidos,n_en_rango,n_absorbidos,torneos,analizable,banderas
+"Atlas","Diego Cocca I","Diego Martín Cocca Pera","2819","2021-07-25","2022-10-02","51","51","0","A2021|A2022|C2022","1","PRIMERA_DE_VENTANA;NO_CONTIGUA"
+"Atlas","Benjamin Mora","Benjamín Mora Mendívil","1002630","2023-01-13","2023-10-30","31","31","0","A2023|C2023","1",""
+"Atlas","Omar Alejandro Flores Serrano","Omar Alejandro Flores Serrano","4290","2023-11-02","2023-11-11","3","3","0","A2023","0","CORTA"
+"Atlas","Benat San Jose","Beñat San José Gil","2790","2024-01-15","2024-11-10","34","34","0","A2024|C2024","1",""
+"Atlas","Gonzalo Pineda Reyes","Gonzalo Pineda Reyes","1000299","2025-01-12","2025-08-10","21","21","0","A2025|C2025","0","CORTA"
+"Atlas","Diego Cocca II","Diego Martín Cocca Pera","2819","2025-08-17","2026-04-26","30","30","0","A2025|C2026","1","NO_CONTIGUA"

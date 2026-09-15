@@ -1,0 +1,195 @@
+[exclusiones] 0 partidos fuera para 'Necaxa': []
+{
+  "n_transitions": 204583,
+  "n_possessions": 35375,
+  "n_matches": 170,
+  "teams": 18,
+  "state_space": {
+    "n_transient": 80,
+    "n_absorbing": 4,
+    "nx": 5,
+    "ny": 4,
+    "phases": [
+      "open",
+      "transition",
+      "restart",
+      "set_piece"
+    ]
+  },
+  "coordinate_sanity": {
+    "corr": 0.7243841608231225,
+    "ok": true
+  },
+  "coordinate_sanity_defense": {
+    "corr": 0.7267531315999147,
+    "ok": true
+  },
+  "defense": {
+    "n_transitions": 112867,
+    "n_possessions": 19132,
+    "n_teams": 17,
+    "min_actions_attack": 2,
+    "min_actions_defense": 1,
+    "pressure_rate": 0.22712133969501355
+  },
+  "coaches": {
+    "attached": true,
+    "club": "Necaxa",
+    "coverage": [
+      {
+        "coach": "Eduardo Fentanes",
+        "matches": 41,
+        "possessions": 3886,
+        "transitions": 18911,
+        "pct_matches": 24.1,
+        "suficiente": true
+      },
+      {
+        "coach": "Jaime Lozano",
+        "matches": 30,
+        "possessions": 2805,
+        "transitions": 16295,
+        "pct_matches": 17.6,
+        "suficiente": true
+      },
+      {
+        "coach": "Nicolas Larcamon",
+        "matches": 17,
+        "possessions": 1696,
+        "transitions": 10055,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Fernando Gago",
+        "matches": 17,
+        "possessions": 1665,
+        "transitions": 10292,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Andres Lillini",
+        "matches": 17,
+        "possessions": 1703,
+        "transitions": 9008,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Martin Varini",
+        "matches": 17,
+        "possessions": 1550,
+        "transitions": 9958,
+        "pct_matches": 10.0,
+        "suficiente": false
+      },
+      {
+        "coach": "Guillermo Alejandro Vazquez Herrera",
+        "matches": 11,
+        "possessions": 1024,
+        "transitions": 5529,
+        "pct_matches": 6.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Pablo Adrian Guede Barriero",
+        "matches": 10,
+        "possessions": 981,
+        "transitions": 6656,
+        "pct_matches": 5.9,
+        "suficiente": false
+      },
+      {
+        "coach": "Rafael Edgar Dudamel Ochoa",
+        "matches": 6,
+        "possessions": 556,
+        "transitions": 3101,
+        "pct_matches": 3.5,
+        "suficiente": false
+      },
+      {
+        "coach": "Luis Alberto Padilla Velasco II",
+        "matches": 3,
+        "possessions": 308,
+        "transitions": 1656,
+        "pct_matches": 1.8,
+        "suficiente": false
+      },
+      {
+        "coach": "Luis Alberto Padilla Velasco I",
+        "matches": 1,
+        "possessions": 69,
+        "transitions": 255,
+        "pct_matches": 0.6,
+        "suficiente": false
+      }
+    ],
+    "unmapped_matches": 0
+  },
+  "exclusiones": {
+    "aplicadas": true,
+    "archivo": "data/eras_api/absorbidos.csv",
+    "club": "Necaxa",
+    "match_ids": [],
+    "n": 0
+  },
+  "by_score_state": [
+    {
+      "score_state": "drawing",
+      "len": 100410
+    },
+    {
+      "score_state": "winning",
+      "len": 44421
+    },
+    {
+      "score_state": "losing",
+      "len": 59752
+    }
+  ],
+  "by_phase": [
+    {
+      "phase": "set_piece",
+      "len": 33560
+    },
+    {
+      "phase": "restart",
+      "len": 57342
+    },
+    {
+      "phase": "transition",
+      "len": 7810
+    },
+    {
+      "phase": "open",
+      "len": 105871
+    }
+  ],
+  "provenance": {
+    "config_sha256": "63e2aa39caa6",
+    "config_path": "config/default.yaml",
+    "git_commit": "a4ba8e6",
+    "dtdecoder_version": "0.6.0"
+  }
+}
+
+== Cobertura por era ==
+shape: (11, 6)
+┌─────────────────────────────────┬─────────┬─────────────┬─────────────┬─────────────┬────────────┐
+│ coach                           ┆ matches ┆ possessions ┆ transitions ┆ pct_matches ┆ suficiente │
+│ ---                             ┆ ---     ┆ ---         ┆ ---         ┆ ---         ┆ ---        │
+│ str                             ┆ u32     ┆ u32         ┆ u32         ┆ f64         ┆ bool       │
+╞═════════════════════════════════╪═════════╪═════════════╪═════════════╪═════════════╪════════════╡
+│ Eduardo Fentanes                ┆ 41      ┆ 3886        ┆ 18911       ┆ 24.1        ┆ true       │
+│ Jaime Lozano                    ┆ 30      ┆ 2805        ┆ 16295       ┆ 17.6        ┆ true       │
+│ Nicolas Larcamon                ┆ 17      ┆ 1696        ┆ 10055       ┆ 10.0        ┆ false      │
+│ Martin Varini                   ┆ 17      ┆ 1550        ┆ 9958        ┆ 10.0        ┆ false      │
+│ Andres Lillini                  ┆ 17      ┆ 1703        ┆ 9008        ┆ 10.0        ┆ false      │
+│ Fernando Gago                   ┆ 17      ┆ 1665        ┆ 10292       ┆ 10.0        ┆ false      │
+│ Guillermo Alejandro Vazquez He… ┆ 11      ┆ 1024        ┆ 5529        ┆ 6.5         ┆ false      │
+│ Pablo Adrian Guede Barriero     ┆ 10      ┆ 981         ┆ 6656        ┆ 5.9         ┆ false      │
+│ Rafael Edgar Dudamel Ochoa      ┆ 6       ┆ 556         ┆ 3101        ┆ 3.5         ┆ false      │
+│ Luis Alberto Padilla Velasco I… ┆ 3       ┆ 308         ┆ 1656        ┆ 1.8         ┆ false      │
+│ Luis Alberto Padilla Velasco I  ┆ 1       ┆ 69          ┆ 255         ┆ 0.6         ┆ false      │
+└─────────────────────────────────┴─────────┴─────────────┴─────────────┴─────────────┴────────────┘

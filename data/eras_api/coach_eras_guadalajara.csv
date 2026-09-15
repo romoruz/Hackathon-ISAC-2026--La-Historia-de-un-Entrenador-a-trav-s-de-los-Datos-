@@ -1,0 +1,11 @@
+club,coach,coach_full,coach_id,start_date,end_date,n_partidos,n_en_rango,n_absorbidos,torneos,analizable,banderas
+"Guadalajara","Victor Manuel Vucetich","Víctor Manuel Vucetich Rojas","3746","2021-07-25","2021-09-19","9","9","0","A2021","0","PRIMERA_DE_VENTANA;CORTA"
+"Guadalajara","Marcelo Michel Leano","Marcelo Michel Leaño","6223","2021-09-26","2022-04-10","20","20","0","A2021|C2022","0","CORTA"
+"Guadalajara","Ricardo Cadena Martinez","Ricardo Cadena Martínez","1001388","2022-04-14","2022-10-02","22","22","0","A2022|C2022","0","CORTA"
+"Guadalajara","Veljko Paunovic","Veljko Paunovic","156","2023-01-08","2023-11-12","34","34","0","A2023|C2023","1",""
+"Guadalajara","Fernando Gago","Fernando Rubén Gago","5662","2024-01-14","2024-10-06","28","28","0","A2024|C2024","1",""
+"Guadalajara","Arturo Ortega Juarez","Arturo Ortega Juárez","1003436","2024-10-19","2024-11-09","6","6","0","A2024","0","CORTA"
+"Guadalajara","Oscar Garcia","Óscar García Junyent","430","2025-01-12","2025-02-27","8","9","1","C2025","0","CORTA;MULTI_MANAGER(1);FUSIONADA(1)"
+"Guadalajara","Jose Luis Melendez Galindo","José Luis Meléndez Galindo","1005590","2025-03-02","2025-03-02","1","1","0","C2025","0","CORTA"
+"Guadalajara","Gerardo Espinoza Ahumada","Gerardo Espinoza Ahumada","1001786","2025-03-09","2025-04-20","6","7","1","C2025","0","CORTA;FUSIONADA(1)"
+"Guadalajara","Gabriel Milito","Gabriel Alejandro Milito","2695","2025-07-20","2026-04-26","34","34","0","A2025|C2026","1",""
