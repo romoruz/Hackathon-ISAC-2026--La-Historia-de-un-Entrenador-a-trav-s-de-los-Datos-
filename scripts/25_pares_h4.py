@@ -5,7 +5,11 @@
 REGLAS PREINSCRITAS (2026-09-14, ANTES de correr esto)
 ======================================================
 
-H4-1. MAGNITUDES A lambda=0, SIGNIFICANCIA A lambda* (ADR-22).
+H4-1. MAGNITUDES A lambda=0 (ADR-22).
+      CORRECCION 2026-09-15 (paquete h2_11): el texto original decia
+      "significancia a lambda*", pero el codigo SIEMPRE corrio la permutacion
+      con LAMBDA_MAGNITUD = 0. La v5 es, por tanto, magnitud Y significancia a
+      lambda=0. La permutacion a lambda=0 es valida; lo falso era la etiqueta.
       No es configurable por corrida. A lambda=0 no hay encogimiento y por
       tanto no hay atenuacion, que es la unica forma de que la magnitud no
       dependa de cuanta muestra tiene cada era.
@@ -16,7 +20,14 @@ H4-2. LA ATENUACION ES DIFERENCIAL Y NO SE ARREGLA CON UN lambda COMUN.
       El sesgo siempre va en el mismo sentido: la era chica se parece al prior
       mas de lo que sus datos dicen. Por eso H4-1 no es una preferencia.
 
-H4-3. SENSIBILIDAD DE n IGUALADO. Cada par se recalcula submuestreando la era
+H4-3. SENSIBILIDAD DE n IGUALADO.
+      NO ES UN INTERVALO DE CONFIANZA (paquete h2_11). Submuestrea SIN
+      reemplazo la era grande y deja FIJA la chica: no recoge la variabilidad
+      de la era chica, y su ancho colapsa cuando b/n -> 1 (sobre la v5:
+      corr(b/n, ancho) = -0.88; Berizzo-Larcamon, b/n = 0.93, da 1.5 pp
+      contra 8.05 pp del bootstrap por posesion de 08_ic_derivados). Por eso
+      el campo se llama `rel_E_T_rango_submuestreo`, no `_ic95`. Los IC van
+      por 08_ic_derivados.py (ADR-31/32) o 30_did_contemporaneo.py (ADR-53). Cada par se recalcula submuestreando la era
       grande al numero de POSESIONES de la chica, repetido. Si el efecto
       sobrevive con n igualado, la asimetria de muestra no lo explica. Es
       preferible a un ajuste analitico porque elimina la asimetria por
@@ -32,8 +43,13 @@ H4-4. CRITERIO DE DECISION, corregido respecto al primer borrador.
       que se esta midiendo.
 
 H4-5. LINEA BASE CONTEMPORANEA (ver 24_linea_base_contemporanea.py). El prior
-      de cada par se construye con los torneos de ESE par, sin el club focal,
-      para que la deriva del proveedor sea un efecto comun que se cancela.
+      de cada par se construye con los torneos de ESE par, sin el club focal.
+      CORRECCION 2026-09-15 (paquete h2_11): el texto original afirmaba que
+      asi "la deriva del proveedor es un efecto comun que se cancela". NO se
+      cancela: a lambda=0 el prior solo entra en renglones sin datos, asi que
+      no toca ni la magnitud ni la permutacion. La v5 mide diferencia entre
+      eras CON la deriva dentro. El contraste corregido es ADR-53
+      (scripts/30_did_contemporaneo.py).
 
 H4-6. SOLO PARES DENTRO DEL MISMO CLUB (ADR-16/ADR-37). Comparar entre clubes
       absorbe plantel, presupuesto y calendario. La comparacion entre clubes
@@ -203,12 +219,12 @@ def n_igualado(a: pl.DataFrame, b: pl.DataFrame, space: StateSpace,
     return {
         "aplicado": True, "n_posesiones_igualado": int(chica),
         "rel_E_T_media": float(d.mean()),
-        "rel_E_T_ic95": [float(np.quantile(d, 0.025)),
+        "rel_E_T_rango_submuestreo": [float(np.quantile(d, 0.025)),
                          float(np.quantile(d, 0.975))],
         # AÑADIDO (paquete 08): el criterio de equivalencia del control
         # negativo pide el IC de xT, no solo su punto.
         "rel_xT_media": float(dx.mean()),
-        "rel_xT_ic95": [float(np.quantile(dx, 0.025)),
+        "rel_xT_rango_submuestreo": [float(np.quantile(dx, 0.025)),
                         float(np.quantile(dx, 0.975))],
         "mismo_signo_que_completo": None,   # se rellena fuera
         "mismo_signo_xT_que_completo": None,
@@ -343,11 +359,11 @@ def main() -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps({
         "reglas_preinscritas": {
-            "H4-1": "magnitudes a lambda=0, significancia a lambda*",
+            "H4-1": "magnitudes Y significancia a lambda=0 (el texto previo decia lambda*; ver h2_11)",
             "H4-2": "la atenuacion es diferencial; un lambda comun no la arregla",
             "H4-3": "sensibilidad de n igualado por submuestreo",
             "H4-4": "la nula de muestreo decide; la empirica es contexto",
-            "H4-5": "linea base contemporanea, sin el club focal",
+            "H4-5": "prior contemporaneo sin el club focal; a lambda=0 NO corrige la deriva (ver ADR-53)",
             "H4-6": "solo pares dentro del mismo club",
             "H4-7": "FDR de BH sobre una familia declarada de antemano",
             "H4-8": "ninguna era PRIMERA_DE_VENTANA sin verificar",

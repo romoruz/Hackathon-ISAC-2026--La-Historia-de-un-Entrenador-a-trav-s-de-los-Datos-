@@ -67,8 +67,16 @@ def main() -> None:
     print(f"revisando {len(D)} documentos en {raiz}\n")
 
     # ---- 1. el conteo de bugs es único --------------------------------
+    # Se quita el marcado ANTES de buscar. La version anterior fallaba con
+    # «**ocho** bugs»: entre la cifra y la palabra hay «** », no un espacio, y
+    # `\s+` no casaba. El chequeo decia verde con ocho, doce y catorce
+    # conviviendo en cinco documentos. Es el patron del proyecto aplicado a su
+    # propio verificador: un resultado plausible y equivocado, sin excepcion.
+    plano = re.sub(r"[*_`]", "", todo)
     numeros = set()
-    for m in re.finditer(r"\b(ocho|nueve|diez|once|doce|trece)\s+bugs", todo, re.I):
+    for m in re.finditer(r"\b(ocho|nueve|diez|once|doce|trece|catorce|quince|"
+                         r"dieciseis|diecis[eé]is|diecisiete|dieciocho|"
+                         r"diecinueve|veinte)\s+bugs", plano, re.I):
         numeros.add(m.group(1).lower())
     comprueba("el número de bugs es consistente en todos los documentos",
               len(numeros) <= 1, f"conviven {sorted(numeros)}")

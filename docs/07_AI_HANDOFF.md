@@ -7,7 +7,7 @@
 
 ## 0. Lee esto primero: el patrón de riesgo del proyecto
 
-**Doce bugs encontrados. Doce silenciosos.** Ninguno lanzó una excepción; todos
+**Dieciocho bugs encontrados. Dieciocho silenciosos.** Ninguno lanzó una excepción; todos
 produjeron números plausibles pero incorrectos. En este dominio, *"corre sin
 error"* no significa nada.
 
@@ -295,7 +295,7 @@ América se parece a sus rivales" no sobrevive al cambio.
 > - λ está débilmente identificado: significancia con λ\*, magnitudes con λ=0.
 > - Las fechas de partido son **sintéticas derivadas** (ADR-26), no del API.
 > - `detect_regime_changes` está descartado como validador de fronteras.
-> - Los **doce** bugs del proyecto fueron silenciosos, y el #13 se
+> - Los **dieciocho** bugs del proyecto fueron silenciosos, y el #13 se
 >   **evitó** diagnosticando el esquema antes de estimar (ADR-42).
 > - ADR-30: ninguna distancia se reporta sin su nula. Tres veces se violó y las
 >   tres veces la conclusión estaba mal.

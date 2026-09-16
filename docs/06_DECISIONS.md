@@ -694,7 +694,7 @@ amenaza 4.3 de 05_VALIDATION sigue viva hasta tener los 18 equipos.
 sus rivales" depende de quien compone el prior. **No sobrevive al cambio** y
 habra que reescribirla (ver 12_API_STATSBOMB §5).
 
-**Estado.** Cerrada como aclaracion; la mejora queda pendiente.
+**Estado.** Superada (2026-09-14): con el API el prior es la liga completa sin el club focal (`16_MIGRACION_API.md` §5).
 
 ---
 
@@ -1240,3 +1240,62 @@ se puede heredar su q.
 **Consecuencia aceptada.** Si el titular de Anselmi cae, cae. No se vuelve a
 la familia pequeña para recuperarlo. Además, Cruz Azul no está en la terna de
 H7, así que ese contraste puede no llegar siquiera a calcularse.
+
+<!-- h2_14 -->
+**Adenda (2026-09-15).** El bloque D1 se corrió con **6 clubes**
+(América, Atlas, Atlético San Luis, Cruz Azul, León, Monterrey), no con la terna: 27 parejas, 648
+contrastes y **32** sobrevivientes a BH
+(`reports/fdr_presion.json`). La opción (a) se mantiene sobre esa familia.
+Pendiente: `generar_defensa_h7.sh` y `12_reporte_html.py` siguen con
+`america,leon,atlas` por defecto; la corrida real usó `--clubes`.
+
+---
+
+<!-- h2_14 -->
+## ADR-53 · El contraste entre eras se normaliza por la liga del mismo torneo
+
+**Fecha.** 2026-09-15. Borrador y predicciones escritos ANTES de la corrida
+(`docs/ADR-53_BORRADOR.md`); resultados de `reports/did_h4_v1.json`.
+
+**Contexto.** En `25_pares_h4.py` la línea base contemporánea solo construía
+el prior, y magnitud y permutación corrían a λ=0: el prior no entraba en
+ningún número. La v5 medía la diferencia entre eras con la deriva del
+proveedor dentro (bug #19). Encoger con λ>0 no lo arregla: atenúa por igual
+estilo y deriva, sin cambiar su proporción.
+
+**Decisión.** Para cada unidad u = (club, entrenador),
+$D_u = \log E_T(\hat P_u, \hat\alpha_u) - \log E_T(\hat P_{base(u)}, \hat\alpha_u)$,
+con la base igual a la liga sin el club, en los torneos de u y ponderada a su
+mezcla (B1, B2). El estimando es el de `08_ic_derivados.py`, con la misma
+función `derivadas`. Para un par del mismo club, $\theta = D_a - D_b$.
+Bootstrap por posesión del foco y de la base (estratificada por torneo),
+intervalo basic en escala log, p por inversión del intervalo y BH al 5% sobre
+una **familia nueva**.
+
+No es el DiD clásico: cada era se observa solo en su periodo y no hay
+pre-tratamiento. El supuesto es que, sin cambio de entrenador, el club se
+habría movido como la liga (B3/B4, contraste débil).
+
+**Reglas preinscritas.** D53-1 a D53-8, en el borrador y en el JSON.
+
+**Resultado.** 60 pares sobre 53 unidades · B = 4000 · rechazan tras BH: DiD **44**, crudo 47 · cambian de signo al corregir: **15** · no rechazados: 16 · eras bloqueadas: 0 · aviso de piso del p: ninguno · contra la v5: 12 dejan de rechazar, 11 empiezan a rechazar
+
+| # | predicción | resultado | |
+|---|---|---|---|
+| 1 | la firma temporal baja respecto al crudo | crudo 37/47 (79%) → DiD 23/44 (52%) — cerca del 50% que se esperaría sin tendencia | ✅ |
+| 2 | Cocca I vs Cocca II deja de ser negativo y significativo | crudo -7.01% → DiD +4.89% [+0.45, +9.62], q = 0.0389 — sigue siendo significativo con el signo INVERTIDO: el sentido del crudo era la deriva | ✅ |
+| 3 | Jardine vs Solari conserva el signo y se reduce | crudo +31.42% → DiD +17.59% [+12.70, +22.43], q = 0.0010 | ✅ |
+| 4 | ningún par demuestra equivalencia al 3% | ninguno; menor margen demostrable 4.02% | ✅ |
+
+**Consecuencias.**
+- La v5 queda como **diferencia bruta entre eras, deriva incluida**. No se
+  borra ni se vuelve a correr.
+- El control negativo **desaparece**: ningún par demuestra equivalencia al 3%.
+  El argumento de discriminación pasa a apoyarse en los pares no rechazados,
+  redactados con su margen ("no detectamos una diferencia mayor a X%"), y en
+  la propia corrección: la firma temporal y los cambios de signo.
+- El intervalo de n igualado de H4-3 se renombra `rango_submuestreo`: no es
+  un IC (corr(b/n, ancho) = −0.88 sobre la v5).
+- La sincronía del escalón A2022→C2023 es de **18 de 18** clubes (`frac_mismo_sentido` = 1.00); `17_SECCION_H2H4.md` §6 decía 17 de 18 y 0.94.
+
+**Estado.** Aceptada.

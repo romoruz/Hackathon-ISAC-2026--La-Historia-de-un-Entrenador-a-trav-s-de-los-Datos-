@@ -305,7 +305,7 @@ python scripts/humo_reporte.py
 #   - deja reporte_demo.html para mirarlo con los ojos
 ```
 
-`node --check` solo dice que el JavaScript **compila**. Los doce bugs de este
+`node --check` solo dice que el JavaScript **compila**. Todos los bugs de este
 proyecto compilaban. Lo que hay que comprobar es que la página **se pinta**, y
 eso es lo que hace `humo_reporte.py`.
 

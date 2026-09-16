@@ -23,7 +23,7 @@ entrenador. **Describe estilo y mide la incertidumbre de esa descripción.**
 > **En este dominio, los errores no producen excepciones: producen números
 > plausibles pero equivocados.**
 
-**Doce bugs encontrados, doce silenciosos.** Ninguno lanzó un error. Todos
+**Dieciocho bugs encontrados, dieciocho silenciosos.** Ninguno lanzó un error. Todos
 dieron resultados que parecían correctos. Ejemplos:
 
 - `phase2` modelaba a un entrenador y rotulaba las figuras con el nombre de
@@ -46,9 +46,9 @@ Con presupuesto de contexto limitado, en este orden:
 
 | # | Documento | Por qué |
 |---|---|---|
-| 1 | `02_STATE_OF_PLAY.md` | dónde estamos, qué está validado, los doce bugs |
+| 1 | `02_STATE_OF_PLAY.md` | dónde estamos, qué está validado, los bugs #1–#12 (el #13 se evitó; los #14–#19: `17_BITACORA_MIGRACION.md` y `10_RESULTADOS.md` §27.5) |
 | 2 | `10_RESULTADOS.md` | los hallazgos con etiqueta 🟢🟡🔴⚪ y sus caveats |
-| 3 | `06_DECISIONS.md` | 51 ADRs. **No reabrir debates cerrados** |
+| 3 | `06_DECISIONS.md` | 53 ADRs. **No reabrir debates cerrados** |
 | 4 | `11_MATEMATICA_APLICADA.md` | qué es cada objeto y por qué funciona |
 | 5 | `01_ARCHITECTURE.md` | qué hace cada archivo |
 | 6 | `04_DATA_CONTRACT.md` | trampas del formato StatsBomb |
@@ -231,7 +231,7 @@ razón de que el proyecto esté validado.
 > Entiendo que:
 > - Fases 0–3 validadas sobre América **y** Cruz Azul; el entregable es
 >   `reporte.html`.
-> - Los **doce** bugs del proyecto fueron **silenciosos**; el #13 se
+> - Los **dieciocho** bugs del proyecto fueron **silenciosos**; el #13 se
 >   **evitó** diagnosticando el esquema antes de estimar (ADR-42).
 > - Markov de primer orden fue **rechazado** por sobredispersión; ADR-21 explica
 >   por qué se mantiene.

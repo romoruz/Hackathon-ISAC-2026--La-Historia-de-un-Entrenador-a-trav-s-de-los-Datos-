@@ -232,7 +232,10 @@ def main() -> None:
     ap.add_argument("--unit", default="coach")
     ap.add_argument("--a", required=True)
     ap.add_argument("--b", required=True)
-    ap.add_argument("--club", default=None)
+    ap.add_argument("--club", default=None,
+                    help="club de las dos eras. Si se omite, se lee de "
+                         "phase0_report.json del --indir. Va al JSON de salida: "
+                         "la unidad es (club, entrenador), no el nombre solo")
     ap.add_argument("--lam", type=float, default=0.0,
                     help="0 por defecto: las MAGNITUDES van con lambda=0 (ADR-22)")
     ap.add_argument("--n-boot", type=int, default=1000)
@@ -253,8 +256,43 @@ def main() -> None:
 
     if args.unit not in trans.columns:
         sys.exit(f"No existe la columna '{args.unit}' en transitions.parquet")
-    A = trans.filter(pl.col(args.unit) == args.a)
-    B = trans.filter(pl.col(args.unit) == args.b)
+
+    # --- clave compuesta (club, entrenador): paquete h2_11 ---------------
+    # Antes `--club` se aceptaba y no se usaba, y el JSON no guardaba el club.
+    # El reporte emparejaba estos archivos solo por nombre de entrenador:
+    # con Jardine, Ortiz, Larcamon y Torrent en dos clubes cada uno, eso es el
+    # patron del bug #17 esperando a que dos clubes compartan un par.
+    club = args.club
+    rp = Path(args.indir) / "phase0_report.json"
+    club_rep = None
+    if rp.exists():
+        club_rep = (json.loads(rp.read_text()).get("coaches") or {}).get("club")
+    if club is None:
+        club = club_rep
+    elif club_rep is not None and club_rep != club:
+        sys.exit(f"--club '{club}' no coincide con phase0_report.json "
+                 f"('{club_rep}') en {args.indir}")
+    if club is None:
+        sys.exit("No se pudo determinar el club: pasa --club o corre phase0.")
+
+    sel_a = pl.col(args.unit) == args.a
+    sel_b = pl.col(args.unit) == args.b
+    if "team" in trans.columns:
+        n_a0 = trans.filter(sel_a).height
+        n_b0 = trans.filter(sel_b).height
+        sel_a = sel_a & (pl.col("team") == club)
+        sel_b = sel_b & (pl.col("team") == club)
+        n_a1 = trans.filter(sel_a).height
+        n_b1 = trans.filter(sel_b).height
+        if (n_a0, n_b0) != (n_a1, n_b1):
+            print(f"AVISO: filtrar tambien por team == '{club}' cambia los "
+                  f"conteos ({n_a0},{n_b0}) -> ({n_a1},{n_b1}). Se usa el "
+                  "filtro compuesto.", file=sys.stderr)
+    else:
+        print("AVISO: transitions.parquet sin columna `team`; solo se filtra "
+              "por entrenador.", file=sys.stderr)
+    A = trans.filter(sel_a)
+    B = trans.filter(sel_b)
     for nom, df in ((args.a, A), (args.b, B)):
         if df.height == 0:
             disp = trans[args.unit].drop_nulls().unique().to_list()
@@ -269,6 +307,7 @@ def main() -> None:
     prior = np.where(nf > 0, Cf / np.maximum(nf, _EPS), 1.0 / space.n_states)
 
     idx_a, idx_b = Indice(A, space), Indice(B, space)
+    print(f"club: {club}")
     print(f"{args.a}: {idx_a.n_poss} posesiones, {A.height} transiciones")
     print(f"{args.b}: {idx_b.n_poss} posesiones, {B.height} transiciones")
     print(f"lambda = {args.lam}   |   {args.n_boot} replicas   |   nivel {args.nivel}\n")
@@ -297,7 +336,8 @@ def main() -> None:
                   f"{d0['hi_pct']:+.2f}%]   (posesion, basic)")
         print()
 
-    res = {"a": args.a, "b": args.b, "unit": args.unit, "lambda": args.lam,
+    res = {"club": club, "a": args.a, "b": args.b, "unit": args.unit,
+           "lambda": args.lam,
            "n_boot": args.n_boot, "nivel": args.nivel,
            "n_poss_a": idx_a.n_poss, "n_poss_b": idx_b.n_poss,
            "resultados": resultados}

@@ -228,7 +228,7 @@ Además, dos bugs menores del instrumental: `01_construir_eras.py`
 sobrescribía el CSV global en corridas de un solo club (arreglado), y una
 resta de columnas `u32` en un diagnóstico dio $2^{32}-528$ en vez de −528.
 
-> El patrón es el mismo que el proyecto lleva catorce bugs documentando:
+> El patrón es el mismo que el proyecto documenta desde el bug #1 (#14 a esta fecha):
 > **nada falla, todo es plausible, y el número está mal.** Esta vez sobre
 > datos de entrada y sobre el instrumental de diagnóstico, no sobre `src/`.
 
@@ -420,7 +420,7 @@ correr el pipeline sobre 19 clubes, regenerar figuras, maquetar el HTML
 contra un contrato escrito.
 
 **Nunca**: decisiones estadísticas, verificación de eras, cambios en el
-espacio de estados. Ahí es donde salieron los catorce bugs, y todos fueron
+espacio de estados. Ahí es donde salieron los bugs #1–#14, y todos fueron
 silenciosos.
 
 ---

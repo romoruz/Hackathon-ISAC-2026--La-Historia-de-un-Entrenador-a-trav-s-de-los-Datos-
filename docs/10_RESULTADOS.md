@@ -5,6 +5,15 @@
 >
 > Corte: 2026-08-20 · `dtdecoder 0.5.0` · **Fases 0–3 completas**
 
+<!-- h2_14 -->
+> ⚠️ **AVISO (2026-09-15).** Las secciones 1 a 26 se calcularon con el volcado
+> anterior y con `coach_eras.csv` **previo al bug #14**: la etiqueta "Solari"
+> cubría a Herrera mal rotulado, a Solari y a siete meses de Ortiz, y el par
+> Sánchez–Ferretti no existe con el umbral de 25 partidos. Sus cifras por era
+> **no son citables**. Los contrastes entre eras vigentes están en **§27**.
+> Siguen en pie las conclusiones de método que no dependen de las eras: la
+> cobertura de los IC (§9) y el principio de §13.
+
 ---
 
 ## 0. Cómo leer este documento
@@ -805,7 +814,7 @@ exactamente cero **aunque la variación real no sea cero**, y esa lectura —*"e
 estilo de entrenador no es medible"*— habría contradicho los seis pilares de
 validación y el resultado intra-jugador de ADR-34, sin que nada fallara.
 
-Es el patrón de los doce bugs aplicado a la estadística: un número plausible y
+Es el patrón de todos los bugs del proyecto aplicado a la estadística: un número plausible y
 equivocado, sin excepción de por medio.
 
 **El hallazgo que reordena la intuición: la potencia la manda el NÚMERO de
@@ -1039,3 +1048,163 @@ distintos, mismo resultado.
    sesgo de selección estructural del proyecto de córners, heredado y declarado.
 4. **7 de 10 transiciones.** Tres eras de Cruz Azul quedan fuera por muestra.
 5. Los penales quedan fuera del análisis por definición: 36 remates.
+
+<!-- h2_14 -->
+---
+
+# 27. 🟢 H4 con la deriva fuera (ADR-53)
+
+**Fuente**: `scripts/30_did_contemporaneo.py` → `reports/did_h4_v1.json`
+**Método**: desviación de cada era contra la liga sin su club en los mismos
+torneos, estimando α′N1 a λ=0, bootstrap por posesión (foco y base), IC basic,
+BH sobre los pares intra-club. Detalle en ADR-53.
+
+60 pares sobre 53 unidades · B = 4000 · rechazan tras BH: DiD **44**, crudo 47 · cambian de signo al corregir: **15** · no rechazados: 16 · eras bloqueadas: 0 · aviso de piso del p: ninguno · contra la v5: 12 dejan de rechazar, 11 empiezan a rechazar
+
+## 27.1 Predicciones preinscritas contra lo que salió
+
+| # | predicción | resultado | |
+|---|---|---|---|
+| 1 | la firma temporal baja respecto al crudo | crudo 37/47 (79%) → DiD 23/44 (52%) — cerca del 50% que se esperaría sin tendencia | ✅ |
+| 2 | Cocca I vs Cocca II deja de ser negativo y significativo | crudo -7.01% → DiD +4.89% [+0.45, +9.62], q = 0.0389 — sigue siendo significativo con el signo INVERTIDO: el sentido del crudo era la deriva | ✅ |
+| 3 | Jardine vs Solari conserva el signo y se reduce | crudo +31.42% → DiD +17.59% [+12.70, +22.43], q = 0.0010 | ✅ |
+| 4 | ningún par demuestra equivalencia al 3% | ninguno; menor margen demostrable 4.02% | ✅ |
+
+## 27.2 Los 60 pares
+
+Signo positivo: el primer entrenador del par sostiene la posesión más que el
+segundo. 🟢 rechaza tras BH · ⚪ no rechaza · ↺ el signo cambia al corregir la
+deriva.
+"crudo" es el mismo estimando sin normalizar, con las mismas réplicas.
+
+| club | par | crudo | DiD | IC 95% | q | |
+|---|---|---|---|---|---|---|
+| América | Andre Jardine vs Fernando Ortiz | +12.8% | **+3.5%** | [+0.1, +7.0] | 0.0562 | ⚪ |
+| América | Andre Jardine vs Santiago Solari | +31.4% | **+17.6%** | [+12.7, +22.4] | 0.0010 | 🟢 |
+| América | Fernando Ortiz vs Santiago Solari | +16.5% | **+13.6%** | [+8.2, +18.7] | 0.0010 | 🟢 |
+| Atlas | Benat San Jose vs Benjamin Mora | -4.2% | **-7.9%** | [-12.0, -3.5] | 0.0010 | 🟢 |
+| Atlas | Benat San Jose vs Diego Cocca I | +7.0% | **-3.2%** | [-6.9, +0.6] | 0.1301 | ⚪ ↺ |
+| Atlas | Benat San Jose vs Diego Cocca II | -0.5% | **+1.6%** | [-3.0, +6.4] | 0.5503 | ⚪ ↺ |
+| Atlas | Benjamin Mora vs Diego Cocca I | +11.7% | **+5.1%** | [+1.0, +9.4] | 0.0207 | 🟢 |
+| Atlas | Benjamin Mora vs Diego Cocca II | +3.9% | **+10.2%** | [+4.9, +15.5] | 0.0010 | 🟢 |
+| Atlas | Diego Cocca I vs Diego Cocca II | -7.0% | **+4.9%** | [+0.5, +9.6] | 0.0389 | 🟢 ↺ |
+| Atlético San Luis | Andre Jardine vs Domenec Torrent | -22.8% | **-18.0%** | [-21.0, -15.0] | 0.0010 | 🟢 |
+| Atlético San Luis | Andre Jardine vs Guillermo Abascal | -11.5% | **-2.3%** | [-6.1, +1.7] | 0.2931 | ⚪ |
+| Atlético San Luis | Andre Jardine vs Gustavo Leal | -29.5% | **-25.0%** | [-27.8, -21.9] | 0.0010 | 🟢 |
+| Atlético San Luis | Domenec Torrent vs Guillermo Abascal | +14.7% | **+19.2%** | [+14.2, +24.5] | 0.0010 | 🟢 |
+| Atlético San Luis | Domenec Torrent vs Gustavo Leal | -8.7% | **-8.5%** | [-12.2, -4.6] | 0.0010 | 🟢 |
+| Atlético San Luis | Guillermo Abascal vs Gustavo Leal | -20.4% | **-23.2%** | [-26.4, -19.8] | 0.0010 | 🟢 |
+| Cruz Azul | Juan Reynoso vs Martin Anselmi | -22.7% | **-15.6%** | [-19.0, -12.4] | 0.0010 | 🟢 |
+| Cruz Azul | Juan Reynoso vs Nicolas Larcamon | -8.9% | **+2.8%** | [-1.5, +7.0] | 0.2639 | ⚪ ↺ |
+| Cruz Azul | Martin Anselmi vs Nicolas Larcamon | +17.8% | **+21.8%** | [+17.3, +26.4] | 0.0010 | 🟢 |
+| Guadalajara | Fernando Gago vs Gabriel Milito | -12.2% | **-12.3%** | [-16.1, -8.5] | 0.0010 | 🟢 |
+| Guadalajara | Fernando Gago vs Veljko Paunovic | +12.3% | **+8.2%** | [+3.8, +12.7] | 0.0010 | 🟢 |
+| Guadalajara | Gabriel Milito vs Veljko Paunovic | +27.9% | **+23.3%** | [+18.4, +28.3] | 0.0010 | 🟢 |
+| Juárez | Hernan Cristante vs Martin Varini | -4.8% | **+4.3%** | [+0.2, +8.8] | 0.0522 | ⚪ ↺ |
+| Juárez | Hernan Cristante vs Mauricio Barbieri | +0.1% | **+8.2%** | [+3.3, +13.1] | 0.0017 | 🟢 |
+| Juárez | Hernan Cristante vs Ricardo Ferretti | +1.2% | **-1.4%** | [-5.2, +3.0] | 0.5503 | ⚪ ↺ |
+| Juárez | Martin Varini vs Mauricio Barbieri | +5.1% | **+3.7%** | [-0.9, +8.3] | 0.1514 | ⚪ |
+| Juárez | Martin Varini vs Ricardo Ferretti | +6.3% | **-5.5%** | [-9.4, -1.5] | 0.0150 | 🟢 ↺ |
+| Juárez | Mauricio Barbieri vs Ricardo Ferretti | +1.1% | **-8.8%** | [-12.8, -4.5] | 0.0017 | 🟢 ↺ |
+| León | Ariel Holan vs Eduardo Berizzo | +4.0% | **+19.2%** | [+14.5, +24.5] | 0.0010 | 🟢 |
+| León | Ariel Holan vs Nicolas Larcamon | +4.1% | **+10.9%** | [+6.3, +15.5] | 0.0010 | 🟢 |
+| León | Eduardo Berizzo vs Nicolas Larcamon | +0.1% | **-7.0%** | [-10.8, -3.2] | 0.0010 | 🟢 ↺ |
+| Mazatlán | Benat San Jose vs Gabriel Caballero | -7.5% | **-5.9%** | [-10.2, -1.2] | 0.0209 | 🟢 |
+| Mazatlán | Benat San Jose vs Ismael Rescalvo | -20.4% | **-12.7%** | [-16.7, -8.7] | 0.0010 | 🟢 |
+| Mazatlán | Benat San Jose vs Victor Manuel Vucetich | -15.5% | **-7.3%** | [-11.4, -3.0] | 0.0024 | 🟢 |
+| Mazatlán | Gabriel Caballero vs Ismael Rescalvo | -13.9% | **-7.2%** | [-11.5, -3.0] | 0.0017 | 🟢 |
+| Mazatlán | Gabriel Caballero vs Victor Manuel Vucetich | -8.7% | **-1.5%** | [-5.7, +2.8] | 0.5503 | ⚪ |
+| Mazatlán | Ismael Rescalvo vs Victor Manuel Vucetich | +6.0% | **+6.2%** | [+1.7, +11.1] | 0.0115 | 🟢 |
+| Monterrey | Domenec Torrent vs Fernando Ortiz | +6.8% | **+4.9%** | [+0.3, +9.9] | 0.0522 | ⚪ |
+| Monterrey | Domenec Torrent vs Martin Demichelis | +12.9% | **+10.9%** | [+5.7, +16.0] | 0.0010 | 🟢 |
+| Monterrey | Domenec Torrent vs Victor Manuel Vucetich | +32.6% | **+22.1%** | [+16.8, +27.4] | 0.0010 | 🟢 |
+| Monterrey | Fernando Ortiz vs Martin Demichelis | +5.8% | **+5.6%** | [+1.0, +10.0] | 0.0207 | 🟢 |
+| Monterrey | Fernando Ortiz vs Victor Manuel Vucetich | +24.2% | **+16.3%** | [+11.9, +20.9] | 0.0010 | 🟢 |
+| Monterrey | Martin Demichelis vs Victor Manuel Vucetich | +17.5% | **+10.1%** | [+5.8, +14.7] | 0.0010 | 🟢 |
+| Necaxa | Eduardo Fentanes vs Jaime Lozano | -15.4% | **-23.7%** | [-26.7, -20.7] | 0.0010 | 🟢 |
+| Pumas UNAM | Andres Lillini vs Efrain Valdez | -15.4% | **-5.5%** | [-8.8, -2.1] | 0.0039 | 🟢 |
+| Pumas UNAM | Andres Lillini vs Gustavo Lema | -7.4% | **+1.9%** | [-1.4, +5.4] | 0.2931 | ⚪ ↺ |
+| Pumas UNAM | Efrain Valdez vs Gustavo Lema | +9.5% | **+7.9%** | [+3.9, +12.0] | 0.0010 | 🟢 |
+| Querétaro | Benjamin Mora vs Mauro Gerk | +4.4% | **-1.9%** | [-5.5, +1.6] | 0.2960 | ⚪ ↺ |
+| Santos Laguna | Eduardo Fentanes vs Ignacio Ambriz | -19.8% | **-10.6%** | [-14.1, -6.8] | 0.0010 | 🟢 |
+| Tigres UANL | Guido Pizarro vs Miguel Herrera | +9.5% | **-1.2%** | [-4.8, +2.6] | 0.5503 | ⚪ ↺ |
+| Tigres UANL | Guido Pizarro vs Robert Siboldi | +2.4% | **+0.8%** | [-3.0, +4.8] | 0.7015 | ⚪ |
+| Tigres UANL | Guido Pizarro vs Veljko Paunovic | +15.5% | **+15.7%** | [+10.8, +20.8] | 0.0010 | 🟢 |
+| Tigres UANL | Miguel Herrera vs Robert Siboldi | -6.5% | **+2.1%** | [-1.4, +5.8] | 0.2931 | ⚪ ↺ |
+| Tigres UANL | Miguel Herrera vs Veljko Paunovic | +5.5% | **+17.1%** | [+12.6, +21.7] | 0.0010 | 🟢 |
+| Tigres UANL | Robert Siboldi vs Veljko Paunovic | +12.8% | **+14.7%** | [+9.9, +19.4] | 0.0010 | 🟢 |
+| Tijuana | Juan Carlos Osorio vs Miguel Herrera | +40.0% | **+36.9%** | [+31.6, +42.2] | 0.0010 | 🟢 |
+| Tijuana | Juan Carlos Osorio vs Sebastian Abreu | +21.9% | **+26.1%** | [+20.4, +32.1] | 0.0010 | 🟢 |
+| Tijuana | Miguel Herrera vs Sebastian Abreu | -12.9% | **-7.9%** | [-11.6, -4.1] | 0.0010 | 🟢 |
+| Toluca | Antonio Mohamed vs Ignacio Ambriz | +0.6% | **-6.0%** | [-9.3, -2.7] | 0.0024 | 🟢 ↺ |
+| Toluca | Antonio Mohamed vs Renato Paiva | +0.1% | **+0.2%** | [-3.7, +4.0] | 0.9583 | ⚪ |
+| Toluca | Ignacio Ambriz vs Renato Paiva | -0.5% | **+6.6%** | [+2.8, +10.4] | 0.0010 | 🟢 ↺ |
+
+**Afirmaciones defendibles.**
+- Magnitudes: la columna DiD, nunca la de crudo.
+- Cocca I vs Cocca II: el técnico difiere de sí mismo, pero **en sentido
+  contrario al del crudo**. Sin la corrección se habría contado al revés.
+- Un par no rechazado se redacta con su margen (§27.3), nunca como "sin
+  diferencia".
+
+## 27.3 Lo que se puede decir de los no rechazados
+
+| club | par | no detectamos una diferencia mayor a |
+|---|---|---|
+| Toluca | Antonio Mohamed vs Renato Paiva | 4.02% |
+| Tigres UANL | Guido Pizarro vs Robert Siboldi | 4.75% |
+| Tigres UANL | Guido Pizarro vs Miguel Herrera | 4.80% |
+| Juárez | Hernan Cristante vs Ricardo Ferretti | 5.25% |
+| Pumas UNAM | Andres Lillini vs Gustavo Lema | 5.41% |
+| Querétaro | Benjamin Mora vs Mauro Gerk | 5.47% |
+| Mazatlán | Gabriel Caballero vs Victor Manuel Vucetich | 5.72% |
+| Tigres UANL | Miguel Herrera vs Robert Siboldi | 5.83% |
+| Atlético San Luis | Andre Jardine vs Guillermo Abascal | 6.14% |
+| Atlas | Benat San Jose vs Diego Cocca II | 6.44% |
+| Atlas | Benat San Jose vs Diego Cocca I | 6.95% |
+| Cruz Azul | Juan Reynoso vs Nicolas Larcamon | 6.99% |
+| América | Andre Jardine vs Fernando Ortiz | 7.05% |
+| Juárez | Martin Varini vs Mauricio Barbieri | 8.28% |
+| Juárez | Hernan Cristante vs Martin Varini | 8.77% |
+| Monterrey | Domenec Torrent vs Fernando Ortiz | 9.90% |
+
+Ningún par cumple el criterio de equivalencia al 3% (D53-4). Con unas 3,000
+posesiones por era, el margen mínimo demostrable ronda el 4%.
+
+## 27.4 ⚪ Material para H5, no citable
+
+Entrenadores con más de una unidad analizable. No controla el efecto del
+club: es insumo para H5, no un resultado.
+
+| entrenador | club: desviación contra la liga del mismo torneo [IC 95%] |
+|---|---|
+| Andre Jardine | América +24.6% [+22.3, +26.9] · Atlético San Luis -10.0% [-12.2, -7.7] |
+| Benat San Jose | Atlas -7.5% [-10.4, -4.7] · Mazatlán -12.6% [-15.5, -9.5] |
+| Benjamin Mora | Atlas +0.4% [-2.8, +3.6] · Querétaro -21.1% [-23.5, -18.7] |
+| Domenec Torrent | Atlético San Luis +9.8% [+6.8, +12.9] · Monterrey +21.9% [+17.8, +26.1] |
+| Eduardo Fentanes | Necaxa -29.1% [-30.9, -27.3] · Santos Laguna -9.2% [-11.4, -7.1] |
+| Fernando Ortiz | América +20.3% [+16.9, +23.7] · Monterrey +16.2% [+12.7, +19.6] |
+| Ignacio Ambriz | Santos Laguna +1.5% [-2.0, +5.0] · Toluca +23.7% [+21.0, +26.6] |
+| Miguel Herrera | Tigres UANL +18.3% [+15.6, +21.1] · Tijuana -12.8% [-14.7, -10.9] |
+| Nicolas Larcamon | Cruz Azul +0.8% [-2.0, +3.6] · León +6.9% [+3.9, +10.0] · Puebla -5.7% [-7.9, -3.5] |
+| Veljko Paunovic | Guadalajara -5.6% [-8.2, -3.1] · Tigres UANL +1.1% [-2.0, +4.3] |
+| Victor Manuel Vucetich | Mazatlán -5.7% [-8.5, -2.9] · Monterrey -0.1% [-2.7, +2.5] |
+
+## 27.5 Bug #19 — la línea base que no entraba
+
+`25_pares_h4.py` declaraba (H4-5) que el prior contemporáneo cancelaba la
+deriva, y su regla H4-1 decía "significancia a λ\*". El código corría
+magnitud y permutación a λ=0, donde el prior no entra. Ninguna excepción,
+números plausibles: el síntoma fue estadístico (el entrenador posterior más
+largo en la mayoría de los pares significativos). Corregido por ADR-53;
+textos de `25` corregidos en el paquete h2_11.
+
+## 27.6 Caveats
+
+1. **La base no es el club.** El supuesto es que el club se habría movido como
+   la liga; B3 lo contrasta de forma débil (14 unidades divergen en Carry/Pass).
+2. **P(gol) y P(remate) son descriptivos** (D53-2): no hay contraste con FDR
+   sobre ellos en esta versión.
+3. **La serie por torneo** de cada unidad está en el JSON y es descriptiva.
+4. **Todo lo anterior a §27 de este documento** usa las eras previas al
+   bug #14 (ver el aviso de cabecera).

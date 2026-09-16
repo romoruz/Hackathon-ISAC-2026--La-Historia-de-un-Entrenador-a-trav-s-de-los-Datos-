@@ -19,6 +19,8 @@ publica aquí por la licencia de Hudl StatsBomb.
 
 ## 1. Titulares y Hallazgos Principales
 
+> 🔴 **RETIRADOS (2026-09-15).** Las tablas de esta sección y el control de plantel se calcularon con el volcado anterior y con eras previas al bug #14 (la etiqueta «Solari» mezclaba tres entrenadores). **No son citables.** Tras la migración al API y la corrección de la deriva del proveedor (ADR-53), los contrastes vigentes están en [docs/README.md](docs/README.md) y en `docs/10_RESULTADOS.md` §27. Esta portada se reescribirá con el reporte.
+
 ### Bloque Ofensivo (Fases 0–3)
 
 | Hallazgo | Magnitud | IC 95% |
@@ -50,6 +52,8 @@ publica aquí por la licencia de Hudl StatsBomb.
 
 ## 2. Los Seis Pilares de Validación
 
+> Los pilares 5 y 6 no dependen de las eras. Los pilares 1 a 4 se midieron con el volcado anterior y están **pendientes de replicar** con el API.
+
 1. **Bondad de ajuste**: Markov de primer orden rechazado por sobredispersión (KS≈0.09, p=0.005), replicado en tres unidades.
 2. **Auto-transiciones**: El 40% de la duración esperada es permanencia en zona. Medido, no oculto.
 3. **Invariancia a la resolución**: Los efectos grandes no cambian entre 12 y 30 zonas.
@@ -60,7 +64,7 @@ publica aquí por la licencia de Hudl StatsBomb.
 ### Control de Plantel
 **9 de 17 jugadores** que jugaron con Jardine y con Ortiz cambiaron su patrón de juego de forma detectable, cuando por azar se esperaría uno. Jardine heredó el 67% de las acciones de ese plantel.
 
-> ⚠️ **Advertencia**: Doce bugs encontrados, doce silenciosos. Ninguno lanzó una excepción; todos produjeron números plausibles pero incorrectos. En este dominio *"corre sin error"* no es evidencia de nada. Ver [docs/02_STATE_OF_PLAY.md](docs/02_STATE_OF_PLAY.md) §8.
+> ⚠️ **Advertencia**: Dieciocho bugs encontrados, dieciocho silenciosos (numerados hasta el #19; el #13 se evitó). Ninguno lanzó una excepción; todos produjeron números plausibles pero incorrectos. En este dominio *"corre sin error"* no es evidencia de nada. Ver [docs/02_STATE_OF_PLAY.md](docs/02_STATE_OF_PLAY.md) §8.
 
 ---
 

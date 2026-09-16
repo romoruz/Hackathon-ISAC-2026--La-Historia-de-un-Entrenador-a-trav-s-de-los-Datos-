@@ -235,7 +235,7 @@ auto-transiciones: el 60% vienen de pases, que ningún umbral de acarreo toca.
 
 ---
 
-## 8. Los doce bugs: doce silenciosos
+## 8. Los bugs #1–#12 (hasta 2026-08-22): todos silenciosos
 
 Ninguno lanzó una excepción. Todos produjeron números plausibles pero
 incorrectos. **Es el patrón de riesgo dominante del proyecto y el argumento que

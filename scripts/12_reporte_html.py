@@ -101,6 +101,27 @@ def _slug(s: str) -> str:
     return s.lower().replace(" ", "")
 
 
+# Archivos descartados por no declarar su club. Se imprimen al final de
+# recolecta(): un descarte silencioso seria el mismo bug con otro sintoma.
+_SIN_CLUB: dict[str, set] = {}
+
+
+def _es_del_club(d: dict, equipo: str, origen: str) -> bool:
+    """Clave compuesta (club, entrenador) -- paquete h2_11, patron bug #17.
+
+    Jardine (America, San Luis), Ortiz (America, Monterrey), Larcamon (Leon,
+    Cruz Azul) y Torrent (San Luis, Monterrey) dirigen en dos de los clubes
+    del reporte. Filtrar solo por nombre de era mezcla sus artefactos entre
+    clubes sin error ni aviso. Un JSON sin `club` NO se acepta: se registra y
+    se avisa. `scripts/31_backfill_club.py` lo rellena de forma verificable.
+    """
+    c = d.get("club")
+    if c is None:
+        _SIN_CLUB.setdefault(origen, set()).add(equipo)
+        return False
+    return c == equipo
+
+
 def defensa(lista: list[str], equipo: str) -> dict:
     """Todo el bloque D1 para un club, indexado por pareja `a|b`.
 
@@ -121,6 +142,8 @@ def defensa(lista: list[str], equipo: str) -> dict:
     fp = REPORTS / "fdr_presion.json"
     if fp.exists():
         for c in json.loads(fp.read_text()).get("contrastes", []):
+            if c.get("club") != equipo:          # h2_11: clave compuesta
+                continue
             if c["tipo"] == "zona":
                 m = _re.match(r"z(\d)(\d)", str(c["detalle"]))
                 if m:
@@ -132,6 +155,8 @@ def defensa(lista: list[str], equipo: str) -> dict:
     for p in REPORTS.glob("presion_indice_*.json"):
         j = json.loads(p.read_text())
         a, b = j["era_a"], j["era_b"]
+        if not _es_del_club(j, equipo, p.name):
+            continue
         if a not in lista or b not in lista or not j.get("curva"):
             continue
         d["pares"].setdefault(f"{a}|{b}", {})["curva"] = [
@@ -145,6 +170,8 @@ def defensa(lista: list[str], equipo: str) -> dict:
     for p in REPORTS.glob("campo_presion_*.json"):
         j = json.loads(p.read_text())
         a, b = j["era_a"], j["era_b"]
+        if not _es_del_club(j, equipo, p.name):
+            continue
         if a not in lista or b not in lista:
             continue
         k = f"{a}|{b}"
@@ -167,6 +194,8 @@ def defensa(lista: list[str], equipo: str) -> dict:
         j = json.loads(p.read_text())
         a, b = j["era_a"], j["era_b"]
         k = f"{a}|{b}"
+        if not _es_del_club(j, equipo, p.name):
+            continue
         if a not in lista or b not in lista or "nivel" not in j:
             continue
         nv = j["nivel"]
@@ -178,8 +207,14 @@ def defensa(lista: list[str], equipo: str) -> dict:
             "na": nv["n_a"], "nb": nv["n_b"]}
 
     # --- instrumento: ¿la presion sirve? ----------------------------------
-    for p in REPORTS.glob("calibracion_*.json"):
+    for p in sorted(REPORTS.glob("calibracion_*.json")):
         j = json.loads(p.read_text())
+        # h2_11: este era el caso ACTIVO del patron #17. Sin el filtro, la
+        # calibracion de Jardine en San Luis podia pintarse como la del
+        # America (y la de Larcamon en Cruz Azul como la de Leon), segun el
+        # orden en que el sistema de archivos devolviera el glob.
+        if not _es_del_club(j, equipo, p.name):
+            continue
         for era, v in j.get("eras", {}).items():
             if era in lista:
                 d["instrumento"][era] = {
@@ -190,6 +225,8 @@ def defensa(lista: list[str], equipo: str) -> dict:
     for p in REPORTS.glob("estandarizacion_defense_*.json"):
         for r in json.loads(p.read_text()):
             a, b = r["era_a"], r["era_b"]
+            if not _es_del_club(r, equipo, p.name):
+                continue
             if a not in lista or b not in lista:
                 continue
             dd = r["diferencias"]
@@ -680,6 +717,8 @@ def recolecta() -> dict:
             a, b = d.get("a"), d.get("b")
             if a not in lista or b not in lista:
                 continue
+            if not _es_del_club(d, equipo, c.name):
+                continue
             r0 = d["resultados"][0]
             club["pares"][f"{a}|{b}"] = {
                 "et": r0["E_T"], "gol": r0["P_gol"], "rem": r0["P_remate"],
@@ -692,6 +731,8 @@ def recolecta() -> dict:
             a, b = d.get("a"), d.get("b")
             k = f"{a}|{b}"
             if k not in club["pares"]:
+                continue
+            if not _es_del_club(d, equipo, c.name):
                 continue
             todos = d["nivel3_intra_jugador"]
             camb = [j for j in todos if j.get("cambio")]
@@ -775,6 +816,16 @@ def recolecta() -> dict:
         print(f"[ok] {nombre}: {len(lista)} entrenadores, "
               f"{len(club['pares'])} pares, {len(club['jugadores'])} jugadores",
               file=sys.stderr)
+    if _SIN_CLUB:
+        print(f"\n[AVISO h2_11] {len(_SIN_CLUB)} JSON descartados por no "
+              "declarar `club` (clave compuesta). Rellenalos con:\n"
+              "    python scripts/31_backfill_club.py            # ver\n"
+              "    python scripts/31_backfill_club.py --escribir # aplicar",
+              file=sys.stderr)
+        for f in sorted(_SIN_CLUB)[:12]:
+            print(f"    {f}", file=sys.stderr)
+        if len(_SIN_CLUB) > 12:
+            print(f"    ... y {len(_SIN_CLUB) - 12} mas", file=sys.stderr)
     return datos
 
 
