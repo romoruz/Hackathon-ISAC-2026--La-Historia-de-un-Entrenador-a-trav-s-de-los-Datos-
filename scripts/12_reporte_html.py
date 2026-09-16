@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -41,10 +42,45 @@ import polars as pl
 RAIZ = Path(__file__).resolve().parent.parent
 REPORTS = RAIZ / "reports"
 
-CLUBES = {
-    "Club América": {"dir": RAIZ / "data" / "processed", "team": "América"},
-    "Cruz Azul": {"dir": RAIZ / "data" / "processed_cruzazul", "team": "Cruz Azul"},
-}
+# Clubes con seccion profunda. Criterio preinscrito por ROL EN EL ARGUMENTO,
+# nunca por magnitud del efecto: America es el foco del reto, Leon aporta el
+# control negativo (equivalencia preinscrita) y Atlas el limite del metodo
+# (Cocca I vs Cocca II: un tecnico difiere de si mismo).
+# Ampliable sin tocar el codigo:  DTDECODER_CLUBES=america,leon,atlas,...
+CLUBES_H7 = os.environ.get("DTDECODER_CLUBES", "america,leon,atlas").split(",")
+
+
+def _descubre_clubes() -> dict:
+    """Construye CLUBES desde `phase0_report.json`, no desde nombres a mano.
+
+    El nombre del club tiene que ser EL MISMO que usan 25_pares_h4.py y
+    27_robustez_h4.py, porque las claves de `pares_h4_v5.json` vienen de ahi.
+    Si el reporte lo escribiera distinto ("Club León" contra "León"), la tabla
+    de pares no casaria y la seccion saldria vacia sin decir por que.
+    """
+    out: dict = {}
+    for slug in [s.strip() for s in CLUBES_H7 if s.strip()]:
+        d = RAIZ / "data" / f"processed_api_{slug}"
+        rp = d / "phase0_report.json"
+        if not (d / "transitions.parquet").exists():
+            print(f"[salto] {slug}: sin transitions.parquet en {d}",
+                  file=sys.stderr)
+            continue
+        equipo = None
+        if rp.exists():
+            equipo = (json.loads(rp.read_text()).get("coaches") or {}).get("club")
+        if not equipo:
+            print(f"[salto] {slug}: phase0_report.json sin nombre de club",
+                  file=sys.stderr)
+            continue
+        out[equipo] = {"dir": d, "team": equipo, "slug": slug}
+    if not out:
+        print("NINGUN club disponible. Revisa data/processed_api_*.",
+              file=sys.stderr)
+    return out
+
+
+CLUBES = _descubre_clubes()
 NX, NY = 5, 4
 MIN_POSS = 1500
 
@@ -556,6 +592,20 @@ def recolecta() -> dict:
                .agg(pl.col("poss_uid").n_unique().alias("n"))
                .filter(pl.col("n") >= MIN_POSS)
                .sort("n", descending=True))
+        # MISMO conjunto de unidades que H4 y que los generadores: el campo
+        # `suficiente` de phase0 (>=25 partidos). Filtrar solo por posesiones
+        # dejaba entrar eras cortas -- Leon/Bava, Atlas/Pineda -- que tienen
+        # tarjeta y cadena en el reporte pero ni huella ni pares, porque los
+        # generadores no les crearon artefactos, y que ademas no aparecen en
+        # la tabla de los 60 pares. Un entrenador a medias es peor que uno
+        # ausente: el lector no sabe si falta el dato o falta el analisis.
+        _rp = cfg["dir"] / "phase0_report.json"
+        if _rp.exists():
+            _co = json.loads(_rp.read_text()).get("coaches") or {}
+            _ok = {c["coach"] for c in _co.get("coverage", [])
+                   if c.get("suficiente")}
+            if _ok:
+                dts = dts.filter(pl.col("coach").is_in(list(_ok)))
         lista = dts["coach"].to_list()
         if len(lista) < 2:
             print(f"[salto] {nombre}: menos de dos etapas con muestra",
@@ -564,6 +614,12 @@ def recolecta() -> dict:
 
         club = {"entrenadores": lista,
                 "posesiones": dict(zip(lista, dts["n"].to_list())),
+                # `dir` y `team` viajan a los datos porque el JavaScript los
+                # necesita para componer el comando de ayuda que se muestra
+                # cuando falta un artefacto. Antes los deducia de un ternario
+                # con dos clubes escritos a mano.
+                "dir": str(cfg["dir"].relative_to(RAIZ)),
+                "team": equipo,
                 "pares": {}, "huella": {}, "jugadores": {}, "cadena": {}}
 
         tope_club = tope_estados(sub)
@@ -597,9 +653,15 @@ def recolecta() -> dict:
 
         # --- huella por entrenador -----------------------------------
         for a in lista:
-            ap = a.split()[-1].lower()
+            # Igualdad EXACTA contra el slug, no subcadena de la ultima
+            # palabra. La version anterior hacia `ap = a.split()[-1].lower()`
+            # y `if ap in c.stem.lower()`: para "Diego Cocca I" eso da
+            # ap = "i", y "i" esta dentro de casi cualquier nombre de
+            # archivo. Cocca I se quedaba con la huella del primer parquet
+            # que devolviera el glob, sin error ni aviso.
+            ap = a.replace(" ", "").lower()
             for c in REPORTS.glob("huella_*.parquet"):
-                if ap in c.stem.lower():
+                if c.stem.lower() in (f"huella_{cfg['slug']}_{ap}",):
                     t = pl.read_parquet(c)
                     top = (t.filter(pl.col("significativo") & (pl.col("z") >= 3)
                                     & (pl.col("n") >= 50))
@@ -2615,8 +2677,11 @@ function render(){
 
  const par=c.pares[dt+"|"+rv];
  const pts=perfiles(c);
- const dir=n==="Cruz Azul"?"data/processed_cruzazul":"data/processed";
- const eq=n==="Cruz Azul"?"Cruz Azul":"América";
+ /* La ruta y el equipo vienen de los datos, no de un ternario con dos
+    clubes escritos a mano: este texto es un comando que el lector copia y
+    pega, y apuntar al club equivocado es peor que no mostrarlo. */
+ const dir=c.dir||"data/processed";
+ const eq=c.team||n;
 
  /* ---- 01 el ritmo ---- */
  let h=cab("01 &middot; el ritmo","Cara a cara",

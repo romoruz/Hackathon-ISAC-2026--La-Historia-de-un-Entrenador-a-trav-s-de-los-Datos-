@@ -449,3 +449,27 @@ validaron.
 **Comprobación aritmética gratis**: las eras nuevas del América dan
 27 + 55 + 129 = 211 partidos sobre la ventana completa. Los conteos de
 `phase0` tienen que cuadrar contra eso.
+
+## Bugs #17 y #18 — identificar una unidad por una clave incompleta
+
+Cuatro apariciones en una sola sesión del mismo patrón: usar como
+identificador algo que no es la clave completa `(club, entrenador)`.
+
+- **#12 (reaparecido)**: el reporte emparejaba huellas por subcadena de la
+  última palabra. «Diego Cocca I» daba `ap="i"`, e `"i"` está dentro de casi
+  cualquier nombre de archivo.
+- **#17**: el slug de la huella era solo el entrenador. Jardine dirigió
+  América y San Luis; al llegar a San Luis el archivo ya existía y el script
+  lo saltó. Cuatro huellas cruzadas entre clubes, y precisamente las cuatro
+  que sostienen el argumento de que la firma viaja. Se previeron 21 huellas
+  y había 17 en disco: el conteo lo delató.
+- **#18**: la tabla de referencia de `29_panorama_liga.py` se indexaba por
+  nombre, así que comparaba a San José/Mazatlán contra los valores de
+  San José/Atlas. En el script escrito para verificar.
+
+**Regla**: en este dominio la unidad es `(club, coach, era)`. Cualquier
+diccionario, nombre de archivo o emparejamiento que use menos que eso es un
+bug esperando a que dos clubes compartan entrenador — y con 8 técnicos en
+varios clubes, eso ocurre.
+
+Ninguno lanzó excepción. Los tres se detectaron contando.

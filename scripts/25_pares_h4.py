@@ -130,12 +130,23 @@ def contraste(a: pl.DataFrame, b: pl.DataFrame, space: StateSpace,
 
 def permutacion(a: pl.DataFrame, b: pl.DataFrame, space: StateSpace,
                 q: np.ndarray, lam: float, obs: float, n_perm: int,
-                rng: np.random.Generator) -> float:
+                rng: np.random.Generator, obs_xt: float | None = None) -> dict:
     """p por permutacion de etiquetas, remuestreando POSESIONES enteras.
 
     Permutar filas sueltas romperia la dependencia dentro de la posesion y
     daria una nula demasiado estrecha: p demasiado chicos, mas rechazos de la
     cuenta. `poss_uid` es la unidad de remuestreo de todo el proyecto.
+
+    AÑADIDO (paquete 08): se devuelve tambien el p de xT, calculado sobre LA
+    MISMA nula y en el mismo bucle, asi que no cuesta una sola permutacion
+    extra. Existe porque el criterio del par nulo exige equivalencia en los
+    DOS estadisticos: hay pares con dif_E_T de +1.56% y dif_xT de +45.72%, y
+    leer solo el primero llevaria a llamarlos «sin efecto».
+
+    OJO: `p_xT` NO entra a la familia del FDR. La familia se declaro de
+    antemano sobre `dif_E_T` (H4-7) y ampliarla ahora seria decidir la familia
+    despues de ver los datos. `p_xT` es descriptivo y solo se usa para el
+    control negativo, donde se busca NO rechazar.
     """
     ua = a["poss_uid"].unique().sort().to_numpy()
     ub = b["poss_uid"].unique().sort().to_numpy()
@@ -143,14 +154,26 @@ def permutacion(a: pl.DataFrame, b: pl.DataFrame, space: StateSpace,
     juntas = pl.concat([a, b], how="vertical_relaxed")
     na = ua.size
     extremos = 0
+    extremos_xt = 0
+    validas = 0
     for _ in range(n_perm):
         perm = rng.permutation(todas)
         pa = juntas.filter(pl.col("poss_uid").is_in(perm[:na].tolist()))
         pb = juntas.filter(pl.col("poss_uid").is_in(perm[na:].tolist()))
         c = contraste(pa, pb, space, q, lam)
-        if c is not None and abs(c["dif_E_T"]) >= abs(obs):
+        if c is None:
+            continue
+        validas += 1
+        if abs(c["dif_E_T"]) >= abs(obs):
             extremos += 1
-    return (extremos + 1) / (n_perm + 1)
+        if obs_xt is not None and abs(c["dif_xT"]) >= abs(obs_xt):
+            extremos_xt += 1
+    return {
+        "p": (extremos + 1) / (n_perm + 1),
+        "p_xT": ((extremos_xt + 1) / (n_perm + 1)
+                 if obs_xt is not None else None),
+        "n_perm_validas": validas,
+    }
 
 
 def n_igualado(a: pl.DataFrame, b: pl.DataFrame, space: StateSpace,
@@ -164,7 +187,7 @@ def n_igualado(a: pl.DataFrame, b: pl.DataFrame, space: StateSpace,
     grande, chica = (a, ub.size) if ua.size > ub.size else (b, ua.size)
     es_a = ua.size > ub.size
     ug = grande["poss_uid"].unique().sort().to_numpy()
-    difs = []
+    difs, difs_xt = [], []
     for _ in range(n_rep):
         pick = rng.choice(ug, size=chica, replace=False)
         sub = grande.filter(pl.col("poss_uid").is_in(pick.tolist()))
@@ -172,15 +195,23 @@ def n_igualado(a: pl.DataFrame, b: pl.DataFrame, space: StateSpace,
              else contraste(a, sub, space, q, lam))
         if c is not None:
             difs.append(c["rel_E_T"])
+            difs_xt.append(c["rel_xT"])
     if not difs:
         return {"aplicado": False, "motivo": "ninguna submuestra fue valida"}
     d = np.asarray(difs)
+    dx = np.asarray(difs_xt)
     return {
         "aplicado": True, "n_posesiones_igualado": int(chica),
         "rel_E_T_media": float(d.mean()),
         "rel_E_T_ic95": [float(np.quantile(d, 0.025)),
                          float(np.quantile(d, 0.975))],
+        # AÑADIDO (paquete 08): el criterio de equivalencia del control
+        # negativo pide el IC de xT, no solo su punto.
+        "rel_xT_media": float(dx.mean()),
+        "rel_xT_ic95": [float(np.quantile(dx, 0.025)),
+                        float(np.quantile(dx, 0.975))],
         "mismo_signo_que_completo": None,   # se rellena fuera
+        "mismo_signo_xT_que_completo": None,
     }
 
 
@@ -265,13 +296,18 @@ def main() -> int:
             mag = contraste(a, b, space, q, LAMBDA_MAGNITUD)
             if mag is None:
                 continue
-            p = permutacion(a, b, space, q, LAMBDA_MAGNITUD,
-                            mag["dif_E_T"], args.n_perm, rng)
+            perm = permutacion(a, b, space, q, LAMBDA_MAGNITUD,
+                               mag["dif_E_T"], args.n_perm, rng,
+                               obs_xt=mag["dif_xT"])
+            p = perm["p"]
             ig = n_igualado(a, b, space, q, LAMBDA_MAGNITUD,
                             args.n_rep_igualado, rng)
             if ig.get("aplicado"):
                 ig["mismo_signo_que_completo"] = bool(
                     np.sign(ig["rel_E_T_media"]) == np.sign(mag["rel_E_T"])
+                )
+                ig["mismo_signo_xT_que_completo"] = bool(
+                    np.sign(ig["rel_xT_media"]) == np.sign(mag["rel_xT"])
                 )
             pares.append({
                 "club": club, "a": x, "b": y,
@@ -281,6 +317,7 @@ def main() -> int:
                 "n_base": base.height,
                 "magnitud_lambda0": mag,
                 "p_permutacion": p,
+                "p_permutacion_xT": perm["p_xT"],
                 "sensibilidad_n_igualado": ig,
             })
             print(f"  {club:<20}{x:<22} vs {y:<22} "
@@ -314,6 +351,10 @@ def main() -> int:
             "H4-6": "solo pares dentro del mismo club",
             "H4-7": "FDR de BH sobre una familia declarada de antemano",
             "H4-8": "ninguna era PRIMERA_DE_VENTANA sin verificar",
+            "H4-9": ("p_xT y el IC de rel_xT son DESCRIPTIVOS: no entran a la "
+                     "familia del FDR, declarada de antemano sobre dif_E_T. "
+                     "Existen para el criterio de equivalencia del control "
+                     "negativo, donde el objetivo es NO rechazar."),
         },
         "alpha_fdr": alpha,
         "n_pares": len(pares),

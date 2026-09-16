@@ -1217,3 +1217,26 @@ positivo** (diferencia de posición inyectada → la detecta y no inventa efecto
 geométrico donde no lo hay).
 
 **Estado.** Cerrada.
+
+## ADR-52 — La familia FDR del bloque defensivo tras la migración
+
+**Fecha**: 2026-09-15. **Estado**: aceptada, escrita ANTES de correr
+`generar_defensa_h7.sh`.
+
+**Contexto.** El script 22 corre Benjamini-Hochberg sobre todos los contrastes
+de presión. Con dos clubes y las eras viejas la familia tenía 46 contrastes y
+el titular de Anselmi quedaba en q = 0.0414. Con la terna de H7 son 12 parejas
+y la familia crece varias veces; los q suben mecánicamente.
+
+**Decisión.** Opción (a): **se muestran todas las parejas y los q son los de
+la familia grande.** Los titulares que no sobrevivan a ese umbral se reportan
+como no significativos.
+
+**Por qué no (b).** Declarar ahora un subconjunto confirmatorio sería fijar la
+familia sabiendo ya qué contrastes existen y cuáles convenían. La familia
+pequeña de agosto pertenece a un universo de eras que el bug #14 invalidó; no
+se puede heredar su q.
+
+**Consecuencia aceptada.** Si el titular de Anselmi cae, cae. No se vuelve a
+la familia pequeña para recuperarlo. Además, Cruz Azul no está en la terna de
+H7, así que ese contraste puede no llegar siquiera a calcularse.

@@ -1,0 +1,10 @@
+club,coach,n_esperado,fuente,fecha
+"América","Santiago Solari",25,"Cesado el 2022-03-02 tras la J8 del Clausura 2022 (17 del A2021 + 8 del C2022). Prensa del momento: ESPN Deportes y Extra de la Laguna, 2022-03-04.","2026-09-15"
+"Atlas","Diego Cocca I",51,"Dirigio al Atlas de 2020 a 2022; anuncio su salida al terminar el Apertura 2022 (17x3 de fase regular). Goal, 2022-09; La Jornada, 2025-08-15.","2026-09-15"
+"Cruz Azul","Juan Reynoso",34,"Llego en el Clausura 2021 (antes de la ventana); salida anunciada el 2022-05-19 tras el Clausura 2022 (17x2). Wikipedia y El Comercio, 2022-05-20.","2026-09-15"
+"Juárez","Ricardo Ferretti",34,"Presentado el 2021-06-03 para el Apertura 2021; salida el 2022-05-05. TUDN cierra su etapa con 27 puntos de 102 posibles en 34 partidos: 102 = 34x3.","2026-09-15"
+"León","Ariel Holan",32,"Llego en julio 2021 en lugar de Ambriz; renuncia el 2022-04-21 tras la J15 del C2022, a dos jornadas del final (17 + 15). Christian Martinez dirigio los 2 restantes, que el API tambien le asigna. Lider Empresarial e Infobae, 2022-04-21.","2026-09-15"
+"Puebla","Nicolas Larcamon",51,"Llego en el Clausura 2021 (antes de la ventana); salida oficial el 2022-11-09, posterior a la liguilla del A2022, que esta excluida del alcance. 17x3 de fase regular. Mediotiempo y AM, 2022-11-09.","2026-09-15"
+"Pumas UNAM","Andres Lillini",51,"Dirigio a Pumas desde 2020; cese anunciado a inicios de octubre de 2022, al terminar la fase regular del A2022. 17x3 dentro de la ventana. Juanfutbol, 2022-10-05.","2026-09-15"
+"Tigres UANL","Miguel Herrera",51,"Tres torneos en el cargo (A2021, C2022, A2022 = 17x3 de fase regular); despido anunciado el 2022-11-09, posterior a la liguilla, que esta excluida. AM e Infobae, 2022-11-09.","2026-09-15"
+"Mazatlán","Benat San Jose",25,"Cesado el 2022-03-02 tras la J8 del Clausura 2022 (17 del A2021 + 8 del C2022). El API le asignaba ademas el partido 3816688 del 2022-03-13, que dirigio el interino Christian Ramirez; corregido en eras_correcciones.csv. Mediotiempo y ESPN, 2022-03-03.","2026-09-15"
