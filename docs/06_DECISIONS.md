@@ -1341,7 +1341,8 @@ La predicción 2 quedó contaminada por el humo con la base vieja (adenda 1).
 La corrección pesó más de lo que suponía el diseño: sin ella rechazaban 24 contrastes y con ella 6.
 
 **Estado.** Aceptada. Antes de redactar frases de geografía, la orientación de
-las zonas se comprueba con `13_verificar_ejes.py`.
+las zonas se comprueba con `13_verificar_ejes.py`. Comprobada el 2026-09-17 con 13 y 14 sobre los datos
+del API (`10_RESULTADOS.md` §33.4).
 
 ---
 
@@ -1495,5 +1496,66 @@ signo del ajuste al marcador en M1): **3 de 9** →
 *Corrección:* `36_contexto.py` imprimió este conteo sobre 11 técnicos
 (incluía a Jardine y a Ortiz), cuando el texto preinscrito dice nueve. El
 veredicto no cambia. El ajuste al marcador **no viaja** con el entrenador en la mayoría de los casos.
+
+**Estado.** Aceptada.
+
+---
+
+<!-- h2_27 -->
+## ADR-58 · Uso de jugadores: núcleo, roles y lo que pasa tras el primer cambio
+
+**Fecha.** 2026-09-17. Preinscrita en `docs/preinscritos/ADR-58_BORRADOR.md`
+(commit db715ef). Resultado: `reports/jugadores_v1.json`.
+
+**Decisión.** Tres bloques sobre las mismas eras y el mismo universo de
+partidos que ADR-54 a ADR-57:
+
+- **A · núcleo y rotación (descriptivo).** Minutos desde `positions`; por era y
+  torneo: N80, continuidad del once, jugadores distintos y cambios tácticos por
+  partido, cada uno como percentil en la liga del mismo torneo. Torneos con
+  menos de 12 partidos de la era: parciales, sin percentil.
+- **B · roles (descriptivo).** Posición modal y reparto 5×4 de las acciones de
+  cada jugador con al menos 450 minutos.
+- **C · tras el primer cambio táctico (inferencial, nunca causal).** Primera
+  sustitución táctica entre 10:00 y 35:00 del segundo tiempo; ventanas de
+  10 minutos con exclusión de ±60 s; θ = Δ de la era − Δ de la liga sin el club,
+  estandarizada por bloque × marcador × torneo. Bootstrap por partido,
+  B = 6000.
+
+**Diagnóstico.** Reloj de `positions`: acumulado (13212
+muestras) · unión acciones–eventos 1.0000 · partidos con
+alineación 1524 · primeros cambios en la franja:
+1859 tácticos y 325 por lesión.
+
+**Lo que hace la liga tras el primer cambio** (Δ = después − antes; M1 en
+acciones, el resto en puntos porcentuales):
+
+| cambio | métrica | perdiendo | empatando | ganando |
+|---|---|---|---|---|
+| táctico | acciones/posesión | +0.301 (n 448) | -0.001 (n 685) | -0.127 (n 725) |
+| táctico | P(remate) | +2.15 pp (n 448) | +1.01 pp (n 685) | -0.95 pp (n 725) |
+| táctico | P(remate) concedido | -5.29 pp (n 448) | -1.58 pp (n 685) | +0.36 pp (n 725) |
+| táctico | field tilt | +8.68 pp (n 449) | +3.89 pp (n 685) | +0.29 pp (n 725) |
+| por lesión | acciones/posesión | +0.363 (n 66) | -0.622 (n 110) | -0.176 (n 149) |
+| por lesión | P(remate) | +0.72 pp (n 66) | -0.72 pp (n 110) | -2.03 pp (n 149) |
+| por lesión | P(remate) concedido | -2.74 pp (n 66) | +0.95 pp (n 110) | +0.09 pp (n 149) |
+| por lesión | field tilt | +0.17 pp (n 66) | -3.92 pp (n 110) | -1.19 pp (n 149) |
+
+**Familias.** ADR-52: 0 de 84 rechazan. Casos:
+0 de 96.
+- ninguno
+
+| # | predicción | valor | |
+|---|---|---|---|
+| 1 | liga, perdiendo: Delta M2 > 0 tras el primer cambio tactico | `{"valor": [0.021513791718917354, 448]}` | ✅ |
+| 2 | liga, perdiendo: Delta FT > 0 tras el primer cambio tactico | `{"valor": [0.08681587401001872, 449]}` | ✅ |
+| 3 | a lo sumo 5 rechazos en ADR-52 y 5 en casos | `{"valor": [0, 84, 0, 96]}` | ✅ |
+| 4 | liga, perdiendo: \|Delta M2\| por lesion < \|Delta M2\| tactico | `{"valor": [[0.007190642500591833, 66], [0.021513791718917354, 448]]}` | ✅ |
+
+**Redacción obligatoria.** "Tras sus primeros cambios, el equipo…". Nunca "sus
+cambios provocan…": los técnicos cambian cuando el partido lo pide (confusión
+por indicación), y la estratificación por minuto y marcador la atenúa sin
+eliminarla. En A, el calendario cargado por competiciones que no están en los
+datos (Concachampions, Leagues Cup) empuja a rotar y se declara como confusor.
 
 **Estado.** Aceptada.

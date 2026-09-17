@@ -48,7 +48,7 @@ Con presupuesto de contexto limitado, en este orden:
 |---|---|---|
 | 1 | `02_STATE_OF_PLAY.md` | dónde estamos, qué está validado, los bugs #1–#12 (el #13 se evitó; los #14–#21: `17_BITACORA_MIGRACION.md` y `10_RESULTADOS.md` §27.5 y §32) |
 | 2 | `10_RESULTADOS.md` | los hallazgos con etiqueta 🟢🟡🔴⚪ y sus caveats |
-| 3 | `06_DECISIONS.md` | 57 ADRs. **No reabrir debates cerrados** |
+| 3 | `06_DECISIONS.md` | 58 ADRs. **No reabrir debates cerrados** |
 | 4 | `11_MATEMATICA_APLICADA.md` | qué es cada objeto y por qué funciona |
 | 5 | `01_ARCHITECTURE.md` | qué hace cada archivo |
 | 6 | `04_DATA_CONTRACT.md` | trampas del formato StatsBomb |

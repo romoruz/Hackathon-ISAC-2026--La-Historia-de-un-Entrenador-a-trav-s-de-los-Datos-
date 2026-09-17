@@ -15,7 +15,7 @@ sobre eventos Hudl StatsBomb de Liga MX.
 | 03 | [Métodos](03_METHODS.md) | jurado técnico | formalización |
 | 04 | [Contrato de datos](04_DATA_CONTRACT.md) | desarrollador | antes de la ingesta |
 | 05 | [Validación](05_VALIDATION.md) | todos | antes de reportar números |
-| 06 | [Decisiones (57 ADRs)](06_DECISIONS.md) | equipo | antes de reabrir un debate |
+| 06 | [Decisiones (58 ADRs)](06_DECISIONS.md) | equipo | antes de reabrir un debate |
 | 07 | [Traspaso a IA](07_AI_HANDOFF.md) | IA | al retomar |
 | 08 | [Reproducibilidad](08_REPRODUCIBILITY.md) | equipo | antes de publicar |
 | 09 | [Glosario](09_GLOSSARY.md) | humanos | cuando un término no cuadre |
@@ -112,6 +112,7 @@ corregido.
   localía, el marcador, el momento y el rival: se separan
   1 de 336 contrastes. §30.
 - **Casos (ADR-57).** Las eras del América y los técnicos con varios clubes. El ajuste al marcador mantiene su signo en 3 de 9. §31.
+- **Jugadores (ADR-58).** Tras el primer cambio táctico, se separan de la liga 0 de 84 contrastes. Torneos con la continuidad del once en el 15% inferior de la liga: Andre Jardine 6 de 6; Fernando Ortiz 1 de 2; Santiago Solari 1 de 1. §33. <!-- h2_27 -->
 
 ## Retirados
 

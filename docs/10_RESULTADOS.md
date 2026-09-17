@@ -1292,7 +1292,7 @@ corrección (24 sin ella). 🟢 = rechaza tras BH.
 | 15 (3, 3) | -5.47 pp | [-9.99, -1.08] | 0.0363 | -5.99 pp | sí |
 
 **Caveats.** (1) Antes de redactar dónde presiona cada técnico, hay que
-comprobar la orientación de las zonas con `13_verificar_ejes.py`. (2) E2
+comprobar la orientación de las zonas con `13_verificar_ejes.py`. Hecho el 2026-09-17 (§33.4). (2) E2
 condiciona a sobrevivir hasta k = 3. (3) La presión es asociación: StatsBomb
 la anota cuando un defensor se acerca.
 
@@ -1457,3 +1457,126 @@ sobre una muestra y aborta si ninguno funciona (ADR-55, adenda 1).
 
 Los dos produjeron números o vacíos sin excepción. Con estos, el registro
 suma **veinte bugs encontrados**, numerados hasta el #21 (el #13 se evitó).
+
+<!-- h2_27 -->
+---
+
+# 33. 🟢 Uso de jugadores (ADR-58)
+
+**Fuente**: `scripts/38_jugadores.py` → `reports/jugadores_v1.json`. La tabla de la liga y las
+predicciones están en ADR-58. Familias: ADR-52 0 de
+84; casos 0 de 96.
+
+## 33.1 ⚪ Núcleo y rotación (descriptivo)
+
+Percentil en la liga del mismo torneo, sin el club. **Un percentil de
+continuidad bajo significa que el once cambia más que en casi toda la liga**; un
+N80 alto, que los minutos se reparten entre más jugadores.
+
+| era | torneo | partidos | N80 (pct) | continuidad (pct) | jugadores distintos (pct) | cambios tácticos/partido (pct) |
+|---|---|---|---|---|---|---|
+| Andre Jardine | A2023 | 17 | 15 (0.82) | 0.61 (0.00) | 30 (0.85) | 1.35 (0.03) |
+| Andre Jardine | C2024 | 17 | 15 (0.76) | 0.53 (0.00) | 27 (0.68) | 1.82 (0.29) |
+| Andre Jardine | A2024 | 17 | 16 (0.97) | 0.70 (0.15) | 32 (0.94) | 2.18 (0.76) |
+| Andre Jardine | C2025 | 15 | 14 (0.44) | 0.66 (0.12) | 27 (0.62) | 2.00 (0.50) |
+| Andre Jardine | A2025 | 17 | 14 (0.74) | 0.68 (0.06) | 25 (0.32) | 1.53 (0.15) |
+| Andre Jardine | C2026 | 17 | 16 (0.94) | 0.68 (0.12) | 27 (0.74) | 1.82 (0.44) |
+| Fernando Ortiz | C2022 | 9 | 11 (parcial) | 0.83 (parcial) | 23 (parcial) | 0.44 (parcial) |
+| Fernando Ortiz | A2022 | 17 | 12 (0.32) | 0.74 (0.09) | 27 (0.97) | 1.24 (0.06) |
+| Fernando Ortiz | C2023 | 17 | 14 (0.88) | 0.86 (0.91) | 23 (0.09) | 0.82 (0.00) |
+| Santiago Solari | A2021 | 17 | 15 (0.91) | 0.64 (0.00) | 27 (0.68) | 0.65 (0.00) |
+| Santiago Solari | C2022 | 8 | 14 (parcial) | 0.70 (parcial) | 24 (parcial) | 1.25 (parcial) |
+
+- **Andre Jardine**: en 6 de 6 torneos completos su continuidad del once cae en el 15% inferior de la liga (mediana del percentil 0.09; de N80, 0.79).
+- **Fernando Ortiz**: en 1 de 2 torneos completos su continuidad del once cae en el 15% inferior de la liga (mediana del percentil 0.50; de N80, 0.60).
+- **Santiago Solari**: en 1 de 1 torneos completos su continuidad del once cae en el 15% inferior de la liga (mediana del percentil 0.00; de N80, 0.91).
+
+Las eras de casos, para ver si la rotación viaja con el entrenador:
+
+| entrenador | club | torneos completos | en el 15% inferior de continuidad | mediana pct continuidad | mediana pct N80 |
+|---|---|---|---|---|---|
+| Andre Jardine | América | 6 | 6 | 0.09 | 0.79 |
+| Andre Jardine | Atlético San Luis | 3 | 0 | 0.88 | 0.03 |
+| Benat San Jose | Atlas | 2 | 0 | 0.51 | 0.26 |
+| Benat San Jose | Mazatlán | 1 | 0 | 0.32 | 0.18 |
+| Benjamin Mora | Atlas | 2 | 0 | 0.88 | 0.46 |
+| Benjamin Mora | Querétaro | 2 | 0 | 0.35 | 0.87 |
+| Domenec Torrent | Atlético San Luis | 2 | 0 | 0.62 | 0.10 |
+| Domenec Torrent | Monterrey | 1 | 1 | 0.12 | 0.50 |
+| Eduardo Fentanes | Necaxa | 2 | 0 | 0.79 | 0.13 |
+| Eduardo Fentanes | Santos Laguna | 2 | 0 | 0.79 | 0.31 |
+| Fernando Ortiz | América | 2 | 1 | 0.50 | 0.60 |
+| Fernando Ortiz | Monterrey | 2 | 1 | 0.26 | 0.71 |
+| Ignacio Ambriz | Santos Laguna | 1 | 1 | 0.15 | 0.97 |
+| Ignacio Ambriz | Toluca | 4 | 0 | 0.53 | 0.37 |
+| Miguel Herrera | Tigres UANL | 3 | 0 | 0.65 | 0.21 |
+| Miguel Herrera | Tijuana | 2 | 0 | 0.53 | 0.28 |
+| Nicolas Larcamon | Cruz Azul | 2 | 0 | 0.38 | 0.37 |
+| Nicolas Larcamon | León | 2 | 0 | 0.57 | 0.65 |
+| Nicolas Larcamon | Puebla | 3 | 0 | 0.53 | 0.32 |
+| Santiago Solari | América | 1 | 1 | 0.00 | 0.91 |
+| Veljko Paunovic | Guadalajara | 2 | 1 | 0.25 | 0.35 |
+| Veljko Paunovic | Tigres UANL | 1 | 1 | 0.06 | 0.41 |
+| Victor Manuel Vucetich | Mazatlán | 2 | 0 | 0.29 | 0.79 |
+| Victor Manuel Vucetich | Monterrey | 2 | 1 | 0.22 | 0.54 |
+
+**Caveats.** (1) Descriptivo: no hay contraste ni familia. (2) El América juega
+competiciones que no están en los datos, y el calendario cargado empuja a rotar.
+(3) N80 depende del número de partidos: por eso los torneos parciales no llevan
+percentil.
+
+## 33.2 ⚪ Roles (descriptivo)
+
+Los cinco jugadores con más minutos de cada era del América. `centro` es la
+media del índice de zona de sus acciones (ix de 0 a 4 hacia el arco rival; iy
+de 0 a 3, de la banda izquierda a la derecha). La tabla trae `player_id` en el
+JSON; los nombres se unen en el reporte.
+
+| era | posición modal | minutos | centro ix (0 = propio) | centro iy | franja más cercana |
+|---|---|---|---|---|---|
+| Andre Jardine | Goalkeeper | 7798 | 0.03 | 1.55 | centro-derecha |
+| Andre Jardine | Right Center Back | 6642 | 1.53 | 2.35 | centro-derecha |
+| Andre Jardine | Left Defensive Midfield | 6202 | 2.17 | 0.86 | centro-izquierda |
+| Andre Jardine | Right Wing | 5725 | 2.61 | 2.03 | centro-derecha |
+| Andre Jardine | Right Back | 5630 | 2.38 | 2.79 | banda derecha |
+| Fernando Ortiz | Left Defensive Midfield | 3515 | 2.13 | 0.90 | centro-izquierda |
+| Fernando Ortiz | Center Attacking Midfield | 3317 | 2.63 | 1.33 | centro-izquierda |
+| Fernando Ortiz | Center Forward | 3062 | 2.98 | 1.50 | centro-derecha |
+| Fernando Ortiz | Right Defensive Midfield | 3016 | 2.07 | 1.73 | centro-derecha |
+| Fernando Ortiz | Left Center Back | 2962 | 1.13 | 0.69 | centro-izquierda |
+| Santiago Solari | Goalkeeper | 2137 | 0.10 | 1.58 | centro-derecha |
+| Santiago Solari | Left Back | 2109 | 2.41 | 0.30 | banda izquierda |
+| Santiago Solari | Left Defensive Midfield | 1840 | 2.33 | 0.83 | centro-izquierda |
+| Santiago Solari | Right Center Back | 1568 | 1.27 | 2.34 | centro-derecha |
+| Santiago Solari | Right Back | 1518 | 2.17 | 2.64 | banda derecha |
+
+## 33.3 🟢 Tras el primer cambio táctico
+
+| era | eventos | métrica | θ | IC 95% | q (ADR-52) | θ sin exclusión |
+|---|---|---|---|---|---|---|
+| Andre Jardine | 62 | acciones/posesión | +0.511 | [-0.463, +1.491] | 0.9880 | +0.541 |
+| Andre Jardine | 62 | P(remate) | +3.73 pp | [-0.76, +8.27] | 0.9880 | +2.49 pp |
+| Andre Jardine | 62 | P(remate) concedido | -2.25 pp | [-7.33, +3.00] | 0.9880 | -1.53 pp |
+| Andre Jardine | 62 | field tilt | +1.65 pp | [-7.38, +10.49] | 0.9880 | +3.61 pp |
+| Fernando Ortiz | 37 | acciones/posesión | -0.393 | [-1.478, +0.708] | 0.9880 | -0.313 |
+| Fernando Ortiz | 37 | P(remate) | +1.10 pp | [-4.79, +6.52] | 0.9880 | -0.60 pp |
+| Fernando Ortiz | 37 | P(remate) concedido | +0.74 pp | [-4.83, +6.16] | 0.9880 | +2.96 pp |
+| Fernando Ortiz | 37 | field tilt | +4.20 pp | [-6.62, +14.93] | 0.9880 | +1.82 pp |
+| Santiago Solari | 13 | acciones/posesión | -0.339 | [-2.379, +1.682] | 0.9880 | +0.027 |
+| Santiago Solari | 13 | P(remate) | +2.85 pp | [-11.70, +16.36] | 0.9880 | +0.66 pp |
+| Santiago Solari | 13 | P(remate) concedido | -0.12 pp | [-7.73, +7.41] | 0.9960 | +3.25 pp |
+| Santiago Solari | 13 | field tilt | +11.74 pp | [-2.07, +29.78] | 0.9880 | +7.07 pp |
+
+En las eras del América, 0 de 12 intervalos excluyen el cero **antes**
+de corregir. Ningún técnico del América se separa de forma detectable de lo que hace la liga tras su primer cambio. Redacción: "tras sus primeros cambios, el equipo…",
+nunca causal.
+
+## 33.4 Orientación de las zonas, comprobada (2026-09-17)
+
+Sin nombres de jugadores: los que la alineación marca por la derecha tienen su
+centro lateral por encima de 1.5 en el 88.0% de los casos
+(n = 492, mediana 2.031); los de la izquierda, en el
+11.5% (n = 443, mediana 0.863).
+Con nombres, `13_verificar_ejes.py` (ataque) y `14_verificar_ejes_def.py`
+(defensa, América y Cruz Azul) dieron CORRECTO sobre los datos del API. Las
+etiquetas de banda de §28 y de esta sección se pueden redactar.
