@@ -10,8 +10,8 @@
 ## 1. Filosofía
 
 En este proyecto **los errores no producen excepciones: producen números
-plausibles pero equivocados**. Los **dieciocho** bugs encontrados hasta ahora
-(`02_STATE_OF_PLAY.md` §8, `17_BITACORA_MIGRACION.md`, `10_RESULTADOS.md` §27.5) fueron todos silenciosos. Dieciocho de dieciocho (numerados hasta el #19; el #13 se evitó).
+plausibles pero equivocados**. Los **veinte** bugs encontrados hasta ahora
+(`02_STATE_OF_PLAY.md` §8, `17_BITACORA_MIGRACION.md`, `10_RESULTADOS.md` §27.5 y §32) fueron todos silenciosos. Veinte de veinte (numerados hasta el #21; el #13 se evitó).
 
 De ahí dos reglas:
 

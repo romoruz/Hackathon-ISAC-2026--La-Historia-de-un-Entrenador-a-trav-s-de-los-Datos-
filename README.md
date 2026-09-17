@@ -64,7 +64,7 @@ publica aquí por la licencia de Hudl StatsBomb.
 ### Control de Plantel
 **9 de 17 jugadores** que jugaron con Jardine y con Ortiz cambiaron su patrón de juego de forma detectable, cuando por azar se esperaría uno. Jardine heredó el 67% de las acciones de ese plantel.
 
-> ⚠️ **Advertencia**: Dieciocho bugs encontrados, dieciocho silenciosos (numerados hasta el #19; el #13 se evitó). Ninguno lanzó una excepción; todos produjeron números plausibles pero incorrectos. En este dominio *"corre sin error"* no es evidencia de nada. Ver [docs/02_STATE_OF_PLAY.md](docs/02_STATE_OF_PLAY.md) §8.
+> ⚠️ **Advertencia**: Veinte bugs encontrados, veinte silenciosos (numerados hasta el #21; el #13 se evitó). Ninguno lanzó una excepción; todos produjeron números plausibles pero incorrectos. En este dominio *"corre sin error"* no es evidencia de nada. Ver [docs/02_STATE_OF_PLAY.md](docs/02_STATE_OF_PLAY.md) §8.
 
 ---
 

@@ -1208,3 +1208,252 @@ textos de `25` corregidos en el paquete h2_11.
 3. **La serie por torneo** de cada unidad está en el JSON y es descriptiva.
 4. **Todo lo anterior a §27 de este documento** usa las eras previas al
    bug #14 (ver el aviso de cabecera).
+
+<!-- h2_23 -->
+---
+
+# 28. 🟢 D1 con la deriva fuera (ADR-54)
+
+**Fuente**: `scripts/33_did_presion.py` → `reports/did_presion_v1.json`.
+135 contrastes en la etapa 1; rechazan 6 con la
+corrección (24 sin ella). 🟢 = rechaza tras BH.
+
+| club | par | E1 q | E2 (pp) | E3 (‰/toque) | E4 (pp) | E5 (pp) |
+|---|---|---|---|---|---|---|
+| América | Andre Jardine vs Fernando Ortiz | 0.3017 | -1.96 (q 0.3852) | -1.38 (q 0.7040) | +6.51 (q 0.3351) | -0.85 (q 0.7002) |
+| América | Andre Jardine vs Santiago Solari | 0.2175 | +3.25 (q 0.2989) | -1.10 (q 0.8509) | +10.47 (q 0.0643) | -0.48 (q 0.8509) |
+| América | Fernando Ortiz vs Santiago Solari | 🟢 0.0412 | 🟢 +5.21 (q 0.0412) | +0.28 (q 0.9575) | +3.96 (q 0.6635) | +0.37 (q 0.9162) |
+| Atlas | Benat San Jose vs Benjamin Mora | 0.4472 | -2.16 (q 0.4816) | -1.18 (q 0.8509) | -3.69 (q 0.7002) | +2.87 (q 0.2561) |
+| Atlas | Benat San Jose vs Diego Cocca I | 0.9575 | +0.70 (q 0.8070) | +1.15 (q 0.8070) | -4.54 (q 0.5820) | +2.38 (q 0.3351) |
+| Atlas | Benat San Jose vs Diego Cocca II | 0.8509 | +0.20 (q 0.9575) | -2.39 (q 0.6067) | +2.39 (q 0.8509) | +1.00 (q 0.7917) |
+| Atlas | Benjamin Mora vs Diego Cocca I | 0.2561 | +2.86 (q 0.3017) | +2.34 (q 0.6385) | -0.84 (q 0.9162) | -0.49 (q 0.8509) |
+| Atlas | Benjamin Mora vs Diego Cocca II | 0.3351 | +2.36 (q 0.4829) | -1.20 (q 0.8509) | +6.08 (q 0.4829) | -1.87 (q 0.4829) |
+| Atlas | Diego Cocca I vs Diego Cocca II | 0.4604 | -0.50 (q 0.8509) | -3.54 (q 0.3404) | +6.93 (q 0.3917) | -1.38 (q 0.6359) |
+| Atlético San Luis | Andre Jardine vs Domenec Torrent | 0.3351 | -2.46 (q 0.4122) | +3.66 (q 0.4012) | +3.81 (q 0.6385) | +0.15 (q 1.0000) |
+| Atlético San Luis | Andre Jardine vs Guillermo Abascal | 0.6385 | -2.53 (q 0.3556) | -1.22 (q 0.7917) | +2.14 (q 0.8509) | -2.84 (q 0.4829) |
+| Atlético San Luis | Andre Jardine vs Gustavo Leal | 1.0000 | +0.49 (q 0.8509) | +3.52 (q 0.3351) | -1.82 (q 0.8509) | -0.09 (q 0.9598) |
+| Atlético San Luis | Domenec Torrent vs Guillermo Abascal | 0.4995 | -0.07 (q 1.0000) | -4.88 (q 0.3351) | -1.68 (q 0.8509) | -3.00 (q 0.4829) |
+| Atlético San Luis | Domenec Torrent vs Gustavo Leal | 0.3249 | +2.96 (q 0.3351) | -0.14 (q 0.9744) | -5.64 (q 0.4829) | -0.25 (q 0.9575) |
+| Atlético San Luis | Guillermo Abascal vs Gustavo Leal | 0.4829 | +3.03 (q 0.3017) | +4.74 (q 0.2561) | -3.96 (q 0.7040) | +2.75 (q 0.4995) |
+| Cruz Azul | Juan Reynoso vs Martin Anselmi | 🟢 0.0112 | 🟢 -9.60 (q 0.0112) | -6.25 (q 0.1125) | +4.06 (q 0.6385) | +1.13 (q 0.6320) |
+| Cruz Azul | Juan Reynoso vs Nicolas Larcamon | 🟢 0.0112 | 🟢 -7.71 (q 0.0112) | -2.24 (q 0.6359) | +1.98 (q 0.8509) | +1.78 (q 0.4170) |
+| Cruz Azul | Martin Anselmi vs Nicolas Larcamon | 0.8070 | +1.90 (q 0.5820) | +4.01 (q 0.4170) | -2.08 (q 0.8509) | +0.64 (q 0.8019) |
+| León | Ariel Holan vs Eduardo Berizzo | 0.7262 | +1.29 (q 0.7581) | -0.76 (q 0.8509) | +4.62 (q 0.6414) | -1.32 (q 0.7262) |
+| León | Ariel Holan vs Nicolas Larcamon | 0.8964 | -1.47 (q 0.7262) | -0.60 (q 0.8964) | +3.34 (q 0.7917) | -0.05 (q 1.0000) |
+| León | Eduardo Berizzo vs Nicolas Larcamon | 0.3351 | -2.76 (q 0.4170) | +0.16 (q 0.9732) | -1.28 (q 0.8964) | +1.27 (q 0.6385) |
+| Monterrey | Domenec Torrent vs Fernando Ortiz | 0.7002 | -2.13 (q 0.5812) | -0.87 (q 0.8509) | +8.65 (q 0.3351) | +2.84 (q 0.4012) |
+| Monterrey | Domenec Torrent vs Martin Demichelis | 0.4829 | -2.63 (q 0.4995) | +1.30 (q 0.8070) | +9.29 (q 0.3351) | +1.96 (q 0.6385) |
+| Monterrey | Domenec Torrent vs Victor Manuel Vucetich | 0.4829 | -2.41 (q 0.4829) | -3.24 (q 0.4156) | +7.64 (q 0.3917) | +0.70 (q 0.8509) |
+| Monterrey | Fernando Ortiz vs Martin Demichelis | 0.6912 | -0.50 (q 0.8850) | +2.17 (q 0.5594) | +0.64 (q 0.9575) | -0.88 (q 0.8070) |
+| Monterrey | Fernando Ortiz vs Victor Manuel Vucetich | 0.8509 | -0.28 (q 0.9190) | -2.38 (q 0.4829) | -1.01 (q 0.9162) | -2.14 (q 0.3351) |
+| Monterrey | Martin Demichelis vs Victor Manuel Vucetich | 0.4829 | +0.22 (q 0.9575) | -4.55 (q 0.2561) | -1.65 (q 0.8762) | -1.26 (q 0.6912) |
+
+## 28.1 Etapa 2: zonas dentro de los pares cuyo E1 rechaza
+
+
+**América · Fernando Ortiz vs Santiago Solari** — 2 zonas tras BH dentro del par:
+
+| zona (ix, iy) | Δ | IC 95% | q | crudo | logit mismo signo |
+|---|---|---|---|---|---|
+| 3 (0, 3) | +13.48 pp | [+7.67, +19.44] | 0.0033 | +10.81 pp | sí |
+| 6 (1, 2) | +10.55 pp | [+4.67, +16.86] | 0.0033 | +8.05 pp | sí |
+
+**Cruz Azul · Juan Reynoso vs Martin Anselmi** — 13 zonas tras BH dentro del par:
+
+| zona (ix, iy) | Δ | IC 95% | q | crudo | logit mismo signo |
+|---|---|---|---|---|---|
+| 1 (0, 1) | -9.71 pp | [-18.11, -1.75] | 0.0261 | -12.26 pp | sí |
+| 3 (0, 3) | -8.21 pp | [-13.74, -2.77] | 0.0055 | -6.94 pp | sí |
+| 4 (1, 0) | -9.19 pp | [-13.91, -4.28] | 0.0010 | -6.34 pp | sí |
+| 5 (1, 1) | -10.12 pp | [-15.75, -4.43] | 0.0010 | -8.11 pp | sí |
+| 7 (1, 3) | -11.15 pp | [-15.10, -6.84] | 0.0010 | -8.94 pp | sí |
+| 8 (2, 0) | -8.34 pp | [-12.34, -4.31] | 0.0010 | -6.67 pp | sí |
+| 9 (2, 1) | -4.88 pp | [-9.34, -0.68] | 0.0395 | -2.70 pp | sí |
+| 10 (2, 2) | -10.26 pp | [-14.90, -5.62] | 0.0010 | -7.94 pp | sí |
+| 11 (2, 3) | -10.17 pp | [-13.94, -6.31] | 0.0010 | -8.33 pp | sí |
+| 13 (3, 1) | -7.72 pp | [-12.55, -2.98] | 0.0040 | -5.97 pp | sí |
+| 14 (3, 2) | -8.05 pp | [-12.27, -3.84] | 0.0010 | -7.26 pp | sí |
+| 15 (3, 3) | -7.24 pp | [-11.50, -3.04] | 0.0017 | -7.17 pp | sí |
+| 16 (4, 0) | -11.40 pp | [-18.38, -4.43] | 0.0030 | -12.25 pp | sí |
+
+**Cruz Azul · Juan Reynoso vs Nicolas Larcamon** — 10 zonas tras BH dentro del par:
+
+| zona (ix, iy) | Δ | IC 95% | q | crudo | logit mismo signo |
+|---|---|---|---|---|---|
+| 3 (0, 3) | -9.83 pp | [-15.43, -3.97] | 0.0050 | -10.05 pp | sí |
+| 4 (1, 0) | -9.45 pp | [-13.91, -5.17] | 0.0033 | -6.76 pp | sí |
+| 7 (1, 3) | -12.39 pp | [-16.88, -7.64] | 0.0033 | -10.25 pp | sí |
+| 8 (2, 0) | -6.75 pp | [-11.05, -2.61] | 0.0089 | -5.00 pp | sí |
+| 9 (2, 1) | -7.92 pp | [-12.88, -3.01] | 0.0089 | -5.09 pp | sí |
+| 10 (2, 2) | -8.19 pp | [-13.74, -2.22] | 0.0200 | -5.75 pp | sí |
+| 11 (2, 3) | -9.21 pp | [-13.41, -4.82] | 0.0044 | -7.40 pp | sí |
+| 13 (3, 1) | -6.04 pp | [-10.80, -0.98] | 0.0367 | -5.06 pp | sí |
+| 14 (3, 2) | -6.92 pp | [-11.80, -2.09] | 0.0200 | -6.19 pp | sí |
+| 15 (3, 3) | -5.47 pp | [-9.99, -1.08] | 0.0363 | -5.99 pp | sí |
+
+**Caveats.** (1) Antes de redactar dónde presiona cada técnico, hay que
+comprobar la orientación de las zonas con `13_verificar_ejes.py`. (2) E2
+condiciona a sobrevivir hasta k = 3. (3) La presión es asociación: StatsBomb
+la anota cuando un defensor se acerca.
+
+---
+
+# 29. 🟢 Balón parado (ADR-55)
+
+**Fuente**: `scripts/35_balon_parado.py` → `reports/balon_parado_v2.json`.
+La síntesis está en ADR-55. Eras de casos (diferencia contra la liga del mismo
+torneo; C2 en unidades de xG por remate):
+
+| era | partidos | C1 of (dif.) | C1 def (dif.) | C2 of (dif.) | C2 def (dif.) |
+|---|---|---|---|---|---|
+| Andre Jardine (América) | 100 | +0.3 pp [-4.1, +4.6] | -2.6 pp [-6.8, +1.8] | +0.0037 | -0.0050 |
+| Fernando Ortiz (América) | 43 | -1.8 pp [-8.3, +4.8] | -9.2 pp [-15.3, -2.6] | -0.0054 | -0.0123 |
+| Santiago Solari (América) | 25 | +5.1 pp [-3.9, +14.3] | +2.6 pp [-8.6, +14.2] | -0.0026 | -0.0184 |
+| Benat San Jose (Atlas) | 34 | +2.0 pp [-5.8, +9.8] | +3.3 pp [-4.8, +12.1] | +0.0009 | -0.0104 |
+| Benjamin Mora (Atlas) | 31 | -7.0 pp [-13.7, -0.5] | +2.9 pp [-4.9, +10.3] | +0.0131 | +0.0058 |
+| Andre Jardine (Atlético San Luis) | 48 | -3.4 pp [-10.2, +4.0] | -4.2 pp [-10.5, +2.3] | +0.0005 | -0.0146 |
+| Domenec Torrent (Atlético San Luis) | 34 | +0.6 pp [-7.6, +8.4] | +11.7 pp [+2.7, +21.0] | -0.0004 | +0.0047 |
+| Nicolas Larcamon (Cruz Azul) | 33 | +4.0 pp [-2.4, +11.4] | -4.3 pp [-15.0, +7.0] | -0.0068 | +0.0343 |
+| Veljko Paunovic (Guadalajara) | 34 | -9.3 pp [-18.0, -0.6] | +12.7 pp [+4.6, +22.1] | -0.0030 | -0.0123 |
+| Nicolas Larcamon (León) | 34 | +3.3 pp [-4.5, +11.9] | -7.7 pp [-13.6, -1.4] | +0.0029 | -0.0007 |
+| Victor Manuel Vucetich (Mazatlán) | 34 | +2.3 pp [-4.1, +8.6] | -3.0 pp [-11.4, +5.9] | -0.0025 | +0.0059 |
+| Benat San Jose (Mazatlán) | 26 | +0.9 pp [-13.5, +14.6] | -3.8 pp [-13.3, +4.4] | -0.0183 | +0.0036 |
+| Victor Manuel Vucetich (Monterrey) | 45 | +2.4 pp [-4.3, +9.0] | -8.8 pp [-17.3, -0.6] | -0.0125 | +0.0073 |
+| Fernando Ortiz (Monterrey) | 38 | -5.3 pp [-12.4, +1.7] | -2.5 pp [-8.4, +3.1] | -0.0131 | -0.0110 |
+| Domenec Torrent (Monterrey) | 25 | +6.9 pp [-3.9, +17.8] | +1.7 pp [-6.9, +9.5] | -0.0112 | -0.0001 |
+| Eduardo Fentanes (Necaxa) | 40 | -2.8 pp [-10.7, +4.5] | -0.1 pp [-6.3, +6.4] | -0.0102 | -0.0035 |
+| Nicolas Larcamon (Puebla) | 51 | +5.4 pp [-1.2, +12.2] | +0.2 pp [-5.5, +5.7] | -0.0001 | +0.0020 |
+| Benjamin Mora (Querétaro) | 33 | +8.3 pp [-0.7, +18.3] | +5.0 pp [-2.3, +12.0] | -0.0284 | -0.0124 |
+| Eduardo Fentanes (Santos Laguna) | 41 | +1.8 pp [-6.4, +9.3] | +8.0 pp [-0.4, +16.2] | +0.0055 | -0.0090 |
+| Ignacio Ambriz (Santos Laguna) | 28 | -0.3 pp [-10.4, +10.3] | +14.9 pp [+6.5, +22.8] | +0.0170 | +0.0090 |
+| Miguel Herrera (Tigres UANL) | 51 | -4.2 pp [-9.9, +1.6] | -7.2 pp [-14.6, +0.4] | +0.0080 | +0.0031 |
+| Veljko Paunovic (Tigres UANL) | 27 | +5.3 pp [-1.6, +11.7] | -0.9 pp [-11.1, +8.8] | +0.0222 | -0.0200 |
+| Miguel Herrera (Tijuana) | 45 | -2.3 pp [-9.0, +4.6] | -7.5 pp [-14.6, -0.5] | -0.0067 | +0.0140 |
+| Ignacio Ambriz (Toluca) | 64 | +5.4 pp [-0.5, +11.8] | +0.0 pp [-5.1, +5.0] | -0.0122 | +0.0025 |
+
+---
+
+# 30. 🟢 Contexto (ADR-56)
+
+**Fuente**: `scripts/36_contexto.py` → `reports/contexto_v1.json`. La tabla de
+la liga está en ADR-56. Las eras del América:
+
+
+**Andre Jardine** (100 partidos)
+
+| contraste | θ | IC 95% | q (ADR-52) |
+|---|---|---|---|
+| localia · M1 | -0.003 | [-0.569, +0.568] | 1.0000 |
+| localia · M2 | -0.08 pp | [-1.83, +1.63] | 1.0000 |
+| localia · M3 | -0.15 pp | [-2.35, +1.99] | 1.0000 |
+| localia · M4 | +0.16 pp | [-1.54, +1.85] | 1.0000 |
+| marcador · M1 | +0.090 | [-0.573, +0.747] | 1.0000 |
+| marcador · M2 | +0.47 pp | [-1.88, +2.68] | 1.0000 |
+| marcador · M3 | +0.27 pp | [-2.32, +2.78] | 1.0000 |
+| marcador · M4 | -2.70 pp | [-4.92, -0.47] | 0.4226 |
+| momento · M1 | -0.070 | [-0.465, +0.323] | 1.0000 |
+| momento · M2 | +2.05 pp | [+0.25, +3.86] | 0.4640 |
+| momento · M3 | -0.68 pp | [-1.93, +0.58] | 0.9659 |
+| momento · M4 | +0.08 pp | [-1.48, +1.57] | 1.0000 |
+| rival · M1 | -0.353 | [-1.016, +0.289] | 0.9659 |
+| rival · M2 | -1.92 pp | [-4.01, +0.16] | 0.6757 |
+| rival · M3 | -3.62 pp | [-6.26, -1.06] | 0.2007 |
+| rival · M4 | -0.15 pp | [-1.83, +1.58] | 1.0000 |
+
+**Fernando Ortiz** (43 partidos)
+
+| contraste | θ | IC 95% | q (ADR-52) |
+|---|---|---|---|
+| localia · M1 | +0.839 | [+0.202, +1.514] | 0.3207 |
+| localia · M2 | +0.75 pp | [-1.88, +3.29] | 1.0000 |
+| localia · M3 | -2.79 pp | [-6.20, +0.62] | 0.8134 |
+| localia · M4 | +0.91 pp | [-1.33, +3.18] | 0.9790 |
+| marcador · M1 | -0.160 | [-0.921, +0.613] | 1.0000 |
+| marcador · M2 | -0.92 pp | [-5.93, +3.90] | 1.0000 |
+| marcador · M3 | -4.76 pp | [-8.48, -1.35] | 0.2007 |
+| marcador · M4 | -0.00 pp | [-2.99, +3.06] | 1.0000 |
+| momento · M1 | -0.410 | [-0.916, +0.090] | 0.8134 |
+| momento · M2 | -0.73 pp | [-3.70, +2.21] | 1.0000 |
+| momento · M3 | -0.46 pp | [-2.11, +1.12] | 1.0000 |
+| momento · M4 | +0.31 pp | [-1.98, +2.52] | 1.0000 |
+| rival · M1 | -0.138 | [-0.901, +0.654] | 1.0000 |
+| rival · M2 | +1.25 pp | [-2.13, +4.24] | 0.9890 |
+| rival · M3 | -0.06 pp | [-4.52, +4.10] | 1.0000 |
+| rival · M4 | -0.10 pp | [-2.90, +2.64] | 1.0000 |
+
+**Santiago Solari** (25 partidos)
+
+| contraste | θ | IC 95% | q (ADR-52) |
+|---|---|---|---|
+| localia · M1 | +0.580 | [-0.413, +1.571] | 0.9526 |
+| localia · M2 | +0.31 pp | [-2.67, +3.42] | 1.0000 |
+| localia · M3 | -0.08 pp | [-4.69, +4.48] | 1.0000 |
+| localia · M4 | +2.15 pp | [-1.00, +5.61] | 0.8756 |
+| marcador · M1 | -0.313 | [-1.448, +0.973] | 1.0000 |
+| marcador · M2 | -0.24 pp | [-5.21, +4.37] | 1.0000 |
+| marcador · M3 | +1.99 pp | [-3.31, +7.87] | 0.9890 |
+| marcador · M4 | +2.12 pp | [-2.49, +7.29] | 0.9713 |
+| momento · M1 | -0.058 | [-0.666, +0.543] | 1.0000 |
+| momento · M2 | -0.25 pp | [-3.03, +2.55] | 1.0000 |
+| momento · M3 | -0.23 pp | [-2.39, +1.90] | 1.0000 |
+| momento · M4 | +0.05 pp | [-2.16, +2.47] | 1.0000 |
+| rival · M1 | -1.478 | [-2.804, -0.285] | 0.3687 |
+| rival · M2 | -1.51 pp | [-5.70, +3.02] | 1.0000 |
+| rival · M3 | +3.77 pp | [-2.35, +9.43] | 0.8798 |
+| rival · M4 | +0.35 pp | [-3.78, +4.65] | 1.0000 |
+
+En las eras del América, 6 de 48 intervalos excluyen el cero **antes**
+de corregir y **ninguno** sobrevive a BH. La frase correcta: ningún técnico del
+América ajusta al contexto de forma detectablemente distinta a la liga.
+
+---
+
+# 31. ⚪ Casos: lo que viaja con el entrenador (descriptivo)
+
+Tabla de ADR-57. E[T] y balón parado se vieron antes de preinscribir: son
+descriptivos.
+
+| entrenador | club | E[T] vs liga (H4) | ajuste al marcador, M1 | C1 of | C1 def |
+|---|---|---|---|---|---|
+| Andre Jardine | América | +24.6% | +0.090 | +0.3 pp | -2.6 pp |
+| Andre Jardine | Atlético San Luis | -10.0% | +0.888 | -3.4 pp | -4.2 pp |
+| Fernando Ortiz | América | +20.3% | -0.160 | -1.8 pp | -9.2 pp |
+| Fernando Ortiz | Monterrey | +16.2% | -0.464 | -5.3 pp | -2.5 pp |
+| Santiago Solari | América | +5.9% | -0.313 | +5.1 pp | +2.6 pp |
+| Benat San Jose | Atlas | -7.5% | +0.272 | +2.0 pp | +3.3 pp |
+| Benat San Jose | Mazatlán | -12.6% | -0.766 | +0.9 pp | -3.8 pp |
+| Benjamin Mora | Atlas | +0.4% | +0.608 | -7.0 pp | +2.9 pp |
+| Benjamin Mora | Querétaro | -21.1% | +0.680 | +8.3 pp | +5.0 pp |
+| Domenec Torrent | Atlético San Luis | +9.8% | +0.879 | +0.6 pp | +11.7 pp |
+| Domenec Torrent | Monterrey | +21.9% | -0.886 | +6.9 pp | +1.7 pp |
+| Nicolas Larcamon | Cruz Azul | +0.8% | -0.143 | +4.0 pp | -4.3 pp |
+| Nicolas Larcamon | León | +6.9% | -0.479 | +3.3 pp | -7.7 pp |
+| Nicolas Larcamon | Puebla | -5.7% | +0.596 | +5.4 pp | +0.2 pp |
+| Veljko Paunovic | Guadalajara | -5.6% | +0.147 | -9.3 pp | +12.7 pp |
+| Veljko Paunovic | Tigres UANL | +1.1% | +0.741 | +5.3 pp | -0.9 pp |
+| Victor Manuel Vucetich | Mazatlán | -5.7% | -0.228 | +2.3 pp | -3.0 pp |
+| Victor Manuel Vucetich | Monterrey | -0.1% | -0.866 | +2.4 pp | -8.8 pp |
+| Eduardo Fentanes | Necaxa | -29.1% | +0.798 | -2.8 pp | -0.1 pp |
+| Eduardo Fentanes | Santos Laguna | -9.2% | -0.068 | +1.8 pp | +8.0 pp |
+| Ignacio Ambriz | Santos Laguna | +1.5% | +1.009 | -0.3 pp | +14.9 pp |
+| Ignacio Ambriz | Toluca | +23.7% | -0.331 | +5.4 pp | +0.0 pp |
+| Miguel Herrera | Tigres UANL | +18.3% | -0.693 | -4.2 pp | -7.2 pp |
+| Miguel Herrera | Tijuana | -12.8% | +0.378 | -2.3 pp | -7.5 pp |
+
+---
+
+# 32. Bugs #20 y #21
+
+**#20 · la base de D1 truncaba distinto que la unidad.** `data/prior_liga`
+usa `min_actions = 2`; las eras defendiendo, `min_actions_defense = 1`. La
+base no tenía las posesiones de una acción que terminan sin fila `TERMINAL`,
+justo el producto de una presión exitosa (y de un córner despejado al primer
+toque). Corregido con la vista defensora (ADR-54, adenda 1).
+
+**#21 · el freeze frame del API es JSON.** `xg_remate.features` se escribió
+para el texto de Python del volcado viejo (`True`/`False`) y devolvía `None`
+en silencio con el JSON del API (`true`/`false`). `35` detecta el formato
+sobre una muestra y aborta si ninguno funciona (ADR-55, adenda 1).
+
+Los dos produjeron números o vacíos sin excepción. Con estos, el registro
+suma **veinte bugs encontrados**, numerados hasta el #21 (el #13 se evitó).

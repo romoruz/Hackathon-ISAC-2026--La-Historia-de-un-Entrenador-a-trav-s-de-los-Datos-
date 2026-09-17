@@ -15,7 +15,7 @@ sobre eventos Hudl StatsBomb de Liga MX.
 | 03 | [Métodos](03_METHODS.md) | jurado técnico | formalización |
 | 04 | [Contrato de datos](04_DATA_CONTRACT.md) | desarrollador | antes de la ingesta |
 | 05 | [Validación](05_VALIDATION.md) | todos | antes de reportar números |
-| 06 | [Decisiones (53 ADRs)](06_DECISIONS.md) | equipo | antes de reabrir un debate |
+| 06 | [Decisiones (57 ADRs)](06_DECISIONS.md) | equipo | antes de reabrir un debate |
 | 07 | [Traspaso a IA](07_AI_HANDOFF.md) | IA | al retomar |
 | 08 | [Reproducibilidad](08_REPRODUCIBILITY.md) | equipo | antes de publicar |
 | 09 | [Glosario](09_GLOSSARY.md) | humanos | cuando un término no cuadre |
@@ -99,6 +99,20 @@ sin corregir al
 23/44
 corregido.
 
+## Defensa, balón parado y contexto
+<!-- h2_23 -->
+
+- **Presión (ADR-54).** Contra la liga del mismo torneo, sobreviven
+  6 de 135 contrastes (24 sin la
+  corrección), en 3 pares: América: Fernando Ortiz vs Santiago Solari; Cruz Azul: Juan Reynoso vs Martin Anselmi; Cruz Azul: Juan Reynoso vs Nicolas Larcamon. `10_RESULTADOS.md` §28.
+- **Balón parado (ADR-55).** 0 de 84 contrastes
+  separan a una era de la liga (familia de casos: 2 de
+  96). La cabeza y la geometría del remate cambian el xG. §29.
+- **Contexto (ADR-56).** Cada era comparada con el ajuste de la liga a la
+  localía, el marcador, el momento y el rival: se separan
+  1 de 336 contrastes. §30.
+- **Casos (ADR-57).** Las eras del América y los técnicos con varios clubes. El ajuste al marcador mantiene su signo en 3 de 9. §31.
+
 ## Retirados
 
 | afirmación | motivo |
@@ -121,7 +135,7 @@ y las auto-transiciones se midieron con el volcado anterior y están
 
 ## Advertencia
 
-**Dieciocho bugs encontrados, todos silenciosos** (numerados hasta el #19; el
+**Veinte bugs encontrados, todos silenciosos** (numerados hasta el #21; el
 #13 se evitó). Ninguno lanzó una excepción; todos produjeron números plausibles
 pero incorrectos. El #14 fue un
 dato de entrada (las eras investigadas a mano) y el #19 una regla de diseño

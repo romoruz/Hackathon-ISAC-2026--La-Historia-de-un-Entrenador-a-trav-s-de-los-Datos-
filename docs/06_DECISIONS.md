@@ -1299,3 +1299,201 @@ habría movido como la liga (B3/B4, contraste débil).
 - La sincronía del escalón A2022→C2023 es de **18 de 18** clubes (`frac_mismo_sentido` = 1.00); `17_SECCION_H2H4.md` §6 decía 17 de 18 y 0.94.
 
 **Estado.** Aceptada.
+
+---
+
+<!-- h2_23 -->
+## ADR-54 · El bloque defensivo D1 se normaliza por la liga del mismo torneo
+
+**Fecha.** 2026-09-16. Preinscrita en `docs/preinscritos/ADR-54_BORRADOR.md`
+(commit 2af2ab2) con las adendas 1 (vista defensora, bug #20) y 2 (universo de
+partidos completos). Resultado: `reports/did_presion_v1.json`.
+
+**Decisión.** Cada era defendiendo (acciones reales del rival, marco del club)
+se compara con la liga sin **ningún** partido del club, en los mismos torneos y
+estandarizada por torneo × zona. Unidad y base salen de la vista defensora
+(`min_actions_defense = 1`). Cinco contrastes por par (E1 geografía ómnibus,
+E2 nivel en k ≥ 3, E3 pendiente, E4/E5 posesiones de una acción), bootstrap por
+partido con la base compartida en el club, B = 6000, familia en dos etapas con
+BH al 5%.
+
+**Resultado.** 27 pares · etapa 1: 135 contrastes · rechazan
+**6** con la corrección y 24 sin ella ·
+cambian de veredicto 20 · partidos excluidos por la
+adenda 2: 6.
+
+Sobreviven:
+- América · Fernando Ortiz vs Santiago Solari · E1
+- América · Fernando Ortiz vs Santiago Solari · E2
+- Cruz Azul · Juan Reynoso vs Martin Anselmi · E1
+- Cruz Azul · Juan Reynoso vs Martin Anselmi · E2
+- Cruz Azul · Juan Reynoso vs Nicolas Larcamon · E1
+- Cruz Azul · Juan Reynoso vs Nicolas Larcamon · E2
+
+| # | predicción | valor | |
+|---|---|---|---|
+| 1 | firma temporal de E2 entre 35% y 65% (crudo y DiD) | `{"crudo": [8, 8], "did": [3, 3]}` | ❌ |
+| 2 | Jardine-Ortiz E2: DiD mas negativo que el crudo | `{"did": -0.019565160510644025, "crudo": -0.004593706240646367}` | ✅ |
+| 3 | Cocca I-II E2: \|DiD - crudo\| < 0.5 pp | `{"diferencia": 0.01826493269431484}` | ❌ |
+| 4 | menos del 25% de la etapa 1 cambia de veredicto | `{"cambian": 20, "de": 135}` | ✅ |
+
+La predicción 2 quedó contaminada por el humo con la base vieja (adenda 1).
+La corrección pesó más de lo que suponía el diseño: sin ella rechazaban 24 contrastes y con ella 6.
+
+**Estado.** Aceptada. Antes de redactar frases de geografía, la orientación de
+las zonas se comprueba con `13_verificar_ejes.py`.
+
+---
+
+<!-- h2_23 -->
+## ADR-55 · Balón parado: la cadena para la prevención, la geometría para la supresión
+
+**Fecha.** 2026-09-16. Preinscrita en `docs/preinscritos/ADR-55_BORRADOR.md`
+(commit 9aa5524) con la adenda 1 (sensibilidades exploratorias, bug #21).
+Integra el proyecto previo de córners. Resultado: `reports/balon_parado_v2.json`.
+
+**Decisión.** Secuencias de córner, tiro libre indirecto y saque de banda
+construidas desde los eventos. C1 = P(remate | secuencia), C2 = E[xG | remate],
+con un modelo de balón parado ajustado una vez para la liga (distancia, ángulo,
+cabeza y geometría del freeze frame, fuera de pliegue por partido). Cada era se
+compara con la liga del mismo torneo; bootstrap por partido, B = 6000. Familias:
+ADR-52 (84 contrastes) y casos de ADR-57 (96).
+
+**Liga.** P(remate | secuencia): {"corner": 0.3960562621979945, "tiro_libre": 0.20872295882763434, "banda": 0.13963562237227672}. P(gol | secuencia):
+{"corner": 0.033380442829261725, "tiro_libre": 0.019678995115143056, "banda": 0.010744468509788933}. Exploratorio, remate en 10 s: {"corner": 0.33467931893128744, "tiro_libre": 0.1451500348918353, "banda": 0.0733426763494288};
+dentro de la fase del proveedor: {"corner": 0.3813177199003971, "tiro_libre": 0.1492672714584787, "banda": 0.03414447700343993}. Cadena en córners:
+P(remate) 0.1987, P(gol) 0.0170, E[T] 2.17.
+
+**Modelo.** 9850 remates y 775 goles · AUC base 0.744,
+con geometría 0.770, StatsBomb 0.775 · ΔAUC
++0.026 [+0.015, +0.038] · cabeza
+-0.444 [-0.525, -0.367] ·
+interacción cabeza × distancia -0.612.
+
+**Familias.** ADR-52: 0 de 84 rechazan.
+Casos: 2 de 96.
+- Querétaro · Benjamin Mora · C2_of: unidad 0.0574, liga 0.0858, diferencia -0.0284 [-0.0416, -0.0166] (q ADR-52 —, q casos 0.0160)
+- Santos Laguna · Ignacio Ambriz · C1_def: unidad 0.5340, liga 0.3850, diferencia +0.1490 [+0.0651, +0.2283] (q ADR-52 —, q casos 0.0160)
+
+| # | predicción | valor | |
+|---|---|---|---|
+| 1 | min_actions=2 descartaba >15% de las posesiones que inician con corner | `{"valor": 0.2436233932296924, "nota": "la sonda (adenda 2) ya mostro 19.8% sobre TODAS las posesiones From Corner"}` | ✅ |
+| 2 | P(S\|secuencia de corner) de la liga en [0.18, 0.30] | `{"valor": 0.3960562621979945}` | ❌ |
+| 3 | beta_cabeza < 0 con IC95 que excluye 0 | `{"valor": [-0.444396318177287, -0.5249958967635829, -0.3666297705077236]}` | ✅ |
+| 4 | delta AUC > 0 con IC95 que excluye 0 | `{"valor": [0.026024277970319032, 0.015043075453450318, 0.03771389993089076]}` | ✅ |
+| 5 | \|cadena - producto\| / cadena < 0.25 (posesion) | `{"valor": 0.7843854513677296}` | ❌ |
+| 6 | a lo sumo 10 de 84 rechazan | `{"valor": [0, 84]}` | ✅ |
+| 7 | goal_open medio de corner < juego abierto | `{"valor": [0.6617221245303774, 0.7763747660210579]}` | ✅ |
+
+De la P(remate | secuencia de córner) de 0.396, 0.335 ocurre en los primeros 10 s (85%). P(gol) por secuencia 0.0334; producto de las dos capas 0.0302; cadena 0.0170. P(remate) por posesión: empírica 0.385, cadena 0.199. La cadena de primer orden subestima el peligro del balón parado (rechazo de Markov, `03_METHODS.md` §7.1); su versión quedó descriptiva desde la preinscripción.
+
+**Estado.** Aceptada.
+
+---
+
+<!-- h2_23 -->
+## ADR-56 · Contexto: cuánto ajusta el entrenador más allá de lo que ajusta la liga
+
+**Fecha.** 2026-09-16. Preinscrita en `docs/preinscritos/ADR-56_BORRADOR.md`
+con la adenda 1 (B = 16,000). Resultado: `reports/contexto_v1.json`.
+
+**Decisión.** θ = [M_era(A) − M_era(B)] − [M_liga(A) − M_liga(B)] desde la
+perspectiva del club (el marcador del rival se invierte), para localía,
+marcador, momento (minuto 60) y rival (tercio por diferencia de xG sin el
+partido propio). Métricas M1–M4. Bootstrap por partido, que conserva la
+dependencia dentro del partido; B = 16,000.
+
+**Lo que ajusta la liga** (A y B de cada contexto):
+
+| contexto | métrica | A | B |
+|---|---|---|---|
+| localia | acciones/posesión (ataque) | local: 5.703 | visitante: 5.361 |
+| localia | P(remate) (ataque) | local: 12.5% | visitante: 10.5% |
+| localia | π de presión (defensa) | local: 22.0% | visitante: 21.0% |
+| localia | P(remate) concedido | local: 10.5% | visitante: 12.5% |
+| marcador | acciones/posesión (ataque) | perdiendo: 5.864 | ganando: 5.053 |
+| marcador | P(remate) (ataque) | perdiendo: 12.6% | ganando: 10.7% |
+| marcador | π de presión (defensa) | perdiendo: 23.1% | ganando: 20.0% |
+| marcador | P(remate) concedido | perdiendo: 10.7% | ganando: 12.6% |
+| momento | acciones/posesión (ataque) | min>=60: 5.223 | min<60: 5.699 |
+| momento | P(remate) (ataque) | min>=60: 12.6% | min<60: 10.9% |
+| momento | π de presión (defensa) | min>=60: 21.4% | min<60: 21.5% |
+| momento | P(remate) concedido | min>=60: 12.6% | min<60: 10.9% |
+| rival | acciones/posesión (ataque) | fuerte: 5.302 | debil: 5.767 |
+| rival | P(remate) (ataque) | fuerte: 10.5% | debil: 12.4% |
+| rival | π de presión (defensa) | fuerte: 20.7% | debil: 21.9% |
+| rival | P(remate) concedido | fuerte: 12.5% | debil: 10.7% |
+| marcador_60 | acciones/posesión (ataque) | perdiendo: 5.753 | ganando: 4.771 |
+| marcador_60 | P(remate) (ataque) | perdiendo: 13.6% | ganando: 11.0% |
+| marcador_60 | π de presión (defensa) | perdiendo: 23.4% | ganando: 19.8% |
+| marcador_60 | P(remate) concedido | perdiendo: 11.0% | ganando: 13.6% |
+
+**Eras que se separan de ese ajuste.** ADR-52:
+1 de 336. Casos: 0 de
+384.
+- Atlético San Luis · Guillermo Abascal · localia|M2: θ -0.0474 [-0.0697, -0.0232] (q ADR-52 0.0420, q casos —)
+
+| # | predicción | valor | |
+|---|---|---|---|
+| 1 | liga: M1 perdiendo > ganando | `{"valor": [5.863596962657328, 5.053058637083994]}` | ✅ |
+| 2 | liga: presion (M3) del que defiende perdiendo > ganando | `{"valor": [0.23097400642312324, 0.19990499392907266]}` | ✅ |
+| 3 | liga: M2 local > visitante | `{"valor": [0.12537128487344426, 0.10477313484167342]}` | ✅ |
+| 4 | liga: M2 min>=60 > min<60 | `{"valor": [0.12605541473647408, 0.10926124975944501]}` | ✅ |
+| 5 | a lo sumo 20 de 336 rechazan (ADR-52) | `{"valor": [1, 336]}` | ✅ |
+| 6 | entre los rechazos, el contexto mas frecuente es el marcador | `{"valor": {"localia": 1, "marcador": 0, "momento": 0, "rival": 0}}` | ❌ |
+
+**Estado.** Aceptada. Un contraste sin rechazo se redacta con su intervalo:
+"no detectamos un ajuste distinto al de la liga mayor a…".
+
+---
+
+<!-- h2_23 -->
+## ADR-57 · Casos del informe: el América y los entrenadores con varios clubes
+
+**Fecha.** 2026-09-16. Preinscrita en `docs/preinscritos/ADR-57_BORRADOR.md`.
+
+**Decisión.** Casos = las eras del América más los entrenadores con al menos
+dos eras analizables en clubes distintos. Es un criterio estructural,
+recalculado por los scripts; coincidió con la tabla preinscrita
+(diferencias: {}).
+
+| entrenador | clubes |
+|---|---|
+| Andre Jardine | América, Atlético San Luis |
+| Fernando Ortiz | América, Monterrey |
+| Santiago Solari | América |
+| Benat San Jose | Atlas, Mazatlán |
+| Benjamin Mora | Atlas, Querétaro |
+| Domenec Torrent | Atlético San Luis, Monterrey |
+| Nicolas Larcamon | Cruz Azul, León, Puebla |
+| Veljko Paunovic | Guadalajara, Tigres UANL |
+| Victor Manuel Vucetich | Mazatlán, Monterrey |
+| Eduardo Fentanes | Necaxa, Santos Laguna |
+| Ignacio Ambriz | Santos Laguna, Toluca |
+| Miguel Herrera | Tigres UANL, Tijuana |
+
+La familia de casos se reporta aparte de la de ADR-52, en balón parado y en
+contexto. Lo que viaja en E[T] y en balón parado es **descriptivo**, porque
+esos puntos se vieron antes de preinscribir.
+
+**Predicción 1** (al menos 6 de los 9 técnicos de varios clubes mantienen el
+signo del ajuste al marcador en M1): **3 de 9** →
+❌.
+
+| entrenador | signo por club | mismo signo |
+|---|---|---|
+| Benat San Jose | + / − | no |
+| Benjamin Mora | + / + | sí |
+| Domenec Torrent | + / − | no |
+| Eduardo Fentanes | + / − | no |
+| Ignacio Ambriz | + / − | no |
+| Miguel Herrera | − / + | no |
+| Nicolas Larcamon | − / − / + | no |
+| Veljko Paunovic | + / + | sí |
+| Victor Manuel Vucetich | − / − | sí |
+
+*Corrección:* `36_contexto.py` imprimió este conteo sobre 11 técnicos
+(incluía a Jardine y a Ortiz), cuando el texto preinscrito dice nueve. El
+veredicto no cambia. El ajuste al marcador **no viaja** con el entrenador en la mayoría de los casos.
+
+**Estado.** Aceptada.

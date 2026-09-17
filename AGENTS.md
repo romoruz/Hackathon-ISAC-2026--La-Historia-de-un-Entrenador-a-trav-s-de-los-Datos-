@@ -13,7 +13,7 @@
 > **En este dominio los errores no lanzan excepciones: producen números
 > plausibles y equivocados.**
 
-**Dieciocho bugs encontrados. Dieciocho silenciosos. Cero excepciones.** Uno más (#13) se
+**Veinte bugs encontrados. Veinte silenciosos. Cero excepciones.** Uno más (#13) se
 evitó porque se diagnosticó el esquema antes de estimar.
 
 Consecuencia operativa, sin matices:
@@ -197,7 +197,7 @@ validación externa contra xG/OBV; fechas reales del API; los 18 equipos; Fase 8
 > Entiendo que:
 > - Fases 0–3 y el bloque defensivo D1 están validados sobre América **y** Cruz
 >   Azul; el entregable es `reporte.html`.
-> - Los dieciocho bugs del proyecto fueron **silenciosos**, y el #13 se evitó
+> - Los veinte bugs del proyecto fueron **silenciosos**, y el #13 se evitó
 >   diagnosticando el esquema antes de estimar.
 > - Markov de primer orden fue **rechazado** por sobredispersión; ADR-21 explica
 >   por qué se mantiene igual.
