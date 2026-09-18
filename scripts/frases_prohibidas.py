@@ -1,4 +1,4 @@
-"""Lista de frases prohibidas de ADR-59 §3, como expresiones regulares.
+"""Lista de frases prohibidas de ADR-59 §3 (y adenda 2 §8), como expresiones regulares.
 
 La usan tres sitios: `12_reporte_html.py` (aborta si su salida contiene una),
 `tests/test_frases_prohibidas.py` y la guía LaTeX. Un solo lugar para la lista.
@@ -26,6 +26,10 @@ PROHIBIDAS: list[tuple[str, str]] = [
     (r"\bno hay efecto", "nulo mal redactado"),
     (r"\bsignificativ\w*", "prohibido en B y C; en A se dice 'difiere'"),
     (r"\bimpone\w*|\bimponer\b", "intención como hecho"),
+    # adenda 2 §8: las notas internas del roadmap no pasan a la página
+    (r"\bpesa\w* mas que\b", "comparación de pesos entre club y técnico (ADR-59 §8)"),
+    (r"\bdemuestra\w* que\b", "lenguaje de prueba fuera de nivel A"),
+    (r"\bsu idea\b", "rasgo fijo del técnico"),
 ]
 
 # "se adapta" solo vale dentro de "es compatible con ..." (nivel C)

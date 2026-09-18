@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Prueba de humo del informe (H7, ADR-59).
+"""Prueba de humo del informe (H7, ADR-59 y su adenda 2).
 
 1. Genera los siete JSON de `reports/` con datos SINTÉTICOS y la misma forma que
-   los reales (15_REPORTE_HTML §9), con los casos límite: torneo parcial con
-   percentil nulo, intervalos que cruzan el cero, predicciones que fallan, sin
-   parquet de transiciones.
+   los reales (15_REPORTE_HTML §9), para las cinco historias, con los casos
+   límite: torneo parcial con percentil nulo, intervalos que cruzan el cero,
+   contrastes que sí sobreviven en historias sin lectura preinscrita,
+   historias sin presión (fuera de los seis clubes de ADR-54), un técnico
+   homónimo que NO debe entrar a una historia, predicciones que fallan y
+   ningún parquet de transiciones.
 2. Corre `12_reporte_html.py` sobre ellos.
-3. Renderiza la página en un DOM real (jsdom) con `humo_reporte.js`.
-4. Repite sin `contexto_v1.json`: la sección 05 debe mostrar el comando que lo
-   genera, y el resto de la página debe pintarse igual.
+3. Renderiza la página en un DOM real (jsdom) con `humo_reporte.js`, recorre
+   las cinco historias y los dos modos.
+4. Repite sin `contexto_v1.json`: 2.6, 3.4 y el cierre deben mostrar el comando
+   que lo genera, y el resto de la página debe pintarse igual.
 
 No valida números: valida que la página se pinta y cumple el contrato.
 
@@ -27,20 +31,47 @@ from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent
-rng = random.Random(20260917)
-TORNEOS = ["A2021", "C2022", "A2022", "C2023", "A2023", "C2024", "A2024", "C2025", "A2025", "C2026"]
+rng = random.Random(20260918)
+T = ["A2021", "C2022", "A2022", "C2023", "A2023", "C2024", "A2024", "C2025", "A2025", "C2026"]
 ERAS = {  # (club, coach): torneos
-    ("América", "Andre Jardine"): TORNEOS[4:],
-    ("América", "Fernando Ortiz"): TORNEOS[1:4],
-    ("América", "Santiago Solari"): TORNEOS[:2],
-    ("Atlético San Luis", "Andre Jardine"): TORNEOS[1:4],
-    ("Monterrey", "Fernando Ortiz"): TORNEOS[4:7],
-    ("Atlas", "Diego Cocca I"): TORNEOS[:3],
-    ("Atlas", "Diego Cocca II"): TORNEOS[5:8],
+    ("América", "Santiago Solari"): T[0:2],
+    ("América", "Fernando Ortiz"): T[2:4],
+    ("América", "Andre Jardine"): T[4:10],
+    ("Atlético San Luis", "Andre Jardine"): T[1:4],
+    ("Atlético San Luis", "Gustavo Leal"): T[4:6],
+    ("Monterrey", "Fernando Ortiz"): T[4:7],
+    ("Monterrey", "Domenec Torrent"): T[7:9],
+    ("Atlas", "Diego Cocca I"): T[0:3],
+    ("Atlas", "Diego Cocca II"): T[5:8],
+    ("Puebla", "Nicolas Larcamon"): T[0:3],
+    ("León", "Ariel Holan"): T[2:4],
+    ("León", "Nicolas Larcamon"): T[4:6],
+    ("León", "Eduardo Berizzo"): T[6:8],
+    ("Cruz Azul", "Martin Anselmi"): T[6:8],
+    ("Cruz Azul", "Nicolas Larcamon"): T[8:10],
+    ("Toluca", "Ignacio Ambriz"): T[1:5],
+    ("Toluca", "Renato Paiva"): T[5:8],
+    ("Santos Laguna", "Eduardo Fentanes"): T[4:6],
+    ("Santos Laguna", "Ignacio Ambriz"): T[6:8],
+    ("Tigres UANL", "Miguel Herrera"): T[0:3],
+    ("Tigres UANL", "Veljko Paunovic"): T[3:5],
+    ("Tijuana", "Miguel Herrera"): T[3:6],
+    ("Tijuana", "Juan Carlos Osorio"): T[6:8],
+    # homónimo: NO debe entrar a la historia de Herrera (igualdad exacta)
+    ("Necaxa", "Hector Herrera"): T[2:4],
 }
+SLUG = {"América": "america", "Atlético San Luis": "atletico_san_luis", "Monterrey": "monterrey",
+        "Atlas": "atlas", "Puebla": "puebla", "León": "leon", "Cruz Azul": "cruz_azul",
+        "Toluca": "toluca", "Santos Laguna": "santos_laguna", "Tigres UANL": "tigres_uanl",
+        "Tijuana": "tijuana", "Necaxa": "necaxa"}
+PRES_CLUBES = ["america", "leon", "atlas", "atletico_san_luis", "monterrey", "cruz_azul"]
 VARIOS = ["Andre Jardine", "Fernando Ortiz", "Benat San Jose", "Benjamin Mora",
           "Domenec Torrent", "Nicolas Larcamon", "Veljko Paunovic",
           "Victor Manuel Vucetich", "Eduardo Fentanes", "Ignacio Ambriz", "Miguel Herrera"]
+CASOS = {"Andre Jardine": ["América", "Atlético San Luis"], "Fernando Ortiz": ["América", "Monterrey"],
+         "Santiago Solari": ["América"], "Nicolas Larcamon": ["Cruz Azul", "León", "Puebla"],
+         "Ignacio Ambriz": ["Santos Laguna", "Toluca"], "Miguel Herrera": ["Tigres UANL", "Tijuana"],
+         "Veljko Paunovic": ["Tigres UANL"], "Domenec Torrent": ["Monterrey"]}
 
 
 def ic(c, w):
@@ -48,36 +79,60 @@ def ic(c, w):
 
 
 def U(club, coach, **kw):
-    return {"club": club, "coach": coach, **kw}
+    return {"club": club, "coach": coach, "slug": SLUG[club],
+            "n_partidos": 17 * len(ERAS[(club, coach)]), **kw}
+
+
+def signo(club, coach):
+    """Perfil sintético: el de ADR-59 para las cuatro eras de §8; variado para el resto."""
+    return {("América", "Andre Jardine"): 1, ("Atlético San Luis", "Andre Jardine"): -1,
+            ("América", "Fernando Ortiz"): 1, ("Monterrey", "Fernando Ortiz"): 1,
+            ("Puebla", "Nicolas Larcamon"): -1, ("Tijuana", "Miguel Herrera"): -1,
+            ("Santos Laguna", "Ignacio Ambriz"): 0}.get((club, coach), 1)
 
 
 # ---------------------------------------------------------------- did_h4 ----
 def h4():
     uni = []
     for (club, coach), ts in ERAS.items():
-        c = {"Andre Jardine": .25 if club == "América" else -.10,
-             "Fernando Ortiz": .20 if club == "América" else .16}.get(coach, .05)
-        uni.append(U(club, coach, rel_E_T_vs_liga=c, rel_E_T_vs_liga_ic95=ic(c, .02),
-                     torneos=ts, serie_por_torneo={
-                         t: {"n_poss": rng.randrange(900, 1800),
-                             # un torneo POR DEBAJO de la liga: la frase cambia sola
-                             "rel_E_T": -0.02 if (coach == "Andre Jardine" and t == ts[1]) else c + rng.uniform(-.08, .08)}
-                         for t in ts}))
+        s = signo(club, coach)
+        c = {1: .2, -1: -.1, 0: .01}[s]
+        w = .02 if s else .03   # s = 0: el intervalo cruza el cero
+        uni.append({"club": club, "coach": coach, "indir": f"data/processed_api_{SLUG[club]}",
+                    "E_T": 5.6 * (1 + c), "E_T_base": 5.6, "replicas_validas": 4000,
+                    "rel_E_T_vs_liga": c, "rel_E_T_vs_liga_ic95": ic(c, w), "torneos": ts,
+                    "serie_por_torneo": {
+                        t: {"n_poss": rng.randrange(900, 1800),
+                            # un torneo POR DEBAJO de la liga: la frase cambia sola
+                            "rel_E_T": -0.02 if (coach == "Andre Jardine" and t == ts[1]) else c + rng.uniform(-.08, .08)}
+                        for t in ts}})
 
     def et(rel, w, q, r):
         return {"rel": rel, "ic95": ic(rel, w), "p": q / 2, "q": q, "rechaza_fdr": r}
 
+    def P(club, a, b, did, cru):
+        return {"club": club, "a": a, "b": b, "did": {"E_T": did}, "crudo": {"E_T": cru},
+                "cambia_signo_por_correccion": (did["rel"] > 0) != (cru["rel"] > 0)}
+
     pares = [
-        {"club": "América", "a": "Andre Jardine", "b": "Fernando Ortiz",
-         "did": {"E_T": et(.035, .034, .056, False)}, "crudo": {"E_T": et(.05, .03, .02, True)}},
-        {"club": "América", "a": "Andre Jardine", "b": "Santiago Solari",
-         "did": {"E_T": et(.176, .05, .001, True)}, "crudo": {"E_T": et(.31, .05, .001, True)}},
-        {"club": "América", "a": "Fernando Ortiz", "b": "Santiago Solari",
-         "did": {"E_T": et(.136, .05, .001, True)}, "crudo": {"E_T": et(.2, .05, .001, True)}},
-        {"club": "Atlas", "a": "Diego Cocca I", "b": "Diego Cocca II",
-         "did": {"E_T": et(.049, .045, .039, True)}, "crudo": {"E_T": et(-.07, .04, .002, True)}},
+        P("América", "Andre Jardine", "Fernando Ortiz", et(.035, .034, .056, False), et(.05, .03, .02, True)),
+        P("América", "Andre Jardine", "Santiago Solari", et(.176, .05, .001, True), et(.31, .05, .001, True)),
+        P("América", "Fernando Ortiz", "Santiago Solari", et(.136, .05, .001, True), et(.2, .05, .001, True)),
+        P("Atlas", "Diego Cocca I", "Diego Cocca II", et(.049, .045, .039, True), et(-.07, .04, .002, True)),
+        P("Atlético San Luis", "Andre Jardine", "Gustavo Leal", et(-.25, .04, .001, True), et(-.2, .04, .001, True)),
+        P("Monterrey", "Fernando Ortiz", "Domenec Torrent", et(.01, .03, .7, False), et(.05, .03, .1, False)),
+        P("León", "Ariel Holan", "Nicolas Larcamon", et(.109, .046, .001, True), et(.041, .04, .05, False)),
+        P("León", "Eduardo Berizzo", "Nicolas Larcamon", et(-.07, .038, .001, True), et(-.02, .04, .4, False)),
+        P("Cruz Azul", "Martin Anselmi", "Nicolas Larcamon", et(.218, .045, .001, True), et(.1, .04, .01, True)),
+        P("Toluca", "Ignacio Ambriz", "Renato Paiva", et(.02, .03, .5, False), et(.06, .03, .05, True)),
+        P("Santos Laguna", "Eduardo Fentanes", "Ignacio Ambriz", et(-.2, .04, .001, True), et(-.15, .04, .001, True)),
+        P("Tigres UANL", "Miguel Herrera", "Veljko Paunovic", et(.171, .045, .001, True), et(.1, .04, .01, True)),
+        P("Tijuana", "Juan Carlos Osorio", "Miguel Herrera", et(.369, .053, .001, True), et(.3, .05, .001, True)),
     ]
-    return {"parametros": {"torneos_orden": TORNEOS},
+    return {"parametros": {"torneos_orden": T},
+            "reglas_preinscritas": {"D53-1": "familia nueva: theta(E_T) de todos los pares intra-club, BH 5%",
+                                    "D53-3": "el crudo (mismo estimando, sin normalizar) es comparacion, no hallazgo",
+                                    "D53-7": "serie por torneo descriptiva"},
             "firma_temporal": {"did": {"posterior_mas_largo": 23, "de": 44},
                                "crudo": {"posterior_mas_largo": 37, "de": 47}},
             "n_pares": 60, "n_rechazados_did": 44, "n_rechazados_crudo": 47,
@@ -94,12 +149,24 @@ def pres():
          "contrastes": {"E2": c(-.02, .022, .38, False), "E4": c(.06, .07, .33, False)}},
         {"club": "América", "a": "Andre Jardine", "b": "Santiago Solari",
          "contrastes": {"E2": c(.033, .029, .30, False), "E4": c(.10, .07, .2, False)}},
-        # orden invertido a propósito: el generador debe voltear el signo
-        {"club": "América", "a": "Santiago Solari", "b": "Fernando Ortiz",
-         "contrastes": {"E2": c(-.052, .032, .041, True), "E4": c(-.04, .08, .5, False)}},
+        {"club": "América", "a": "Fernando Ortiz", "b": "Santiago Solari",
+         "contrastes": {"E2": c(.052, .032, .041, True), "E4": c(-.04, .08, .5, False)}},
+        {"club": "Atlético San Luis", "a": "Andre Jardine", "b": "Gustavo Leal",
+         "contrastes": {"E2": c(.005, .025, .8, False), "E4": c(-.02, .03, .6, False)}},
+        {"club": "León", "a": "Ariel Holan", "b": "Nicolas Larcamon",
+         "contrastes": {"E2": c(-.015, .041, .7, False), "E4": c(.01, .03, .7, False)}},
+        # sobrevive en una historia sin lectura preinscrita: la plantilla dice "difiere"
+        {"club": "Cruz Azul", "a": "Martin Anselmi", "b": "Nicolas Larcamon",
+         "contrastes": {"E2": c(-.077, .03, .011, True), "E4": c(.02, .02, .3, False)}},
+        {"club": "Monterrey", "a": "Fernando Ortiz", "b": "Domenec Torrent",
+         "contrastes": {"E2": c(.01, .03, .7, False), "E4": c(.01, .03, .7, False)}},
     ]
-    return {"n_rechaza_crudo": 24, "n_rechaza_did": 6, "n_cambian_veredicto": 20,
+    return {"parametros": {"clubes": PRES_CLUBES},
+            "reglas_preinscritas": {"D54-1": "familia nueva: E1-E5 de las parejas de ADR-52, BH 5%",
+                                    "D54-3": "magnitudes en pp con pi crudo; logit como sensibilidad"},
+            "n_rechaza_crudo": 24, "n_rechaza_did": 6, "n_cambian_veredicto": 20,
             "m_etapa1": 135, "pares": pares,
+            "unidades": [{"club": c_, "coach": co} for (c_, co) in ERAS if SLUG[c_] in PRES_CLUBES],
             "predicciones": [{"n": i, "texto": f"predicción sintética {i}", "cumple": i % 2 == 0}
                              for i in (1, 2, 3, 4)]}
 
@@ -108,11 +175,19 @@ def pres():
 def bp():
     zon = lambda: {k: {"n": rng.randrange(0, 130), "xg": rng.uniform(0, 11)}  # noqa: E731
                    for k in ("area_chica", "area_central", "area_lateral", "fuera_del_area")}
-    uni = [U("América", "Andre Jardine",
-             C1_of={"did": .003, "ic95": [-.041, .046], "rechaza": False, "rechaza_casos": False},
-             C1_def={"did": -.026, "ic95": [-.068, .018], "rechaza": False, "rechaza_casos": False},
-             descriptivos={"mapa_remates_of": zon(),
-                           "mapa_remates_def": {**zon(), "area_chica": {"n": 0, "xg": 0.0}}})]
+    uni = []
+    for (club, coach) in ERAS:
+        rech = (club, coach) == ("Toluca", "Ignacio Ambriz")
+        uni.append(U(club, coach,
+                     corners_por_partido_of=rng.uniform(4, 6), corners_por_partido_def=rng.uniform(4, 6),
+                     remates_of=rng.randrange(80, 250), remates_def=rng.randrange(80, 250),
+                     C1_of={"did": .07 if rech else .003, "ic95": [.03, .11] if rech else [-.041, .046],
+                            "q_casos": .01 if rech else .6, "rechaza_casos": rech,
+                            **({"q": .8, "rechaza": False} if club == "América" else {})},
+                     C1_def={"did": -.026, "ic95": [-.068, .018], "q_casos": .5, "rechaza_casos": False,
+                             **({"q": .8, "rechaza": False} if club == "América" else {})},
+                     descriptivos={"mapa_remates_of": zon(),
+                                   "mapa_remates_def": {**zon(), "area_chica": {"n": 0, "xg": 0.0}}}))
     return {"liga": {"P_S_secuencia": {"corner": .396, "tiro_libre": .209, "banda": .14},
                      "P_G_secuencia": {"corner": .033, "tiro_libre": .02, "banda": .011},
                      "goal_open_medio": {"corner": .66, "juego_abierto": .78}},
@@ -120,6 +195,8 @@ def bp():
                        "beta_base_estandarizado": {"dist_meta": -.58, "angulo": .54, "cabeza": -.44},
                        "beta_base_ic95": {"dist_meta": [-.7, -.46], "angulo": [.42, .66],
                                           "cabeza": [-.5, .02]}},
+            "reglas": {"D55-1": "C1 = P(S|secuencia), empirica", "D55-6": "comparacion contra la liga sin el club"},
+            "familia_casos": {"m": 96, "casos": CASOS},
             "unidades": uni,
             "predicciones": [{"n": i, "texto": f"bp {i}", "cumple": i != 2} for i in range(1, 8)]}
 
@@ -134,18 +211,23 @@ def ctx():
                     b: rng.uniform(5, 6) if m == "M1" else rng.uniform(.1, .23), "otro": 0.0}
                 for m in ("M1", "M2", "M3", "M4")} for c, (a, b) in CTX.items()}
     uni = []
-    for coach in ("Andre Jardine", "Fernando Ortiz", "Santiago Solari"):
-        con = {}
+    for (club, coach) in ERAS:
+        con, tasas = {}, {}
         for c in CTX:
             for m in ("M1", "M2", "M3", "M4"):
                 t = rng.uniform(-.03, .03) if m != "M1" else rng.uniform(-.4, .4)
                 w = abs(t) * (0.6 if (c, m) == ("marcador", "M4") else 1.4) + .005
+                # un contraste que sobrevive en una historia sin lectura preinscrita
+                r = (club, coach, c, m) == ("Tigres UANL", "Veljko Paunovic", "rival", "M2")
                 con[f"{c}|{m}"] = {"theta": t, "ic95": ic(t, w), "p": .3,
-                                   "q_casos": .5, "rechaza_casos": False}
-        uni.append(U("América", coach, contrastes=con))
+                                   "q_casos": .01 if r else .5, "rechaza_casos": r}
+        tasas["marcador|M1|perdiendo"], tasas["marcador|M1|ganando"] = rng.uniform(5, 7), rng.uniform(4, 6)
+        uni.append(U(club, coach, contrastes=con, tasas=tasas))
     viaja = {c: (i % 3 == 0) for i, c in enumerate(VARIOS)}
-    k = sum(v for c, v in viaja.items())
-    return {"liga": liga, "unidades": uni, "viaja_marcador_M1": viaja,
+    k = sum(viaja.values())
+    return {"liga": liga, "unidades": uni, "viaja_marcador_M1": viaja, "casos": CASOS,
+            "reglas": {"D56": "theta = ajuste de la unidad menos ajuste de la liga",
+                       "D56-bootstrap": "por partido", "D57-1": "casos", "D57-2": "familia casos separada, BH 5%"},
             "predicciones": [{"adr": 56, "n": i, "texto": f"ctx {i}", "valor": [1, 2],
                               "cumple": i != 6} for i in range(1, 7)] +
                             [{"adr": 57, "n": 1, "texto": "al menos 6 de 9", "valor": [k, len(viaja)],
@@ -172,10 +254,15 @@ def jug():
               "zonas": [round(v, 4) for v in
                         (lambda xs: [x / sum(xs) for x in xs])([rng.random() ** 3 for _ in range(20)])]}
              for k in range(7)]
-        C = {m: {"theta": .02, "ic95": [-.07, .1], "rechaza_casos": False} for m in ("M2", "FT")}
+        rech = (club, coach) == ("Puebla", "Nicolas Larcamon")
+        C = {"M2": {"theta": .02, "ic95": [-.07, .1], "q_casos": .6, "rechaza_casos": False},
+             "FT": {"theta": .12 if rech else .02, "ic95": [.05, .19] if rech else [-.07, .1],
+                    "q_casos": .02 if rech else .6, "rechaza_casos": rech}}
         uni.append(U(club, coach, A=A, B=B, C=C))
     return {"liga": {"Tactical": {"M2": {"perdiendo": [.0215, 448]},
                                   "FT": {"perdiendo": [.0868, 449]}}},
+            "reglas": {"D58-A": "nucleo y rotacion descriptivos", "D58-B": "roles descriptivos",
+                       "D58-C": "primer cambio tactico", "D58-familias": "casos, BH 5%"},
             "unidades": uni,
             "predicciones": [{"n": i, "texto": f"jug {i}", "cumple": True} for i in range(1, 5)]}
 
@@ -184,33 +271,35 @@ def jug():
 def met():
     uni = []
     for (club, coach), ts in ERAS.items():
-        s = 1 if club == "América" else -1
-        g = {k: {"dif": s * d, "ic95": [s * d - w, s * d + w]} for k, d, w in
-             (("npxg_favor", .3, .17), ("npxg_contra", -.32, .1), ("prog_pases", 3.7, 1.8),
-              ("obv_favor", .43, .25), ("field_tilt", .11, .03))}
+        s = signo(club, coach)
+
+        def M_(d, w, liga=1.15):
+            return {"era": liga + d, "liga": liga, "dif": d, "ic95": [d - w, d + w]}
+        g = {k: M_(s * d if s else d / 10, w) for k, d, w in
+             (("npxg_favor", .3, .17), ("prog_pases", 3.7, 1.8), ("obv_favor", .43, .25))}
+        g["npxg_contra"] = M_(-.32 if s >= 0 else .1, .1)
+        g["field_tilt"] = M_(s * .11 if s else .004, .03, liga=.5)
         if club == "Monterrey":
-            g["npxg_favor"] = {"dif": -.04, "ic95": [-.22, .15]}
-            g["field_tilt"] = {"dif": .038, "ic95": [-.008, .082]}
-            g["prog_pases"] = {"dif": 6.6, "ic95": [3.2, 10]}
-        if club == "Monterrey" or (club == "América" and coach == "Fernando Ortiz"):
-            h = g["npxg_contra"]
-            g["npxg_contra"] = {"dif": -abs(h["dif"]), "ic95": sorted([-abs(x) for x in h["ic95"]])}
+            g["npxg_favor"] = M_(-.04, .185)
+            g["field_tilt"] = M_(.038, .045, liga=.5)
         pt = {t: {"parcial": (t == ts[-1] and coach == "Andre Jardine" and club == "América"),
                   "field_tilt": {"percentil": rng.uniform(.8, 1)},
                   "npxg_favor": {"percentil": rng.uniform(0, 1)}} for t in ts}
-        # el último torneo de Jardine, PARCIAL: sin percentil
-        for t, v in pt.items():
+        for v in pt.values():   # el último torneo de Jardine, PARCIAL: sin percentil
             if v["parcial"]:
                 v["field_tilt"]["percentil"] = None
                 v["npxg_favor"]["percentil"] = None
         uni.append(U(club, coach, **{"global": g, "por_torneo": pt}))
-    return {"liga": {"media": {"npxg_favor": 1.149}}, "unidades": uni}
+    return {"liga": {"media": {"npxg_favor": 1.149}}, "parametros": {"torneos": T},
+            "reglas": {"D59P-1": "xG sin penales", "D59P-3": "pase progresivo", "D59P-5": "field tilt",
+                       "D59P-comparacion": "liga sin partidos del club", "D59P-incertidumbre": "bootstrap"},
+            "casos": {k: v for k, v in CASOS.items()}, "unidades": uni}
 
 
 def der():
     return {"por_torneo": [{"torneo": t, "torneo_orden": 4043 + i, "clubes": 18,
                             "acc_por_posesion_cruda_media": 7 + i * .15,
-                            "acc_por_posesion_cruda_sd_clubes": .7} for i, t in enumerate(TORNEOS)]}
+                            "acc_por_posesion_cruda_sd_clubes": .7} for i, t in enumerate(T)]}
 
 
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
@@ -227,7 +316,7 @@ def escribe_sinteticos(d: Path):
 
 def corre(gen: Path, rep: Path, out: Path) -> None:
     r = subprocess.run([sys.executable, str(gen), "--reports", str(rep),
-                        "--parquet", str(rep / "no_existe.parquet"), "--out", str(out)],
+                        "--datos", str(rep / "sin_datos"), "--out", str(out)],
                        capture_output=True, text=True)
     print(r.stdout.strip())
     if r.returncode:

@@ -14,6 +14,8 @@ from frases_prohibidas import revisa
     "lo que explica el dominio", "el mejor técnico", "su firma táctica", "el ADN del club",
     "no hay efecto", "una diferencia Significativa", "Jardine impone su estilo",
     "el equipo se adapta al rival",
+    # adenda 2 §8
+    "el club pesa más que el técnico", "esto demuestra que viaja", "su idea sí viaja",
 ])
 def test_la_lista_detecta(frase):
     assert revisa(frase), frase
@@ -22,6 +24,7 @@ def test_la_lista_detecta(frase):
 @pytest.mark.parametrize("frase", [
     "la firma temporal de la deriva baja", "es compatible con que el equipo se adapta al club",
     "no detectamos una diferencia mayor a 4.2 pp", "Bajo Jardine, el América tuvo posesiones más largas",
+    "ningún par demuestra equivalencia al 3%", "la idea de la sección",
 ])
 def test_la_lista_no_sobrerreacciona(frase):
     assert not revisa(frase), frase

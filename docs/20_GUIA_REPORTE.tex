@@ -1,4 +1,4 @@
-% 20_GUIA_REPORTE.tex — guía de lectura del informe H7 (ADR-59)
+% 20_GUIA_REPORTE.tex — guía de lectura del informe H7 (ADR-59 y adendas 1 y 2)
 % Compilar desde docs/:
 %   python ../scripts/12_reporte_html.py --out ../reporte.html --tex cifras_reporte.tex
 %   pdflatex 20_GUIA_REPORTE.tex && pdflatex 20_GUIA_REPORTE.tex
@@ -20,7 +20,7 @@
 \renewcommand{\contentsname}{Índice}
 \renewcommand{\tablename}{Tabla}
 \pagestyle{fancy}\fancyhf{}
-\fancyhead[L]{\small Guía de lectura · El América de Jardine}
+\fancyhead[L]{\small Guía de lectura · La historia de un entrenador}
 \fancyhead[R]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -42,9 +42,9 @@
 \newcommand{\fuente}[1]{{\small\ttfamily #1}}
 \newcommand{\bloque}[3]{\par\textbf{Qué muestra.} #1\par\textbf{Cómo se lee.} #2\par\textbf{Sustento.} #3\par}
 
-\title{\textbf{El América de Jardine}\\[0.3em]\large Guía de lectura del informe interactivo}
+\title{\textbf{La historia de un entrenador}\\[0.3em]\large Guía de lectura del informe interactivo}
 \author{dt-decoder · Hackathon 2026}
-\date{Acompaña a \texttt{reporte.html} (ADR-59 y su adenda 1)}
+\date{Acompaña a \texttt{reporte.html} (ADR-59 y sus adendas 1 y 2)}
 
 \begin{document}
 \maketitle
@@ -64,12 +64,28 @@ números que quedan escritos a mano son definiciones y umbrales fijados antes de
 %======================================================================
 \section{Cómo usar la página}
 
-La página es una crónica de diez secciones, en el orden de ADR-59 §4. La barra
-superior es un índice: cada botón lleva a una sección y el nombre de la sección
-activa aparece a su lado. Arriba de todo están las huellas de los insumos: el
-commit del código y, para cada JSON, la fecha de su corrida y el inicio de su
-sha256. Los JSON de \texttt{reports/} no se versionan; esa huella es la forma de
-saber con qué datos se generó la página.
+La página cuenta cinco historias (Jardine, Larcamón, Ambriz, Herrera y Ortiz)
+en tres actos (adenda 2 de ADR-59). El \textbf{acto 1} es común: cómo se lee
+una posesión y en qué confiar. El \textbf{acto 2} describe la era principal del
+técnico (la de más partidos) contra la liga del mismo torneo. El \textbf{acto 3}
+mira el club antes y después de él, y qué cambia cuando cambia de club. El
+\textbf{cierre} pone a prueba el método.
+
+La barra superior tiene tres controles: el selector de historia, el índice por
+actos y el interruptor \emph{sencilla / técnica}. En modo sencillo se ocultan
+los intervalos, el valor de $q$ y los plegables de método; la lectura de $q$ en
+palabras, el nivel de cada frase y el margen de cada nulo se ven siempre. La
+portada de cada historia trae cinco frases en ranuras fijas, cada una con un
+enlace a su sección.
+
+Cada sección de los actos 2 y 3 tiene cuatro capas: la frase con su color, la
+figura, una traducción ``en un partido'' y el plegable ``cómo lo medimos''. Si
+falta una capa, la página lo dice. En modo técnico, arriba de todo están las
+huellas de los insumos: el commit del código y, para cada JSON, la fecha de su
+corrida y el inicio de su sha256.
+
+Esta guía detalla la historia de Jardine, que abre la página. Las otras cuatro
+usan las mismas plantillas de redacción (sección~\ref{sec:adenda2}).
 
 Tres gestos bastan para leerla:
 \begin{itemize}
@@ -84,7 +100,8 @@ comando que lo genera. Si los datos cambian y una frase preinscrita deja de
 sostenerse, el generador se detiene con un mensaje y no escribe la página.
 
 \subsection{Los tres niveles de evidencia}
-Cada frase lleva una etiqueta y una sola.
+Cada frase lleva una etiqueta y una sola. En la página, la etiqueta tiene
+color: verde para A, ámbar para B, gris para C.
 
 \begin{tabularx}{\linewidth}{@{}lXX@{}}
 \toprule
@@ -195,7 +212,7 @@ como cota: ``si existe, es menor a $X$''.
 %======================================================================
 \section{Sección por sección}
 
-\subsection*{01 · Cómo leer este informe \hfill{\normalfont\small componente 5.6}}
+\subsection*{Acto 1 · El marco \hfill{\normalfont\small componente 5.6}}
 \bloque{El esquema de las tres preguntas y la serie de acciones por posesión de
 la liga, torneo a torneo, con una banda de $\pm$ una desviación estándar entre
 clubes.}
@@ -204,7 +221,7 @@ equipo. Es la razón de comparar contra la liga del mismo torneo.}
 {Sección~\ref{sec:deriva}. Fuente: \fuente{deriva\_proveedor › por\_torneo} y
 \fuente{did\_h4\_v1 › firma\_temporal}. El bloque plegable resume la cadena.}
 
-\subsection*{02 · El América de Jardine con el balón \hfill{\normalfont\small 5.1 ofensiva}}
+\subsection*{2.1, 2.3 y 3.1 · Con el balón y el club antes y después \hfill{\normalfont\small 5.1 ofensiva}}
 \bloque{Duración de la posesión contra la liga (\nivel{B} \cifraPosJ{}
 \cifraPosJic), contra las otras eras del club (\nivel{A} Solari \cifraSolJ{}
 \cifraSolJic, $q=$ \cifraSolJq; nulo contra Ortiz \cifraOrtJ{} \cifraOrtJic,
@@ -229,7 +246,7 @@ redacta como nulo con cota \cifraOrtJmargen.}
 \end{itemize}
 Fuentes: \fuente{did\_h4\_v1}, \fuente{metricas\_v1 › global}.}
 
-\subsection*{03 · Sin el balón \hfill{\normalfont\small 5.1 defensiva}}
+\subsection*{2.4 · Sin el balón \hfill{\normalfont\small 5.1 defensiva}}
 \bloque{npxG concedido contra la liga (\nivel{B}) y el nivel de presión entre las
 tres eras del América (\nivel{A}), con E4 como sustituto declarado de las
 transiciones.}
@@ -243,7 +260,7 @@ E4 = posesiones rivales de una sola acción en juego abierto. Toda cifra de
 presión es \emph{por acción}, no por posesión: los dos estimandos pueden
 diferir en signo. Fuente: \fuente{did\_presion\_v1 › pares}.}
 
-\subsection*{04 · ¿Se sostiene en el tiempo? \hfill{\normalfont\small 5.2 consistencia}}
+\subsection*{2.5 · ¿La misma idea torneo tras torneo? \hfill{\normalfont\small 5.2 consistencia}}
 \bloque{La posesión relativa torneo a torneo y los percentiles de field tilt y
 npxG a favor. El selector cambia la métrica.}
 {En la vista de posesión, la línea punteada es la liga del torneo. En las
@@ -254,7 +271,7 @@ medias de los demás equipos. Nivel \nivel{C}: la serie por torneo no trae
 intervalo (adenda 1). Fuentes: \fuente{did\_h4\_v1 › serie\_por\_torneo},
 \fuente{metricas\_v1 › por\_torneo}.}
 
-\subsection*{05 · ¿Ajusta al contexto? \hfill{\normalfont\small 5.2 variabilidad}}
+\subsection*{2.6 · ¿Ajusta al contexto? \hfill{\normalfont\small 5.2 variabilidad}}
 \bloque{Lo que ajusta la liga entera en cuatro contextos (localía, marcador,
 minuto 60, rival) y el bosque de $\theta$ de cada era del América.}
 {Cada punto es cuánto más (o menos) ajusta la era que la liga. Aro: el
@@ -269,7 +286,7 @@ P(remate) a favor, M3 = presión del que defiende, M4 = P(remate) concedido.
 La familia de casos (ADR-57) se corrige por separado. La tabla de la liga es
 \nivel{C} porque el JSON no trae su intervalo. Fuente: \fuente{contexto\_v1}.}
 
-\subsection*{06 · El plantel \hfill{\normalfont\small 5.3}}
+\subsection*{2.8 · Jugadores y minutos \hfill{\normalfont\small 5.3}}
 \bloque{Rotación (continuidad del once y N80), los cinco jugadores con más
 minutos y lo que pasa tras el primer cambio.}
 {Cada anillo es un torneo y marca el percentil de la era en la liga; la marca
@@ -290,7 +307,7 @@ jugador dibuja su mapa de zonas.}
 Fuente: \fuente{jugadores\_v1}. Los jugadores aparecen por identificador; el
 JSON no trae nombres.}
 
-\subsection*{07 · Balón parado \hfill{\normalfont\small 5.4}}
+\subsection*{2.7 · Balón parado \hfill{\normalfont\small 5.4}}
 \bloque{El embudo de la liga (córner, tiro libre indirecto, saque de banda), lo
 que pesa en el xG de un remate, el contraste del América en córners y las zonas
 de remate a favor y en contra.}
@@ -306,7 +323,7 @@ geometría del remate mejora el AUC en \cifraDauc{} (IC por bootstrap por
 partido con predicciones fijas). El JSON no trae el intercepto ni las escalas,
 así que no se dibuja una curva en metros. Fuente: \fuente{balon\_parado\_v2}.}
 
-\subsection*{08 · ¿Qué es de Jardine y qué del América? \hfill{\normalfont\small diferenciador}}
+\subsection*{3.4 · ¿Qué viaja con él y qué se queda en el club? \hfill{\normalfont\small diferenciador}}
 \bloque{Una tabla-figura con cuatro eras (Jardine y Ortiz, en el América y fuera)
 y la lista de técnicos con varios clubes.}
 {Cada celda da el valor y una barra con su intervalo y la línea del cero. La
@@ -319,7 +336,7 @@ el club; con dos técnicos no hay regla general. Fuentes: \fuente{did\_h4\_v1},
 \fuente{metricas\_v1}, \fuente{jugadores\_v1}, \fuente{contexto\_v1 ›
 viaja\_marcador\_M1}.}
 
-\subsection*{09 · ¿El método distingue de verdad? \hfill{\normalfont\small credibilidad}}
+\subsection*{Cierre · ¿El método distingue de verdad? \hfill{\normalfont\small credibilidad}}
 \bloque{Conteos crudos contra corregidos, el marcador de predicciones
 preinscritas (\cifraMarcador) y el anexo de errores silenciosos.}
 {Punto lleno: la predicción se cumplió; aro: falló. Tocar cada punto muestra su
@@ -329,7 +346,12 @@ su bloque de predicciones en el JSON; la página las recalcula con los cuatro
 criterios de 06\_DECISIONS. El anexo de errores queda pendiente hasta tener su
 fuente.}
 
-\subsection*{10 · Framework y límites \hfill{\normalfont\small 5.6}}
+\subsection*{Pendientes declarados}
+2.2 (progresión) y, en el acto 1, dónde vive una posesión viva y la curva de
+supervivencia llegan con ADR-61. 3.2 (plantel contra uso) y 3.3 (mapa de
+estilos) llegan con ADR-60. La página los muestra como pendientes, sin cifras.
+
+\subsection*{Cierre · Framework y límites \hfill{\normalfont\small 5.6}}
 Lo que el marco no captura: la distribución de longitudes no es la de una
 cadena de Markov; no hay tiempo en segundos, así que las transiciones van por
 sustituto; no hay datos posicionales 360; hay competiciones fuera de los datos;
@@ -354,6 +376,27 @@ rendimiento ni intención.
   después de ver los datos y así se declara.
 \item El anexo de errores queda pendiente hasta tener el catálogo.
 \item La página muestra $q$ con su lectura en palabras y nunca $p$.
+\end{enumerate}
+
+%======================================================================
+\section{Adenda 2 de ADR-59}\label{sec:adenda2}
+\begin{enumerate}
+\item Tres actos y cinco historias en lugar de diez secciones fijas. El elenco
+  se eligió después de ver el barrido exploratorio de eras; ninguna distancia
+  del barrido entra a la página hasta ADR-60.
+\item Las eras de una historia se buscan por igualdad exacta del nombre del
+  técnico. La era principal es la de más partidos.
+\item Las lecturas preinscritas de ADR-59 valen solo para Jardine y conservan
+  sus guardas. Las otras historias usan plantillas fijas: \nivel{A} ``difiere''
+  o nulo con margen, \nivel{B} ``por encima / por debajo de la liga'' o ``no se
+  separa de la liga'', \nivel{C} conteos y rangos. Ninguna frase se elige por
+  su resultado.
+\item Presión: solo en los seis clubes de ADR-54. Una historia sin eras en ellos
+  lo declara.
+\item Cuatro capas por sección; la capa ``en un partido'' repite cifras de la
+  capa 1 en unidades de un partido y no es una jugada real.
+\item Portada con cinco ranuras fijas; interruptor sencilla / técnica.
+\item Frases prohibidas nuevas: ``pesa más que'', ``demuestra que'', ``su idea''.
 \end{enumerate}
 
 \end{document}

@@ -16,7 +16,7 @@ def test_B_sin_intervalo_no_se_construye():
 def test_un_nivel_por_frase(tmp_path):
     humo.escribe_sinteticos(tmp_path)
     datos, _, _ = modelo_desde(tmp_path)
-    for s in datos["secciones"]:
+    for _, s in gen.todas_las_secciones(datos):
         for b in s.get("bloques", []):
             if b["tipo"] == "frase":
                 assert b["nivel"] in ("A", "B", "C")
@@ -40,8 +40,9 @@ def test_seccion_sin_insumo_declara_comando(tmp_path):
     humo.escribe_sinteticos(tmp_path)
     (tmp_path / "balon_parado_v2.json").unlink()
     datos, _, _ = modelo_desde(tmp_path)
-    s7 = next(s for s in datos["secciones"] if s["id"] == "s7")
-    assert s7["falta"]["comando"].startswith("python scripts/35_")
+    for h in datos["historias"]:
+        s27 = next(s for s in h["acto2"] if s["id"] == "a2-7")
+        assert s27["falta"]["comando"].startswith("python scripts/35_"), h["id"]
 
 
 @pytest.mark.skipif(not hay_reales(), reason="sin reports/")

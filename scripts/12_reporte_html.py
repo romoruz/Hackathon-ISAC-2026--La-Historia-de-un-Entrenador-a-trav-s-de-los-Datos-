@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-12_reporte_html.py — el informe final (H7), reescrito para ADR-59.
+12_reporte_html.py — el informe final (H7), en tres actos y cinco historias.
 
 QUÉ PRODUCE
 -----------
@@ -9,18 +9,23 @@ dibujadas por JavaScript, sin CDN ni fuentes remotas. Se abre con doble clic.
 
 CÓMO ESTÁ HECHO
 ---------------
-1. `recolecta()` lee los siete JSON de `reports/` (y, si existe, el parquet de
-   transiciones del América para el mapa de zonas).
-2. `Modelo` guarda cada cifra con su fuente (JSON › ruta) y cada frase con su
-   nivel de evidencia (A probado, B medido, C descriptivo). Una frase lleva un
-   solo nivel; una frase B sin intervalo no se puede construir.
-3. La prosa se escribe aquí, en Python, con plantillas. El JavaScript solo
-   pinta: secciones, figuras e interacción. Así el texto se revisa sin navegador.
-4. Antes de escribir, la salida entera pasa por `frases_prohibidas.revisa()`.
-   Si aparece una frase de ADR-59 §3, el script termina con error.
+1. `recolecta()` lee los siete JSON de `reports/`.
+2. `historias()` arma las cinco historias de ADR-59 adenda 2 §2: las eras de
+   cada técnico (igualdad EXACTA sobre `coach`) y su era principal (la de más
+   partidos). Si existe, lee el parquet de transiciones de la era principal
+   para el mapa de zonas.
+3. `Modelo` guarda cada cifra con su fuente (JSON › ruta) y cada frase con su
+   nivel (A probado, B medido, C descriptivo) y su capa (1 frase, 2 figura,
+   3 en un partido, 4 cómo lo medimos). Todos los modelos escriben en un
+   mismo registro de cifras.
+4. La prosa se escribe aquí, con plantillas fijas que valen para las cinco
+   historias (adenda 2 §3). Las lecturas preinscritas de ADR-59 solo valen
+   para Jardine y conservan sus guardas: si se rompen, no se escribe nada.
+5. Antes de escribir, la salida entera pasa por `frases_prohibidas.revisa()`.
 
-La estructura es la de ADR-59 §4 (diez secciones) con los ajustes de nivel de
-`docs/preinscritos/ADR-59_ADENDA_1.md`.
+Estructura: ADR-59 §4 reordenada por `docs/preinscritos/ADR-59_ADENDA_2.md`
+(portada, acto 1 común, actos 2 y 3 por historia, cierre común). No lee
+`reports/barrido/` (adenda 2 §2).
 
 Uso:
     python scripts/12_reporte_html.py
@@ -55,12 +60,51 @@ FUENTES = {
     "met":  ("metricas_v1.json",      "python scripts/40_panel_55.py"),
     "der":  ("deriva_proveedor.json", "script de deriva del proveedor (ver 06_DECISIONS)"),
 }
-PARQUET_AMERICA = "data/processed_api_america/transitions.parquet"
 
-CLUB = "América"
+# Las cinco historias (adenda 2 §2). El orden es el del selector.
+HISTORIAS = [
+    ("jardine", "Andre Jardine"),
+    ("larcamon", "Nicolas Larcamon"),
+    ("ambriz", "Ignacio Ambriz"),
+    ("herrera", "Miguel Herrera"),
+    ("ortiz", "Fernando Ortiz"),
+]
+JARDINE = "jardine"
+CLUB_J = "América"
 FOCO = "Andre Jardine"
 ERAS_CLUB = ["Andre Jardine", "Fernando Ortiz", "Santiago Solari"]
 FUERA = [("Atlético San Luis", "Andre Jardine"), ("Monterrey", "Fernando Ortiz")]
+
+# Nombres para mostrar. Las claves son los valores del JSON y NO se tocan.
+NOMBRE = {
+    "Andre Jardine": "André Jardine", "Nicolas Larcamon": "Nicolás Larcamón",
+    "Domenec Torrent": "Domènec Torrent", "Benat San Jose": "Beñat San José",
+    "Benjamin Mora": "Benjamín Mora", "Martin Anselmi": "Martín Anselmi",
+    "Martin Demichelis": "Martín Demichelis", "Sebastian Abreu": "Sebastián Abreu",
+    "Victor Manuel Vucetich": "Víctor Manuel Vucetich",
+}
+APELLIDO = {"Benat San Jose": "San José", "Diego Cocca I": "Cocca I",
+            "Diego Cocca II": "Cocca II", "Juan Carlos Osorio": "Osorio",
+            "Victor Manuel Vucetich": "Vucetich", "Antonio Mohamed": "Mohamed"}
+SIN_ARTICULO = {"Tigres UANL"}
+
+POS = {
+    "Goalkeeper": "portero", "Right Back": "lateral derecho", "Left Back": "lateral izquierdo",
+    "Right Wing Back": "carrilero derecho", "Left Wing Back": "carrilero izquierdo",
+    "Center Back": "central", "Right Center Back": "central por derecha",
+    "Left Center Back": "central por izquierda",
+    "Center Defensive Midfield": "contención", "Right Defensive Midfield": "contención por derecha",
+    "Left Defensive Midfield": "contención por izquierda",
+    "Center Midfield": "medio centro", "Right Center Midfield": "interior derecho",
+    "Left Center Midfield": "interior izquierdo", "Right Midfield": "volante derecho",
+    "Left Midfield": "volante izquierdo", "Center Attacking Midfield": "mediapunta",
+    "Right Attacking Midfield": "mediapunta por derecha",
+    "Left Attacking Midfield": "mediapunta por izquierda",
+    "Right Wing": "extremo derecho", "Left Wing": "extremo izquierdo",
+    "Center Forward": "centro delantero", "Right Center Forward": "delantero por derecha",
+    "Left Center Forward": "delantero por izquierda", "Striker": "delantero",
+    "Secondary Striker": "segundo delantero",
+}
 
 # Reglas numéricas del informe. Son reglas, no resultados: cada una con su origen.
 REGLAS = {
@@ -103,9 +147,26 @@ def f_q(q):
     return f"{q:.3f}"
 
 
+def m_pct(x):
+    return f"{x * 100:.1f}%"
+
+
+def m_pp(x):
+    return f"{x * 100:.1f} pp"
+
+
+def m_num(x, dec=2):
+    return f"{x:.{dec}f}"
+
+
 def margen(ic):
     """Extremo del IC más lejano al cero (ADR-59 §3)."""
     return max(abs(ic[0]), abs(ic[1]))
+
+
+def direccion(ic):
+    """+1 si el IC está por encima del cero, −1 si por debajo, 0 si lo cruza."""
+    return 1 if ic[0] > 0 else -1 if ic[1] < 0 else 0
 
 
 def fuerza(q):
@@ -124,8 +185,32 @@ def esc(s: str) -> str:
     return html.escape(str(s), quote=True)
 
 
+def nom(c: str) -> str:
+    return NOMBRE.get(c, c)
+
+
+def ape(c: str) -> str:
+    return APELLIDO.get(c) or nom(c).split()[-1]
+
+
+def del_(club: str) -> str:
+    return ("de " if club in SIN_ARTICULO else "del ") + club
+
+
+def el_(club: str) -> str:
+    return club if club in SIN_ARTICULO else "el " + club
+
+
+def en_(club: str) -> str:
+    return "en " + el_(club)
+
+
+def pos(p: str) -> str:
+    return POS.get(p, p)
+
+
 # ---------------------------------------------------------------------------
-# el modelo: cifras con fuente y frases con nivel
+# el modelo: cifras con fuente y frases con nivel y capa
 # ---------------------------------------------------------------------------
 class FaltaInsumo(Exception):
     def __init__(self, clave):
@@ -144,9 +229,11 @@ def exige(cond: bool, msg: str):
 class Modelo:
     NIVELES = ("A", "B", "C")
 
-    def __init__(self, J: dict):
+    def __init__(self, J: dict, registro: list | None = None, *, exporta=True, hid="comun"):
         self.J = J
-        self.cifras: list[dict] = []
+        self.cifras: list[dict] = registro if registro is not None else []
+        self.exporta = exporta   # solo Jardine y el acto 1 exportan macros LaTeX
+        self.hid = hid
 
     def need(self, *claves):
         for k in claves:
@@ -157,34 +244,58 @@ class Modelo:
     def c(self, texto: str, fuente: str, clave: str = "") -> str:
         """Una cifra en el texto. Siempre con fuente; el tooltip la muestra.
         `clave` la exporta como macro \\cifra<clave> para la guía LaTeX."""
-        self.cifras.append({"t": texto, "f": fuente, "k": clave})
+        self.cifras.append({"t": texto, "f": fuente, "k": clave if self.exporta else "",
+                            "h": self.hid})
         return (f'<span class="cf" data-f="{esc(fuente)}" '
                 f'data-tip="<b>fuente</b>{esc(esc(fuente))}">{esc(texto)}</span>')
+
+    def cita(self, texto: str, fuente: str) -> str:
+        """Texto largo copiado del JSON (una regla, una lista). Cuenta como cifra."""
+        self.cifras.append({"t": texto, "f": fuente, "k": "", "h": self.hid})
+        return (f'<span class="cf cita" data-f="{esc(fuente)}" '
+                f'data-tip="<b>fuente</b>{esc(esc(fuente))}">{esc(texto)}</span>')
+
+    def ic(self, ic, fmt, fuente: str, clave: str = "", **kw) -> str:
+        """Intervalo: se oculta en el modo sencillo (adenda 2 §7)."""
+        return '<span class="tec"> ' + self.c(f_ic(ic, fmt, **kw), fuente, clave) + "</span>"
+
+    def q(self, q, fuente: str, clave: str = "") -> str:
+        """q con su lectura: el número es técnico, la lectura se ve siempre."""
+        return ('<span class="tec">, q = ' + self.c(f_q(q), fuente, clave) + "</span>"
+                f" ({fuerza(q)})")
 
     def regla(self, clave: str, texto: str) -> str:
         return self.c(texto, REGLAS[clave][1])
 
-    # -- frases ------------------------------------------------------------
-    def frase(self, nivel: str, html_: str, *, ic=True, nota_adenda: str = "") -> dict:
+    # -- bloques -----------------------------------------------------------
+    def frase(self, nivel: str, html_: str, *, ic=True, nota_adenda: str = "",
+              adenda: int = 1, portada: int | None = None) -> dict:
         assert nivel in self.NIVELES, nivel
         if nivel == "B" and not ic:
             raise ValueError("una frase B necesita intervalo (ADR-59 §2)")
-        return {"tipo": "frase", "nivel": nivel, "html": html_,
-                "adenda": nota_adenda}
+        return {"tipo": "frase", "capa": 1, "nivel": nivel, "html": html_,
+                "adenda": nota_adenda, "n_adenda": adenda, "portada": portada}
 
-    def nulo(self, html_: str) -> dict:
-        return {"tipo": "frase", "nivel": "A", "nulo": True, "html": html_,
-                "adenda": False}
+    def nulo(self, html_: str, portada: int | None = None) -> dict:
+        return {"tipo": "frase", "capa": 1, "nivel": "A", "nulo": True, "html": html_,
+                "adenda": False, "portada": portada}
 
     def nota(self, html_: str) -> dict:
         return {"tipo": "nota", "html": html_}
 
     def fig(self, fid: str, titulo: str, pie: str, datos) -> dict:
-        return {"tipo": "fig", "id": fid, "titulo": titulo, "pie": pie,
+        return {"tipo": "fig", "capa": 2, "id": fid, "titulo": titulo, "pie": pie,
                 "datos": datos}
 
-    def plegable(self, titulo: str, html_: str) -> dict:
-        return {"tipo": "plegable", "titulo": titulo, "html": html_}
+    def ejemplo(self, html_: str) -> dict:
+        return {"tipo": "ejemplo", "capa": 3, "html": html_}
+
+    def plegable(self, titulo: str, html_: str, capa: int | None = 4) -> dict:
+        return {"tipo": "plegable", "capa": capa, "titulo": titulo, "html": html_}
+
+    def hueco(self, capa: int, html_: str) -> dict:
+        """Una capa que falta, declarada con su motivo (adenda 2 §5)."""
+        return {"tipo": "hueco", "capa": capa, "html": html_}
 
 
 # ---------------------------------------------------------------------------
@@ -212,29 +323,32 @@ def _commit() -> dict:
         return {"hash": "sin git", "sucio": None}
 
 
-def _zonas_parquet(ruta: Path):
-    """Mapa 'dónde vive' del América de Jardine (se conserva de la versión
-    anterior: mapa_zonas). Devuelve None si no hay parquet o polars."""
+def _zonas_parquet(ruta: Path, club: str, coach: str):
+    """Mapa 'dónde vive' de una era. Filtra por equipo Y por técnico; si no
+    queda ninguna fila lo dice (no pinta una cancha vacía)."""
     if not ruta.exists():
-        return None
+        return {"falta": str(ruta)}
     try:
         import numpy as np
         import polars as pl
     except ImportError:
-        return None
-    t = pl.read_parquet(ruta)
-    t = t.filter((pl.col("team") == CLUB) & (pl.col("coach") == FOCO))
+        return {"falta": f"{ruta} (sin polars/numpy en este entorno)"}
+    t = pl.read_parquet(ruta, columns=["team", "coach", "from_state"])
+    t = t.filter((pl.col("team") == club) & (pl.col("coach") == coach))
+    if not t.height:
+        return {"falta": f"{ruta}: 0 filas con team = {club!r} y coach = {coach!r}"}
     m = np.zeros((NX, NY))
-    if t.height:
-        z = t["from_state"].to_numpy().astype(int) // 4
-        for a, b in zip(z // NY, z % NY):
-            if 0 <= a < NX and 0 <= b < NY:
-                m[a, b] += 1
+    z = t["from_state"].to_numpy().astype(int) // 4
+    for a, b in zip(z // NY, z % NY):
+        if 0 <= a < NX and 0 <= b < NY:
+            m[a, b] += 1
     tot = max(m.sum(), 1e-9)
     return {"m": (m / tot).round(5).tolist(), "n": int(m.sum())}
 
 
-def recolecta(reports: Path, parquet: Path) -> tuple[dict, dict]:
+def recolecta(reports: Path, datos: Path) -> tuple[dict, dict]:
+    """`datos` es la raíz bajo la que viven `data/processed_api_<club>/`. Si no
+    existe, los mapas de zonas se declaran como faltantes."""
     J, traza = {}, {"commit": _commit(), "insumos": [],
                     "generado": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}
     for k, (nombre, cmd) in FUENTES.items():
@@ -248,7 +362,8 @@ def recolecta(reports: Path, parquet: Path) -> tuple[dict, dict]:
             J[k] = None
             traza["insumos"].append({"archivo": nombre, "sha": None, "fecha": None,
                                      "comando": cmd})
-    J["zonas"] = _zonas_parquet(parquet)
+    J["_datos"] = Path(datos)
+    J["zonas"] = {}
     return J, traza
 
 
@@ -281,6 +396,15 @@ def unidad(J, k, club, coach):
     return hallados[0]
 
 
+def unidad_o_none(J, k, club, coach):
+    try:
+        return unidad(J, k, club, coach)
+    except KeyError as e:
+        if "unidades para" in str(e):
+            raise
+        return None
+
+
 def par(lista, club, a, b):
     hallados = [p for p in lista
                 if _del_club(p, club, f"pares[{p.get('a')} / {p.get('b')}]")
@@ -292,12 +416,103 @@ def par(lista, club, a, b):
     return hallados[0], (hallados[0]["a"] == a)
 
 
-def ape(n):
-    return n.split()[-1]
+def pares_de(lista, clubes) -> list[dict]:
+    return [p for p in lista
+            if any(_del_club(p, c, f"pares[{p.get('a')} / {p.get('b')}]") for c in clubes)]
 
 
 def torneos_orden(J):
-    return J["h4"]["parametros"]["torneos_orden"]
+    if J.get("h4"):
+        return J["h4"]["parametros"]["torneos_orden"]
+    if J.get("met"):
+        return J["met"]["parametros"]["torneos"]
+    return []
+
+
+def primer_torneo(J, club, coach) -> int:
+    """Índice del primer torneo de una era, para decir 'antes' o 'después'."""
+    orden = torneos_orden(J)
+    for k, campo in (("h4", "torneos"), ("met", "por_torneo"), ("jug", "A")):
+        if J.get(k):
+            u = unidad_o_none(J, k, club, coach)
+            if u is not None and u.get(campo):
+                ts = list(u[campo])
+                return min(orden.index(t) for t in ts if t in orden)
+    return 10 ** 6
+
+
+# ---------------------------------------------------------------------------
+# las cinco historias (adenda 2 §2)
+# ---------------------------------------------------------------------------
+def historia(J, hid: str, coach: str) -> dict:
+    """Eras del técnico por igualdad EXACTA de `coach`, ordenadas en el tiempo;
+    la principal es la de más partidos (empate: la más antigua)."""
+    fuente = next((k for k in ("met", "jug", "ctx", "bp") if J.get(k)), None)
+    eras = []
+    if fuente:
+        for u in J[fuente]["unidades"]:
+            if u.get("coach") == coach and u.get("club"):
+                eras.append({"club": u["club"], "n": u["n_partidos"], "slug": u.get("slug"),
+                             "t0": primer_torneo(J, u["club"], coach)})
+    eras.sort(key=lambda e: e["t0"])
+    principal = max(eras, key=lambda e: (e["n"], -e["t0"]))["club"] if eras else None
+    return {"id": hid, "coach": coach, "nombre": nom(coach), "eras": eras,
+            "principal": principal, "clubes": [e["club"] for e in eras],
+            "fuente_eras": fuente}
+
+
+def zonas_de(J, club, coach):
+    k = (club, coach)
+    if k not in J["zonas"]:
+        indir = None
+        if J.get("h4"):
+            u = unidad_o_none(J, "h4", club, coach)
+            indir = u.get("indir") if u else None
+        if indir is None:
+            slug = next((e["slug"] for e in (J.get("met") or {}).get("unidades", [])
+                         if e.get("club") == club and e.get("coach") == coach), None)
+            indir = f"data/processed_api_{slug}"
+        J["zonas"][k] = _zonas_parquet(J["_datos"] / indir / "transitions.parquet", club, coach)
+    return J["zonas"][k]
+
+
+# ---------------------------------------------------------------------------
+# plantillas de redacción (adenda 2 §3)
+# ---------------------------------------------------------------------------
+def cola_B(M: Modelo, ic, fuente: str, fmt_m) -> str:
+    s = direccion(ic)
+    if s > 0:
+        return " por encima de la liga"
+    if s < 0:
+        return " por debajo de la liga"
+    return ("; no se separa de la liga: si hay diferencia, es menor a " +
+            M.c(fmt_m(margen(ic)), fuente + ".ic95 (extremo más lejano al cero)"))
+
+
+def frase_contraste(M: Modelo, etiqueta: str, t, ic, q, rechaza, fmt, fmt_m, fuente,
+                    claves=("", "", "", ""), portada=None) -> dict:
+    """Nivel A: 'difiere' si sobrevive a BH; nulo con margen si no."""
+    k_t, k_ic, k_q, k_m = claves
+    base = (etiqueta + " " + M.c(fmt(t), fuente, k_t) +
+            M.ic(ic, fmt, fuente + ".ic95", k_ic) + M.q(q, fuente + ".q", k_q))
+    if rechaza:
+        return M.frase("A", base + ". Difiere.", portada=portada)
+    excluye = ic[0] * ic[1] > 0
+    return M.nulo(base + ". " + (
+        "El intervalo no toca el cero, pero la diferencia no sobrevive a la corrección; "
+        "si existe, es menor a " if excluye else "No detectamos una diferencia mayor a ") +
+        M.c(fmt_m(margen(ic)), fuente + ".ic95 (extremo más lejano al cero)", k_m) + ".",
+        portada=portada)
+
+
+def cuando(J, H, otro, club) -> str:
+    return "antes" if primer_torneo(J, club, otro) < primer_torneo(J, club, H["coach"]) else "después"
+
+
+def plegable_fuente(M: Modelo, titulo: str, partes: list[str], fuentes: list[str]) -> dict:
+    cuerpo = "".join(f"<p>{p}</p>" for p in partes)
+    cuerpo += "<p><b>Archivo y campo</b>: " + " · ".join(M.cita(f, f) for f in fuentes) + "</p>"
+    return M.plegable(titulo, cuerpo)
 
 
 # ---------------------------------------------------------------------------
@@ -311,7 +526,7 @@ def predicciones_adr53(h4) -> list[dict]:
     r_cru = ft["crudo"]["posterior_mas_largo"] / ft["crudo"]["de"]
     cocca, _ = par(h4["pares"], "Atlas", "Diego Cocca I", "Diego Cocca II")
     neg_sig = cocca["did"]["E_T"]["rel"] < 0 and cocca["did"]["E_T"]["rechaza_fdr"]
-    js, _ = par(h4["pares"], CLUB, "Andre Jardine", "Santiago Solari")
+    js, _ = par(h4["pares"], CLUB_J, "Andre Jardine", "Santiago Solari")
     d, c = js["did"]["E_T"]["rel"], js["crudo"]["E_T"]["rel"]
     return [
         {"adr": 53, "n": 1, "texto": "la firma temporal baja respecto al crudo",
@@ -346,21 +561,69 @@ def viajan_marcador(ctx) -> tuple[int, int, list]:
 
 
 # ---------------------------------------------------------------------------
-# secciones
+# ACTO 1 · el marco (común)
 # ---------------------------------------------------------------------------
-def sec01(M: Modelo):
-    M.need("h4", "der")
-    h4, der = M.J["h4"], M.J["der"]
-    ft = h4["firma_temporal"]
-    F = "did_h4_v1 › firma_temporal"
-    serie = sorted(der["por_torneo"], key=lambda r: r["torneo_orden"])
-    B = [
+def a1_posesion(M: Modelo):
+    return [
         M.frase("C", "Cada posesión se lee con tres preguntas: <b>dónde se juega</b>, "
                 "<b>cuánto dura</b> y <b>con qué probabilidad termina en remate o gol</b>. "
                 "Todo lo demás del informe son respuestas a esas tres preguntas."),
         M.fig("fig1", "Las tres preguntas de una posesión",
               "Esquema. La cancha está partida en 20 zonas; el equipo analizado ataca "
               "hacia la derecha.", None),
+        M.plegable("Definiciones", DEF_POSESION, capa=None),
+    ]
+
+
+def a1_cadena(M: Modelo):
+    return [
+        M.frase("C", "La posesión se mueve de estado en estado. Un estado es una zona de la "
+                "cancha junto con la fase del juego. Mientras la posesión sigue viva, pasa "
+                "entre estados <b>transitorios</b>; cuando termina en remate, gol o pérdida, "
+                "cae en un estado <b>absorbente</b> del que ya no sale."),
+        M.frase("C", "Los estados transitorios se comunican entre sí; cada final es una clase "
+                "cerrada. Por eso la distribución estacionaria de la cadena completa es "
+                "trivial (todo acaba en un final) y lo que interesa es dónde vive una "
+                "posesión <i>mientras sigue viva</i>: la distribución cuasi-estacionaria."),
+        M.fig("cadena", "Transitorios y absorbentes",
+              "Esquema: cuatro estados vivos que se pasan el balón y tres salidas sin "
+              "regreso.", None),
+        M.plegable("La matriz de la cadena", DEF_MARKOV, capa=None),
+    ]
+
+
+def a1_estimacion(M: Modelo):
+    return [
+        M.frase("C", "Una zona poco visitada da probabilidades ruidosas. Por eso cada "
+                "probabilidad se encoge hacia la de los rivales de la liga: con muchos "
+                "datos manda el equipo, con pocos manda la liga. Las magnitudes que se "
+                "publican van sin encoger; el encogimiento solo se usa para decidir si una "
+                "diferencia es real (ADR-22)."),
+        M.fig("estimacion", "Del conteo a la probabilidad",
+              "Esquema, sin datos: la barra de la izquierda es lo observado, la de en medio "
+              "la referencia de la liga, la de la derecha lo que se usa para el contraste.",
+              None),
+    ]
+
+
+def a1_confianza(M: Modelo):
+    return [
+        M.frase("C", "Cada frase del informe lleva un color. <b>Verde</b>: probado (un "
+                "contraste escrito antes de medir que sobrevive a la corrección por muchas "
+                "comparaciones). <b>Ámbar</b>: medido contra la liga del mismo torneo, con "
+                "intervalo. <b>Gris</b>: descriptivo. Una frase lleva un solo color."),
+        M.fig("semaforo", "El semáforo", "Un nulo va en verde: es un contraste probado que "
+              "no encontró diferencia, y dice hasta qué tamaño la descarta.", None),
+    ]
+
+
+def a1_deriva(M: Modelo):
+    M.need("h4", "der")
+    h4, der = M.J["h4"], M.J["der"]
+    ft = h4["firma_temporal"]
+    F = "did_h4_v1 › firma_temporal"
+    serie = sorted(der["por_torneo"], key=lambda r: r["torneo_orden"])
+    return [
         M.frase("C", "El proveedor de datos cambió su forma de registrar eventos entre "
                 "torneos: la cantidad de acciones por posesión se mueve para los " +
                 M.c(f'{serie[0]["clubes"]} clubes', "deriva_proveedor › por_torneo.clubes") +
@@ -376,189 +639,299 @@ def sec01(M: Modelo):
               "entre clubes. Fuente: deriva_proveedor › por_torneo.",
               [{"t": r["torneo"], "v": r["acc_por_posesion_cruda_media"],
                 "sd": r["acc_por_posesion_cruda_sd_clubes"]} for r in serie]),
-        M.plegable("Definiciones y la cadena de Markov", DEF_MARKOV),
     ]
-    return B
 
 
-def sec02(M: Modelo):
-    M.need("h4", "met")
-    J = M.J
-    u = unidad(J, "h4", CLUB, FOCO)
-    g = unidad(J, "met", CLUB, FOCO)["global"]
-    lig = J["met"]["liga"]["media"]
-    Fu = "did_h4_v1 › unidades[América, Jardine]"
-    Fm = "metricas_v1 › unidades[América, Jardine] › global"
-    pjs, _ = par(J["h4"]["pares"], CLUB, FOCO, "Santiago Solari")
-    pjo, _ = par(J["h4"]["pares"], CLUB, FOCO, "Fernando Ortiz")
-    es, eo = pjs["did"]["E_T"], pjo["did"]["E_T"]
-    Fp = "did_h4_v1 › pares[América, {}] › did.E_T"
-    ic_o_excluye = eo["ic95"][0] * eo["ic95"][1] > 0
-    exige(u["rel_E_T_vs_liga_ic95"][0] > 0, "§2: la posesión de Jardine ya no está por encima de la liga")
-    exige(es["rechaza_fdr"] and es["rel"] > 0, "§2: Jardine–Solari ya no difiere (A)")
-    exige(not eo["rechaza_fdr"], "§2: Jardine–Ortiz ahora sobrevive a BH; ya no es un nulo")
-    for k in ("prog_pases", "npxg_favor", "obv_favor", "field_tilt"):
-        exige(g[k]["ic95"][0] > 0, f"§2: {k} ya no está por encima de la liga")
+def a1_simular(M: Modelo):
+    return [
+        M.frase("C", "La simulación de posesiones (componente 06, opcional) no se incluye: "
+                "la cadena de Markov no reproduce la distribución de longitudes, y simular "
+                "desde ella arrastraría ese sesgo (ADR-21)."),
+        M.hueco(2, "La curva de supervivencia observada contra la de la cadena llega con "
+                "ADR-61 (fase F3)."),
+    ]
 
+
+# ---------------------------------------------------------------------------
+# ACTO 2 · cómo juega (por historia; era principal)
+# ---------------------------------------------------------------------------
+def s21(M: Modelo, H):
+    M.need("h4")
+    J, c, club = M.J, H["coach"], H["principal"]
+    u = unidad(J, "h4", club, c)
+    Fu = f"did_h4_v1 › unidades[{club}, {ape(c)}]"
+    r, ic = u["rel_E_T_vs_liga"], u["rel_E_T_vs_liga_ic95"]
+    if H["id"] == JARDINE:
+        exige(ic[0] > 0, "2.1: la posesión de Jardine ya no está por encima de la liga")
+    val = M.c(f_pct(r), Fu + " › rel_E_T_vs_liga", "PosJ")
+    ivl = M.ic(ic, f_pct, Fu + " › rel_E_T_vs_liga_ic95", "PosJic")
+    base = f"Bajo {ape(c)}, las posesiones {del_(club)} "
+    s = direccion(ic)
+    if s > 0:
+        txt = (base + "duraron " + val + " más que las de la liga en los mismos torneos" +
+               ivl + ", medido en acciones por posesión.")
+    elif s < 0:
+        txt = (base + "fueron más cortas que las de la liga en los mismos torneos: " + val +
+               ivl + ", medido en acciones por posesión.")
+    else:
+        txt = (base + "no se separan de la liga en los mismos torneos: " + val + ivl +
+               "; si hay diferencia, es menor a " +
+               M.c(m_pct(margen(ic)), Fu + " › rel_E_T_vs_liga_ic95 (extremo más lejano al cero)") + ".")
+    filas = []
+    for e in H["eras"]:
+        uu = unidad_o_none(J, "h4", e["club"], c)
+        if uu:
+            filas.append({"era": e["club"], "n": e["n"], "v": uu["rel_E_T_vs_liga"],
+                          "ic": uu["rel_E_T_vs_liga_ic95"], "principal": e["club"] == club})
     B = [
-        M.frase("B", "Bajo Jardine, las posesiones del América duraron " +
-                M.c(f_pct(u["rel_E_T_vs_liga"]), Fu + " › rel_E_T_vs_liga", "PosJ") +
-                " más que las de la liga en los mismos torneos " +
-                M.c(f_ic(u["rel_E_T_vs_liga_ic95"], f_pct), Fu + " › rel_E_T_vs_liga_ic95", "PosJic") +
-                ", medido en acciones por posesión."),
-        M.frase("A", "Difieren de las del América de Solari: " +
-                M.c(f_pct(es["rel"]), Fp.format("Jardine–Solari"), "SolJ") + " " +
-                M.c(f_ic(es["ic95"], f_pct), Fp.format("Jardine–Solari") + ".ic95", "SolJic") +
-                ", q = " + M.c(f_q(es["q"]), Fp.format("Jardine–Solari") + ".q", "SolJq") +
-                f" ({fuerza(es['q'])})."),
-        M.nulo("Contra el América de Ortiz: " +
-               M.c(f_pct(eo["rel"]), Fp.format("Jardine–Ortiz"), "OrtJ") + " " +
-               M.c(f_ic(eo["ic95"], f_pct), Fp.format("Jardine–Ortiz") + ".ic95", "OrtJic") +
-               ", q = " + M.c(f_q(eo["q"]), Fp.format("Jardine–Ortiz") + ".q", "OrtJq") + ". " +
-               ("El intervalo no toca el cero, pero la diferencia no sobrevive a la "
-                "corrección por comparaciones múltiples; si existe, es menor a "
-                if ic_o_excluye else "No detectamos una diferencia mayor a ") +
-               M.c(f"{margen(eo['ic95']) * 100:.1f}%", Fp.format("Jardine–Ortiz") +
-                   ".ic95 (extremo más lejano al cero)", "OrtJmargen") + "."),
-        M.fig("fig3", "Pares del América: corregido contra crudo",
-              "Duración de la posesión, diferencia relativa. Punto lleno: comparación "
-              "contra la liga del mismo torneo. Aro: la resta cruda, sin corregir la deriva.",
-              [{"par": f"{ape(p['a'])} – {ape(p['b'])}",
-                "did": p["did"]["E_T"]["rel"], "did_ic": p["did"]["E_T"]["ic95"],
-                "q": p["did"]["E_T"]["q"], "rech": p["did"]["E_T"]["rechaza_fdr"],
-                "cru": p["crudo"]["E_T"]["rel"], "cru_ic": p["crudo"]["E_T"]["ic95"],
-                "cru_rech": p["crudo"]["E_T"]["rechaza_fdr"]}
-               for p in J["h4"]["pares"] if p["club"] == CLUB]),
-        M.frase("B", "Progresión: " +
-                M.c(f_num(g["prog_pases"]["dif"], 1), Fm + " › prog_pases.dif") +
-                " pases progresivos por partido sobre la liga " +
-                M.c(f_ic(g["prog_pases"]["ic95"], f_num, dec=1), Fm + " › prog_pases.ic95") + "."),
-        M.frase("B", "Ocasiones: " +
-                M.c(f_num(g["npxg_favor"]["dif"]), Fm + " › npxg_favor.dif") +
-                " npxG por partido " +
-                M.c(f_ic(g["npxg_favor"]["ic95"], f_num), Fm + " › npxg_favor.ic95") +
-                " sobre una liga de " +
-                M.c(f_num(lig["npxg_favor"], 2, signo=False), "metricas_v1 › liga.media.npxg_favor") +
-                "; OBV a favor " +
-                M.c(f_num(g["obv_favor"]["dif"]), Fm + " › obv_favor.dif") + " " +
-                M.c(f_ic(g["obv_favor"]["ic95"], f_num), Fm + " › obv_favor.ic95") + "."),
-        M.frase("B", "Dominio territorial: field tilt " +
-                M.c(f_pp(g["field_tilt"]["dif"]), Fm + " › field_tilt.dif", "FtJ") + " " +
-                M.c(f_ic(g["field_tilt"]["ic95"], f_pp), Fm + " › field_tilt.ic95", "FtJic") +
-                " por encima de la liga."),
-        M.fig("fig2", "Dónde vive el América de Jardine",
-              "Porcentaje de las acciones de la cadena en cada zona. Orientación "
-              "verificada (10_RESULTADOS §33.4).",
-              J["zonas"] or {"falta": PARQUET_AMERICA}),
+        M.frase("B", txt, portada=1),
+        M.fig("eras_pos", f"Duración de la posesión contra la liga, en cada club de {ape(c)}",
+              "Diferencia relativa con su intervalo. La era principal va primero en el texto.",
+              filas),
+        M.fig("fig2", f"Dónde vive {el_(club)} de {ape(c)}",
+              "Porcentaje de las acciones de la cadena en cada zona.", zonas_de(J, club, c)),
+        M.ejemplo("Una posesión " + del_(club) + f" de {ape(c)} tuvo de media " +
+                  M.c(m_num(u["E_T"], 1), Fu + " › E_T") + " acciones; la de la liga en los "
+                  "mismos torneos, " + M.c(m_num(u["E_T_base"], 1), Fu + " › E_T_base") + "."),
+        plegable_fuente(M, "Cómo lo medimos", [
+            "Duración esperada de la posesión, <i>E[T] = N·1</i>, en acciones, con la matriz "
+            "fundamental de la cadena (primer acto).",
+            "Se compara contra la liga del mismo torneo, sin los partidos del club. El "
+            "intervalo sale de " + M.c(str(u["replicas_validas"]), Fu + " › replicas_validas") +
+            " réplicas bootstrap por partido. Nivel B: no pertenece a una familia corregida."],
+            [Fu + " › rel_E_T_vs_liga", Fu + " › rel_E_T_vs_liga_ic95"]),
     ]
     return B
 
 
-def sec03(M: Modelo):
-    M.need("met", "pres")
-    J = M.J
-    g = unidad(J, "met", CLUB, FOCO)["global"]
-    Fm = "metricas_v1 › unidades[América, Jardine] › global"
-    pp = J["pres"]["pares"]
-    jo, so = par(pp, CLUB, FOCO, "Fernando Ortiz")
-    js, ss = par(pp, CLUB, FOCO, "Santiago Solari")
-    os_, s3 = par(pp, CLUB, "Fernando Ortiz", "Santiago Solari")
-    Fp = "did_presion_v1 › pares[América, {}] › contrastes.{}.did"
+METRICAS_B = [  # clave, prefijo de la frase, título corto, unidad, fmt, fmt del margen
+    ("prog_pases", "Progresión: ", "pases progresivos", "pases progresivos por partido",
+     lambda v: f_num(v, 1), lambda v: m_num(v, 1)),
+    ("npxg_favor", "Ocasiones (la liga genera {liga} npxG sin penales por partido): ", "npxG a favor",
+     "npxG por partido", f_num, m_num),
+    ("obv_favor", "Valor de las acciones: ", "OBV a favor", "OBV a favor por partido", f_num, m_num),
+    ("field_tilt", "Dominio territorial: field tilt ", "field tilt", "", f_pp, m_pp),
+]
 
-    def e(p, k, a_primero):
-        d = p["contrastes"][k]["did"]
-        s = 1 if a_primero else -1
-        ic = sorted([s * d["ic95"][0], s * d["ic95"][1]])
-        return {"t": s * d["theta"], "ic": ic, "q": d["q"], "r": d["rechaza"]}
 
-    E2o, E2s, E2x = e(jo, "E2", so), e(js, "E2", ss), e(os_, "E2", s3)
-    E4o, E4s = e(jo, "E4", so), e(js, "E4", ss)
-    exige(g["npxg_contra"]["ic95"][1] < 0, "§3: el npxG concedido ya no está por debajo de la liga")
-    exige(not E2o["r"] and not E2s["r"], "§3: una presión de Jardine ahora sobrevive a BH")
-    exige(E2s["ic"][0] * E2s["ic"][1] > 0, "§3: el IC Jardine–Solari ya cruza el cero; cambia la redacción")
-    exige(E2x["r"] and E2x["t"] > 0, "§3: Ortiz–Solari ya no difiere (A)")
-    B = [
-        M.frase("B", "Bajo Jardine, el América concedió " +
-                M.c(f_num(g["npxg_contra"]["dif"]), Fm + " › npxg_contra.dif") +
-                " npxG por partido respecto a la liga " +
-                M.c(f_ic(g["npxg_contra"]["ic95"], f_num), Fm + " › npxg_contra.ic95") + "."),
-        M.nulo("Nivel de presión (por acción del rival, E2) contra Ortiz: " +
-               M.c(f_pp(E2o["t"]), Fp.format("Jardine–Ortiz", "E2"), "PresJO") + " " +
-               M.c(f_ic(E2o["ic"], f_pp), Fp.format("Jardine–Ortiz", "E2") + ".ic95", "PresJOic") +
-               ". No detectamos una diferencia de nivel de presión mayor a " +
-               M.c(f"{margen(E2o['ic']) * 100:.1f} pp",
-                   Fp.format("Jardine–Ortiz", "E2") + ".ic95 (extremo más lejano al cero)", "PresMargen") + "."),
-        M.nulo("Contra Solari: " +
-               M.c(f_pp(E2s["t"]), Fp.format("Jardine–Solari", "E2")) + " " +
-               M.c(f_ic(E2s["ic"], f_pp), Fp.format("Jardine–Solari", "E2") + ".ic95") +
-               ", q = " + M.c(f_q(E2s["q"]), Fp.format("Jardine–Solari", "E2") + ".q") +
-               ". El intervalo no toca el cero, pero no sobrevive a la corrección; "
-               "si existe, es menor a " +
-               M.c(f"{margen(E2s['ic']) * 100:.1f} pp",
-                   Fp.format("Jardine–Solari", "E2") + ".ic95 (extremo más lejano al cero)") + "."),
-        M.frase("A", "Lo que el método sí detecta en el mismo club: el América de Ortiz "
-                "presiona más que el de Solari, " +
-                M.c(f_pp(E2x["t"]), Fp.format("Ortiz–Solari", "E2")) + " " +
-                M.c(f_ic(E2x["ic"], f_pp), Fp.format("Ortiz–Solari", "E2") + ".ic95") +
-                ", q = " + M.c(f_q(E2x["q"]), Fp.format("Ortiz–Solari", "E2") + ".q") +
-                f" ({fuerza(E2x['q'])})."),
-        M.fig("fig3b", "Presión en el América, por pareja",
-              "E2: nivel de presión por acción del rival, en puntos porcentuales. "
-              "Punto lleno: sobrevive a la corrección; aro: no.",
-              [{"par": "Jardine – Ortiz", **E2o}, {"par": "Jardine – Solari", **E2s},
-               {"par": "Ortiz – Solari", **E2x}]),
-        M.frase("C", "Transiciones: sin tiempo en segundos, el informe usa un sustituto "
-                "declarado, E4 (posesiones rivales de una sola acción en juego abierto). "
-                "Jardine contra Ortiz " + M.c(f_pp(E4o["t"]), Fp.format("Jardine–Ortiz", "E4")) +
-                "; contra Solari " + M.c(f_pp(E4s["t"]), Fp.format("Jardine–Solari", "E4")) +
-                (". Ninguno sobrevive a la corrección." if not (E4o["r"] or E4s["r"])
-                 else ". Ver la tabla de pares para el veredicto de cada uno.")),
-        M.nota("Todas las cifras de presión de esta sección son <b>por acción del rival</b> "
-               "(E2), no por posesión (15_REPORTE_HTML §8)."),
+def s23(M: Modelo, H):
+    M.need("met")
+    J, c, club = M.J, H["coach"], H["principal"]
+    g = unidad(J, "met", club, c)["global"]
+    Fm = f"metricas_v1 › unidades[{club}, {ape(c)}] › global"
+    if H["id"] == JARDINE:
+        for k in ("prog_pases", "npxg_favor", "obv_favor", "field_tilt"):
+            exige(g[k]["ic95"][0] > 0, f"2.3: {k} ya no está por encima de la liga")
+    B, tarjetas = [], []
+    for k, etq, corto, uni, fmt, fm in METRICAS_B:
+        d = g[k]
+        claves = ("FtJ", "FtJic") if k == "field_tilt" else ("", "")
+        if "{liga}" in etq:
+            etq = etq.format(liga=M.c(f_num(J["met"]["liga"]["media"]["npxg_favor"], 2, signo=False),
+                                      "metricas_v1 › liga.media.npxg_favor"))
+        txt = (etq + M.c(fmt(d["dif"]), f"{Fm} › {k}.dif", claves[0]) +
+               (f" {uni}" if uni else "") + M.ic(d["ic95"], fmt, f"{Fm} › {k}.ic95", claves[1]) +
+               cola_B(M, d["ic95"], f"{Fm} › {k}", fm))
+        B.append(M.frase("B", txt + ".", portada=2 if k == "field_tilt" else None))
+        tarjetas.append({"k": k, "t": corto, "v": d["dif"], "ic": d["ic95"],
+                         "u": "pp" if k == "field_tilt" else "num"})
+    x, f = g["npxg_favor"], g["field_tilt"]
+    B += [
+        M.fig("tarjetas", "Con el balón, contra la liga del mismo torneo",
+              "Cada tarjeta: la diferencia con la liga y su intervalo. La línea vertical "
+              "es la liga.", tarjetas),
+        M.ejemplo(f"En un partido típico, {el_(club)} de {ape(c)} generó " +
+                  M.c(m_num(x["era"]), f"{Fm} › npxg_favor.era") + " npxG sin penales; la liga, " +
+                  M.c(m_num(x["liga"]), f"{Fm} › npxg_favor.liga") + ". Su parte de las acciones "
+                  "en el último tercio fue " + M.c(f"{f['era'] * 100:.0f}%", f"{Fm} › field_tilt.era") +
+                  ", contra " + M.c(f"{f['liga'] * 100:.0f}%", f"{Fm} › field_tilt.liga") +
+                  " de la liga."),
     ]
+    rg = J["met"].get("reglas", {})
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        M.cita(rg.get("D59P-1", "—"), "metricas_v1 › reglas.D59P-1"),
+        M.cita(rg.get("D59P-3", "—"), "metricas_v1 › reglas.D59P-3"),
+        M.cita(rg.get("D59P-5", "—"), "metricas_v1 › reglas.D59P-5"),
+        "Comparación: " + M.cita(rg.get("D59P-comparacion", "—"), "metricas_v1 › reglas.D59P-comparacion") +
+        ". Incertidumbre: " + M.cita(rg.get("D59P-incertidumbre", "—"), "metricas_v1 › reglas.D59P-incertidumbre") +
+        ". Nivel B."],
+        [f"{Fm} › <métrica>.dif", f"{Fm} › <métrica>.ic95"]))
     return B
 
 
-def sec04(M: Modelo):
+def s24(M: Modelo, H):
+    M.need("met")
+    J, c, club = M.J, H["coach"], H["principal"]
+    g = unidad(J, "met", club, c)["global"]
+    Fm = f"metricas_v1 › unidades[{club}, {ape(c)}] › global"
+    d = g["npxg_contra"]
+    if H["id"] == JARDINE:
+        exige(d["ic95"][1] < 0, "2.4: el npxG concedido ya no está por debajo de la liga")
+    B = [M.frase("B", f"Bajo {ape(c)}, {el_(club)} concedió " +
+                 M.c(f_num(d["dif"]), Fm + " › npxg_contra.dif") +
+                 " npxG por partido" +
+                 M.ic(d["ic95"], f_num, Fm + " › npxg_contra.ic95") +
+                 cola_B(M, d["ic95"], Fm + " › npxg_contra", m_num) + ".", portada=3)]
+    conc = []
+    for e in H["eras"]:
+        uu = unidad_o_none(J, "met", e["club"], c)
+        if uu:
+            conc.append({"era": e["club"], "n": e["n"], "v": uu["global"]["npxg_contra"]["dif"],
+                         "ic": uu["global"]["npxg_contra"]["ic95"], "principal": e["club"] == club})
+    figs = [M.fig("concedido", f"npxG concedido contra la liga, en cada club de {ape(c)}",
+                  "Por debajo del cero: concede menos que la liga.", conc)]
+
+    # presión (ADR-54): solo en los clubes que midió
+    pres = J.get("pres")
+    if pres is None:
+        B.append(M.hueco(1, "Presión: falta <b>did_presion_v1.json</b> (" +
+                         esc(FUENTES["pres"][1]) + ")."))
+    else:
+        medidos = set(pres["parametros"]["clubes"])
+        clubes = [e["club"] for e in H["eras"] if e["slug"] in medidos]
+        if not clubes:
+            B.append(M.hueco(1, "Presión: ADR-54 la midió en seis clubes (" +
+                             M.cita(", ".join(pres["parametros"]["clubes"]),
+                                    "did_presion_v1 › parametros.clubes") +
+                             f"); ninguna era de {ape(c)} está en ellos."))
+        else:
+            B += presion(M, H, pres, clubes, figs)
+    B += figs
+    B.append(M.ejemplo(f"En un partido típico, {el_(club)} de {ape(c)} concedió " +
+                       M.c(m_num(d["era"]), Fm + " › npxg_contra.era") +
+                       " npxG sin penales; la liga, " +
+                       M.c(m_num(d["liga"]), Fm + " › npxg_contra.liga") + "."))
+    partes = ["npxG concedido: la suma del xG sin penales del rival, contra la liga del mismo "
+              "torneo (nivel B)."]
+    if pres is not None:
+        rp = pres.get("reglas_preinscritas", {})
+        partes += ["Presión, E2: probabilidad de que una acción del rival se haga bajo "
+                   "presión, <b>por acción del rival</b>, no por posesión (15_REPORTE_HTML §8). "
+                   "Diferencia en diferencias entre dos eras del mismo club, cada una contra "
+                   "la liga del mismo torneo.",
+                   "Familia: " + M.cita(rp.get("D54-1", "—"), "did_presion_v1 › reglas_preinscritas.D54-1") +
+                   ". " + M.cita(rp.get("D54-3", "—"), "did_presion_v1 › reglas_preinscritas.D54-3") + "."]
+    B.append(plegable_fuente(M, "Cómo lo medimos", partes,
+                             [Fm + " › npxg_contra", "did_presion_v1 › pares[] › contrastes.E2.did"]))
+    return B
+
+
+def presion(M: Modelo, H, pres, clubes, figs) -> list:
+    c = H["coach"]
+    ps = pares_de(pres["pares"], clubes)
+    fr, ctrl, bosque_, e4 = [], [], [], []
+    guard = {}
+    for p in ps:
+        a, b, club = p["a"], p["b"], p["club"]
+        d = p["contrastes"]["E2"]["did"]
+        F = f"did_presion_v1 › pares[{club}, {ape(a)}–{ape(b)}] › contrastes.E2.did"
+        bosque_.append({"par": f"{ape(a)} – {ape(b)}", "club": club, "t": d["theta"],
+                        "ic": d["ic95"], "q": d["q"], "r": d["rechaza"]})
+        guard[(club, a, b)] = d
+        con = c in (a, b)
+        if con:
+            otro = b if a == c else a
+            claves = (("PresJO", "PresJOic", "", "PresMargen")
+                      if H["id"] == JARDINE and club == CLUB_J and otro == "Fernando Ortiz"
+                      else ("", "", "", ""))
+            etq = (f"Presión (E2, por acción del rival), {ape(a)} frente a {ape(b)} "
+                   f"{en_(club)} ({ape(otro)} llegó {cuando(M.J, H, otro, club)}):")
+            fr.append(frase_contraste(M, etq, d["theta"], d["ic95"], d["q"], d["rechaza"],
+                                      f_pp, m_pp, F, claves))
+            if "E4" in p["contrastes"]:
+                e4.append((f"{ape(a)} frente a {ape(b)}", p["contrastes"]["E4"]["did"],
+                           f"did_presion_v1 › pares[{club}, {ape(a)}–{ape(b)}] › contrastes.E4.did"))
+        elif d["rechaza"]:
+            ctrl.append(M.frase("A", f"Lo que el método sí detecta en el mismo club: {en_(club)}, "
+                              f"{ape(a)} frente a {ape(b)}, " +
+                              M.c(f_pp(d["theta"]), F) + M.ic(d["ic95"], f_pp, F + ".ic95") +
+                              M.q(d["q"], F + ".q") + ". Difiere."))
+    fr += ctrl
+    if H["id"] == JARDINE:
+        jo = guard.get((CLUB_J, FOCO, "Fernando Ortiz"))
+        js = guard.get((CLUB_J, FOCO, "Santiago Solari"))
+        ox = guard.get((CLUB_J, "Fernando Ortiz", "Santiago Solari"))
+        exige(jo is not None and js is not None and ox is not None,
+              "2.4: faltan pares de presión del América")
+        exige(not jo["rechaza"] and not js["rechaza"], "2.4: una presión de Jardine ahora sobrevive a BH")
+        exige(js["ic95"][0] * js["ic95"][1] > 0, "2.4: el IC Jardine–Solari ya cruza el cero; cambia la redacción")
+        exige(ox["rechaza"] and ox["theta"] > 0, "2.4: Ortiz–Solari ya no difiere (A)")
+    if e4:
+        sob = [t for t, d, _ in e4 if d["rechaza"]]
+        fr.append(M.frase("C", "Transiciones: sin tiempo en segundos, el informe usa un "
+                          "sustituto declarado, E4 (posesiones rivales de una sola acción en "
+                          "juego abierto). " + "; ".join(
+                              f"{t} " + M.c(f_pp(d["theta"]), F) for t, d, F in e4) +
+                          (". Ninguno sobrevive a la corrección." if not sob else
+                           ". Sobreviven a la corrección: " + ", ".join(sob) + ".")))
+    figs.append(M.fig("fig3b", "Presión en los clubes de la historia, por pareja",
+                      "E2: nivel de presión por acción del rival, en puntos porcentuales. "
+                      "Punto lleno: sobrevive a la corrección; aro: no.", bosque_))
+    return fr
+
+
+def s25(M: Modelo, H):
     M.need("h4", "met")
-    J = M.J
-    u = unidad(J, "h4", CLUB, FOCO)
-    m = unidad(J, "met", CLUB, FOCO)["por_torneo"]
+    J, c, club = M.J, H["coach"], H["principal"]
+    u = unidad(J, "h4", club, c)
+    m = unidad(J, "met", club, c)["por_torneo"]
     ts = [t for t in torneos_orden(J) if t in u["serie_por_torneo"]]
     serie = [{"t": t, "pos": u["serie_por_torneo"][t]["rel_E_T"],
               "n": u["serie_por_torneo"][t]["n_poss"],
               "ft": m[t]["field_tilt"]["percentil"] if t in m and not m[t]["parcial"] else None,
               "xg": m[t]["npxg_favor"]["percentil"] if t in m and not m[t]["parcial"] else None}
              for t in ts]
-    F = "did_h4_v1 › unidades[América, Jardine] › serie_por_torneo"
-    Fm = "metricas_v1 › unidades[América, Jardine] › por_torneo"
+    F = f"did_h4_v1 › unidades[{club}, {ape(c)}] › serie_por_torneo"
+    Fm = f"metricas_v1 › unidades[{club}, {ape(c)}] › por_torneo"
     pos_txt = ", ".join(M.c(f_pct(s["pos"]), f"{F}.{s['t']}.rel_E_T") for s in serie)
     n_sobre = sum(s["pos"] > 0 for s in serie)
+    n_bajo = sum(s["pos"] < 0 for s in serie)
     cierre = (". Todos por encima de la liga." if n_sobre == len(serie) else
+              ". Todos por debajo de la liga." if n_bajo == len(serie) else
               ". Por encima de la liga en " + M.c(f"{n_sobre} de {len(serie)}", F) + ".")
     ft = [s["ft"] for s in serie if s["ft"] is not None]
     comp = [s for s in serie if s["xg"] is not None]
-    exige(len(comp) >= 2, "§4: menos de dos torneos completos en metricas_v1")
-    xg = [s["xg"] for s in comp]
-    ult = comp[-1]
-    B = [
-        M.frase("C", f"Posesión sobre la liga en los {M.c(str(len(serie)), F)} torneos, "
-                "en orden: " + pos_txt + cierre,
-                nota_adenda="ADR-59 la marcaba B; la serie por torneo no trae intervalo."),
-        M.frase("C", "Field tilt entre el percentil " +
-                M.c(f"{min(ft):.2f}", Fm + " › field_tilt.percentil (mín)") + " y el " +
-                M.c(f"{max(ft):.2f}", Fm + " › field_tilt.percentil (máx)") +
-                " de la liga en los torneos completos."),
-        M.frase("C", "npxG a favor entre el percentil " +
-                M.c(f"{min(xg[:-1]):.2f}", Fm + " › npxg_favor.percentil (mín, sin el último)") +
-                " y el " + M.c(f"{max(xg[:-1]):.2f}", Fm + " › npxg_favor.percentil (máx)") +
-                " en los torneos anteriores, y " +
-                M.c(f"{ult['xg']:.2f}", f"{Fm}.{ult['t']}.npxg_favor.percentil") +
-                " en " + ult["t"] + ". Es la evolución observada; el informe no le "
-                "atribuye una causa."),
+    if H["id"] == JARDINE:
+        exige(len(comp) >= 2, "2.5: menos de dos torneos completos en metricas_v1")
+    B = [M.frase("C", f"Posesión sobre la liga en los {M.c(str(len(serie)), F)} torneos, "
+                 "en orden: " + pos_txt + cierre,
+                 nota_adenda="ADR-59 la marcaba B; la serie por torneo no trae intervalo.")]
+    if len(comp) >= 2:
+        xg = [s["xg"] for s in comp]
+        ult = comp[-1]
+        B += [
+            M.frase("C", "Field tilt entre el percentil " +
+                    M.c(f"{min(ft):.2f}", Fm + " › field_tilt.percentil (mín)") + " y el " +
+                    M.c(f"{max(ft):.2f}", Fm + " › field_tilt.percentil (máx)") +
+                    " de la liga en los torneos completos."),
+            M.frase("C", "npxG a favor entre el percentil " +
+                    M.c(f"{min(xg[:-1]):.2f}", Fm + " › npxg_favor.percentil (mín, sin el último)") +
+                    " y el " + M.c(f"{max(xg[:-1]):.2f}", Fm + " › npxg_favor.percentil (máx, sin el último)") +
+                    " en los torneos completos anteriores, y " +
+                    M.c(f"{ult['xg']:.2f}", f"{Fm}.{ult['t']}.npxg_favor.percentil") +
+                    " en " + ult["t"] + ". Es la evolución observada; el informe no le "
+                    "atribuye una causa."),
+        ]
+    else:
+        B.append(M.hueco(1, "Percentiles de field tilt y npxG: la era tiene menos de dos "
+                         "torneos completos en metricas_v1."))
+    hi = max(serie, key=lambda s: s["pos"])
+    lo = min(serie, key=lambda s: s["pos"])
+    B += [
         M.fig("fig4", "Torneo a torneo, contra la liga",
               "Cambia la métrica con el selector. La línea punteada es la liga del "
               "mismo torneo.", serie),
+        M.ejemplo(f"El torneo con las posesiones más largas respecto a la liga fue {hi['t']} (" +
+                  M.c(f_pct(hi["pos"]), f"{F}.{hi['t']}.rel_E_T") + f"); el más bajo, {lo['t']} (" +
+                  M.c(f_pct(lo["pos"]), f"{F}.{lo['t']}.rel_E_T") + ")."),
+        plegable_fuente(M, "Cómo lo medimos", [
+            "La serie por torneo repite la comparación de la duración, torneo por torneo. " +
+            M.cita(J["h4"]["reglas_preinscritas"].get("D53-7", "—"),
+                   "did_h4_v1 › reglas_preinscritas.D53-7") +
+            ": sin intervalo, nivel C (adenda 1).",
+            "Percentil: posición de la era entre los clubes de la liga en ese torneo; los "
+            "torneos parciales no llevan percentil."],
+            [F, Fm]),
     ]
     return B
 
@@ -573,130 +946,112 @@ MET = {"M1": ("acciones por posesión", "num"),
        "M4": ("P(remate) concedido", "pp")}
 
 
-def sec05(M: Modelo):
+def s26(M: Modelo, H):
     M.need("ctx")
     ctx = M.J["ctx"]
+    c, club = H["coach"], H["principal"]
     liga = []
-    for c, (a, b, nom) in CTX.items():
+    for cx, (a, b, nomb) in CTX.items():
         for mk, (mn, uni) in MET.items():
-            va, vb = ctx["liga"][c][mk][a], ctx["liga"][c][mk][b]
-            liga.append({"ctx": nom, "a": a, "b": b, "m": mn, "uni": uni,
+            va, vb = ctx["liga"][cx][mk][a], ctx["liga"][cx][mk][b]
+            liga.append({"ctx": nomb, "a": a, "b": b, "m": mn, "uni": uni,
                          "va": va, "vb": vb, "d": va - vb})
-    bosque = {}
-    for coach in ERAS_CLUB:
-        u = unidad(M.J, "ctx", CLUB, coach)
+    # las eras del club principal que están en la familia casos (ADR-57)
+    eras_club = [co for co, clubes in ctx["casos"].items() if club in clubes]
+    if c not in eras_club:
+        eras_club.insert(0, c)
+    eras_club.sort(key=lambda co: (co != c, primer_torneo(M.J, club, co)))
+    bosque_ = {}
+    for co in eras_club:
+        u = unidad(M.J, "ctx", club, co)
         filas = []
-        for c, (a, b, nom) in CTX.items():
+        for cx, (a, b, nomb) in CTX.items():
             for mk, (mn, uni) in MET.items():
-                d = u["contrastes"][f"{c}|{mk}"]
-                filas.append({"ctx": nom, "m": mk, "mn": mn, "uni": uni,
+                d = u["contrastes"][f"{cx}|{mk}"]
+                filas.append({"ctx": nomb, "m": mk, "mn": mn, "uni": uni,
                               "t": d["theta"], "ic": d["ic95"],
-                              "q": d["q_casos"], "r": d["rechaza_casos"]})
-        bosque[coach] = filas
-    fj = bosque[FOCO]
-    n_total = sum(len(v) for v in bosque.values())
-    n_rech = sum(f["r"] for v in bosque.values() for f in v)
-    excl = [f for f in fj if f["ic"][0] * f["ic"][1] > 0]
-    F = "contexto_v1 › unidades[América, *] › contrastes"
+                              "q": d.get("q_casos"), "r": bool(d.get("rechaza_casos"))})
+        bosque_[co] = filas
+    fj = bosque_[c]
+    n_total = sum(len(v) for v in bosque_.values())
+    n_rech = sum(f["r"] for v in bosque_.values() for f in v)
+    excl = [f for f in fj if f["ic"][0] * f["ic"][1] > 0 and not f["r"]]
+    F = f"contexto_v1 › unidades[{club}, *] › contrastes"
 
     def fx(f):
         return f_num(f["t"], 2) if f["uni"] == "num" else f_pp(f["t"])
 
-    exige(not any(f["r"] for f in fj), "§5: un contraste de Jardine ahora sobrevive a BH")
+    if H["id"] == JARDINE:
+        exige(not any(f["r"] for f in fj), "2.6: un contraste de Jardine ahora sobrevive a BH")
     excl_txt = "; ".join(
         f'{f["ctx"]} · {f["mn"]} ' +
-        M.c(fx(f), f"contexto_v1 › unidades[América, Jardine] › contrastes.{f['ctx']}|{f['m']}.theta")
+        M.c(fx(f), f"contexto_v1 › unidades[{club}, {ape(c)}] › contrastes.{f['ctx']}|{f['m']}.theta")
         for f in excl)
-    B = [
-        M.frase("C", "Lo que ajusta la liga entera: perdiendo contra ganando, en casa contra "
-                "fuera, antes y después del minuto 60, y ante rivales fuertes o débiles. "
-                "La tabla muestra los dos valores de cada contexto.", nota_adenda="ADR-59 la marcaba B; contexto_v1 › liga no trae intervalo."),
+    etiq = (f"{el_(club)[0].upper()}{el_(club)[1:]}")
+    B = [M.frase("C", "Lo que ajusta la liga entera: perdiendo contra ganando, en casa contra "
+                 "fuera, antes y después del minuto 60, y ante rivales fuertes o débiles. "
+                 "La tabla muestra los dos valores de cada contexto.",
+                 nota_adenda="ADR-59 la marcaba B; contexto_v1 › liga no trae intervalo.")]
+    if n_rech == 0:
+        B.append(M.nulo(f"{etiq} ajusta al contexto como la liga: " +
+                        M.c(f"{n_rech} de {n_total}", F + " › rechaza_casos "
+                            f"({len(bosque_)} eras × 16)", "CtxRech") +
+                        " contrastes sobreviven a la corrección. " +
+                        (f"Bajo {ape(c)}, {M.c(str(len(excl)), F + ' (IC que excluye el cero)')} " +
+                         ("intervalo excluye el cero antes de corregir y no sobrevive: "
+                          if len(excl) == 1 else
+                          "intervalos excluyen el cero antes de corregir y ninguno sobrevive: ") +
+                         excl_txt + "." if excl else "")))
+    else:
+        rech = [(co, f) for co, v in bosque_.items() for f in v if f["r"]]
+        B.append(M.frase("A", f"{en_(club)[0].upper()}{en_(club)[1:]}, " +
+                         M.c(f"{n_rech} de {n_total}", F + " › rechaza_casos") +
+                         " contrastes sobreviven a la corrección: " + "; ".join(
+                             f"{ape(co)}, {f['ctx']} · {f['mn']} " +
+                             M.c(fx(f), f"contexto_v1 › unidades[{club}, {ape(co)}] › contrastes.{f['ctx']}|{f['m']}.theta") +
+                             M.q(f["q"], f"contexto_v1 › unidades[{club}, {ape(co)}] › contrastes.{f['ctx']}|{f['m']}.q_casos")
+                             for co, f in rech) + ". Los demás no se distinguen del ajuste de la liga."))
+    u = unidad(M.J, "ctx", club, c)
+    ta = u.get("tasas", {})
+    B += [
         M.fig("tabla5", "Lo que ajusta la liga", "Fuente: contexto_v1 › liga. Sin intervalo en "
               "el JSON: se muestra como descriptivo (adenda 1).", liga),
-        M.nulo("El América ajusta al contexto como la liga: " +
-               M.c(f"{n_rech} de {n_total}", F + " › rechaza_casos (tres eras × 16)", "CtxRech") +
-               " contrastes sobreviven a la corrección. " +
-               (f"Bajo Jardine, {M.c(str(len(excl)), F + ' (IC que excluye el cero)')} "
-                "intervalos excluyen el cero antes de corregir y ninguno sobrevive: " +
-                excl_txt + "." if excl else "")),
         M.fig("fig5", "Bosque de θ: cuánto ajusta cada era más allá de la liga",
               "θ = ajuste de la era menos ajuste de la liga en el mismo contexto. "
-              "Aro: el intervalo excluye el cero antes de corregir, pero no sobrevive. "
-              "Cada nulo se lee por su extremo más lejano.", bosque),
+              "Aro: no sobrevive a la corrección. Cada nulo se lee por su extremo más lejano.",
+              bosque_),
     ]
+    if ta.get("marcador|M1|perdiendo") is not None and ta.get("marcador|M1|ganando") is not None:
+        Ft = f"contexto_v1 › unidades[{club}, {ape(c)}] › tasas"
+        B.append(M.ejemplo(f"Con {el_(club)} de {ape(c)} perdiendo, sus posesiones duraron " +
+                           M.c(m_num(ta["marcador|M1|perdiendo"]), Ft + "[marcador|M1|perdiendo]") +
+                           " acciones; ganando, " +
+                           M.c(m_num(ta["marcador|M1|ganando"]), Ft + "[marcador|M1|ganando]") + "."))
+    else:
+        B.append(M.hueco(3, "La era no trae tasas por marcador en contexto_v1."))
+    rg = ctx.get("reglas", {})
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        M.cita(rg.get("D56", "—"), "contexto_v1 › reglas.D56") + ".",
+        "Familia: " + M.cita(rg.get("D57-2", "—"), "contexto_v1 › reglas.D57-2") +
+        " (" + M.cita(rg.get("D57-1", "—"), "contexto_v1 › reglas.D57-1") + ").",
+        "Bootstrap: " + M.cita(rg.get("D56-bootstrap", "—"), "contexto_v1 › reglas.D56-bootstrap") + "."],
+        [F + "[<contexto>|<métrica>] › theta, ic95, q_casos, rechaza_casos"]))
     return B
 
 
-def sec06(M: Modelo):
-    M.need("jug")
-    jug = M.J["jug"]
-    u = unidad(M.J, "jug", CLUB, FOCO)
-    ts = [t for t in torneos_orden(M.J) if t in u["A"]]
-    A = [{"t": t, **{k: u["A"][t].get(k) for k in
-          ("percentil_continuidad", "percentil_n80", "n80", "continuidad", "parcial",
-           "jugadores_distintos")}} for t in ts]
-    completos = [a for a in A if not a["parcial"]]
-    lim_c, lim_n = REGLAS["cont_inferior"][0], REGLAS["n80_mediana"][0]
-    n_bajo = sum(a["percentil_continuidad"] <= lim_c for a in completos)
-    n_alto = sum(a["percentil_n80"] > lim_n for a in completos)
-    top = sorted(u["B"], key=lambda b: -b["minutos"])[:5]
-    C = u["C"]
-    tl = jug["liga"]["Tactical"]
-    Fa = "jugadores_v1 › unidades[América, Jardine] › A"
-    exige(not C["M2"]["rechaza_casos"] and not C["FT"]["rechaza_casos"],
-          "§6: el cambio tras el primer cambio ahora sobrevive a BH")
-    exige(C["M2"]["ic95"][0] < 0 < C["M2"]["ic95"][1] and C["FT"]["ic95"][0] < 0 < C["FT"]["ic95"][1],
-          "§6: un IC tras el primer cambio ya no cruza el cero; cambia la redacción")
-    Fc = "jugadores_v1 › unidades[América, Jardine] › C"
-    B = [
-        M.frase("C", "Rotación: la continuidad del once quedó en el " +
-                M.regla("cont_inferior", "15%") + " inferior de la liga en " +
-                M.c(f"{n_bajo} de {len(completos)}", Fa + " › percentil_continuidad", "RotJ") +
-                " torneos, y el número de jugadores que suman el 80% de los minutos (N80) "
-                "quedó por encima de la " + M.regla("n80_mediana", "mediana") +
-                " de la liga en " + M.c(f"{n_alto} de {len(completos)}", Fa + " › percentil_n80") +
-                ". Hay partidos fuera de estos datos (otras competiciones) que pueden "
-                "estar detrás de la rotación; no los medimos.", nota_adenda="El umbral del N80 (mediana) lo fija la adenda; ADR-58 no lo fijaba."),
-        M.fig("fig6", "Continuidad del once y N80, percentil en la liga",
-              "Cada anillo es un torneo. Continuidad baja = más cambios en el once.", A),
-        M.frase("C", "Roles: los cinco jugadores con más minutos, con su posición más "
-                "frecuente y dónde intervienen. Toca uno para ver su mapa."),
-        M.fig("roles", "Los cinco con más minutos", "Fuente: jugadores_v1 › B. Sin nombres: "
-              "el JSON solo trae el identificador del jugador.",
-              [{"id": b["player_id"], "pos": b["posicion_modal"], "min": b["minutos"],
-                "acc": b["acciones"],
-                "z": [b["zonas"][ix * NY:(ix + 1) * NY] for ix in range(NX)]} for b in top]),
-        M.nulo("Tras sus primeros cambios, el equipo no se movió de forma detectable: "
-               "remate " + M.c(f_pp(C["M2"]["theta"]), Fc + " › M2.theta") + " " +
-               M.c(f_ic(C["M2"]["ic95"], f_pp), Fc + " › M2.ic95") + "; field tilt " +
-               M.c(f_pp(C["FT"]["theta"]), Fc + " › FT.theta") + " " +
-               M.c(f_ic(C["FT"]["ic95"], f_pp), Fc + " › FT.ic95") +
-               ". No detectamos un cambio mayor a " +
-               M.c(f"{margen(C['M2']['ic95']) * 100:.1f} pp", Fc + " › M2.ic95 (extremo)") +
-               " en remate ni a " +
-               M.c(f"{margen(C['FT']['ic95']) * 100:.1f} pp", Fc + " › FT.ic95 (extremo)") +
-               " en field tilt."),
-        M.frase("C", "En la liga, tras el primer cambio cuando el equipo va perdiendo: "
-                "remate " + M.c(f_pp(tl["M2"]["perdiendo"][0]),
-                                "jugadores_v1 › liga.Tactical.M2.perdiendo[0]") +
-                " y field tilt " + M.c(f_pp(tl["FT"]["perdiendo"][0]),
-                                       "jugadores_v1 › liga.Tactical.FT.perdiendo[0]") + ".",
-                nota_adenda="ADR-59 la marcaba B; el JSON trae [delta, n], sin intervalo."),
-    ]
-    return B
-
-
-def sec07(M: Modelo):
+def s27(M: Modelo, H):
     M.need("bp")
     bp = M.J["bp"]
+    c, club = H["coach"], H["principal"]
     lg, mo = bp["liga"], bp["modelo"]
-    u = unidad(M.J, "bp", CLUB, FOCO)
+    u = unidad(M.J, "bp", club, c)
     Fl = "balon_parado_v2 › liga"
-    Fu = "balon_parado_v2 › unidades[América, Jardine]"
+    Fu = f"balon_parado_v2 › unidades[{club}, {ape(c)}]"
     of, de = u["C1_of"], u["C1_def"]
-    exige(not (of["rechaza"] or of["rechaza_casos"] or de["rechaza"] or de["rechaza_casos"]),
-          "§7: el América ahora se separa de la liga en córners")
-    exige(mo["delta_auc_ic95_percentil"][0] > 0, "§7: ΔAUC ya no excluye el cero")
+    if H["id"] == JARDINE:
+        exige(not (of.get("rechaza") or of["rechaza_casos"] or de.get("rechaza") or de["rechaza_casos"]),
+              "2.7: el América ahora se separa de la liga en córners")
+    exige(mo["delta_auc_ic95_percentil"][0] > 0, "2.7: ΔAUC ya no excluye el cero")
     tipos = [("corner", "córner"), ("tiro_libre", "tiro libre indirecto"), ("banda", "saque de banda")]
     B = [
         M.frase("C", "El embudo de la liga: tras un córner, la secuencia termina en remate "
@@ -709,89 +1064,317 @@ def sec07(M: Modelo):
                 ". En gol, el córner llega a " + M.c(f"{lg['P_G_secuencia']['corner']:.3f}",
                                                      Fl + " › P_G_secuencia.corner") + ".",
                 nota_adenda="ADR-59 la marcaba B; el embudo de la liga no trae intervalo."),
-        M.fig("fig7", "Embudo del balón parado en la liga",
-              "Cambia entre remate y gol con el selector.",
-              [{"k": k, "n": n, "s": lg["P_S_secuencia"][k], "g": lg["P_G_secuencia"][k]}
-               for k, n in tipos]),
         M.frase("B", "Añadir la geometría del remate (portería libre, defensores) mejora "
                 "la discriminación del modelo de xG en " +
-                M.c(f"{mo['delta_auc']:+.3f}", "balon_parado_v2 › modelo.delta_auc", "Dauc") + " de AUC " +
-                M.c(f"[{mo['delta_auc_ic95_percentil'][0]:+.3f}, "
-                    f"{mo['delta_auc_ic95_percentil'][1]:+.3f}]",
-                    "balon_parado_v2 › modelo.delta_auc_ic95_percentil") +
-                ". La portería queda libre en " +
+                M.c(f"{mo['delta_auc']:+.3f}", "balon_parado_v2 › modelo.delta_auc", "Dauc") + " de AUC" +
+                '<span class="tec"> ' + M.c(f"[{mo['delta_auc_ic95_percentil'][0]:+.3f}, "
+                                            f"{mo['delta_auc_ic95_percentil'][1]:+.3f}]",
+                                            "balon_parado_v2 › modelo.delta_auc_ic95_percentil") +
+                "</span>. La portería queda libre en " +
                 M.c(f"{lg['goal_open_medio']['corner']:.3f}", Fl + " › goal_open_medio.corner") +
                 " de los remates de córner contra " +
                 M.c(f"{lg['goal_open_medio']['juego_abierto']:.3f}",
                     Fl + " › goal_open_medio.juego_abierto") + " en juego abierto."),
+    ]
+    rech_of, rech_de = bool(of["rechaza_casos"]), bool(de["rechaza_casos"])
+    if not rech_of and not rech_de:
+        B.append(M.nulo(f"{el_(club)[0].upper()}{el_(club)[1:]} de {ape(c)} no se separa de la "
+                        "liga en córners. A favor: " +
+                        M.c(f_pp(of["did"]), Fu + " › C1_of.did") +
+                        M.ic(of["ic95"], f_pp, Fu + " › C1_of.ic95") + "; en contra: " +
+                        M.c(f_pp(de["did"]), Fu + " › C1_def.did") +
+                        M.ic(de["ic95"], f_pp, Fu + " › C1_def.ic95") +
+                        ". No detectamos una diferencia mayor a " +
+                        M.c(m_pp(max(margen(of["ic95"]), margen(de["ic95"]))),
+                            Fu + " › C1_of/C1_def.ic95 (extremo)") + "."))
+    else:
+        for lado, d, nm in (("of", of, "a favor"), ("def", de, "en contra")):
+            B.append(frase_contraste(M, f"Córners {nm}, {el_(club)} de {ape(c)} contra la liga:",
+                                     d["did"], d["ic95"], d["q_casos"], d["rechaza_casos"],
+                                     f_pp, m_pp, f"{Fu} › C1_{lado}"))
+    B += [
+        M.fig("fig7", "Embudo del balón parado en la liga",
+              "Cambia entre remate y gol con el selector.",
+              [{"k": k, "n": n, "s": lg["P_S_secuencia"][k], "g": lg["P_G_secuencia"][k]}
+               for k, n in tipos]),
         M.fig("fig7b", "Qué pesa en el xG de un remate",
               "Coeficientes estandarizados del modelo base, con IC 95%. A la izquierda "
               "del cero, menos xG.",
               [{"k": k, "b": mo["beta_base_estandarizado"][k],
                 "ic": mo["beta_base_ic95"][k]} for k in ("dist_meta", "angulo", "cabeza")]),
-        M.nulo("El América de Jardine no se separa de la liga en córners. A favor: " +
-               M.c(f_pp(of["did"]), Fu + " › C1_of.did") + " " +
-               M.c(f_ic(of["ic95"], f_pp), Fu + " › C1_of.ic95") + "; en contra: " +
-               M.c(f_pp(de["did"]), Fu + " › C1_def.did") + " " +
-               M.c(f_ic(de["ic95"], f_pp), Fu + " › C1_def.ic95") +
-               ". No detectamos una diferencia mayor a " +
-               M.c(f"{max(margen(of['ic95']), margen(de['ic95'])) * 100:.1f} pp",
-                   Fu + " › C1_of/C1_def.ic95 (extremo)") + "."),
         M.fig("remates", "Dónde remata y dónde le rematan",
               "Remates tras córner por zona del área. Fuente: balon_parado_v2 › "
               "unidades › descriptivos.",
               {"of": u["descriptivos"]["mapa_remates_of"],
                "def": u["descriptivos"]["mapa_remates_def"]}),
+        M.nota("Las zonas de cada rival en los remates (Voronoi a favor y en contra) llegan en "
+               "la fase F5."),
     ]
+    if "corners_por_partido_of" in u:
+        B.append(M.ejemplo(f"En un partido, {el_(club)} de {ape(c)} sacó " +
+                           M.c(m_num(u["corners_por_partido_of"], 1), Fu + " › corners_por_partido_of") +
+                           " córners y le sacaron " +
+                           M.c(m_num(u["corners_por_partido_def"], 1), Fu + " › corners_por_partido_def") +
+                           "; en toda la era, " + M.c(str(u["remates_of"]), Fu + " › remates_of") +
+                           " remates tras córner a favor y " + M.c(str(u["remates_def"]), Fu + " › remates_def") +
+                           " en contra."))
+    else:
+        B.append(M.hueco(3, "La era no trae córners por partido en balon_parado_v2."))
+    rg = bp.get("reglas", {})
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        M.cita(rg.get("D55-1", "—"), "balon_parado_v2 › reglas.D55-1") + ".",
+        M.cita(rg.get("D55-6", "—"), "balon_parado_v2 › reglas.D55-6") + ".",
+        "Familia: los casos de ADR-57, corregidos juntos (" +
+        M.c(str(bp.get("familia_casos", {}).get("m", "—")), "balon_parado_v2 › familia_casos.m") +
+        " contrastes)."],
+        [Fu + " › C1_of, C1_def", Fl]))
     return B
 
 
-def sec08(M: Modelo):
-    M.need("h4", "met", "jug", "ctx")
-    J = M.J
-    eras = [(CLUB, FOCO), FUERA[0], (CLUB, "Fernando Ortiz"), FUERA[1]]
-    filas = []
-    lim = REGLAS["cont_inferior"][0]
-    for club, coach in eras:
-        h = unidad(J, "h4", club, coach)
-        g = unidad(J, "met", club, coach)["global"]
-        a = [v for v in unidad(J, "jug", club, coach)["A"].values() if not v["parcial"]]
-        filas.append({
-            "era": f"{ape(coach)} · {club}", "club": club, "coach": coach,
+def s28(M: Modelo, H):
+    M.need("jug")
+    jug = M.J["jug"]
+    c, club = H["coach"], H["principal"]
+    u = unidad(M.J, "jug", club, c)
+    ts = [t for t in torneos_orden(M.J) if t in u["A"]]
+    A = [{"t": t, **{k: u["A"][t].get(k) for k in
+          ("percentil_continuidad", "percentil_n80", "n80", "continuidad", "parcial",
+           "jugadores_distintos")}} for t in ts]
+    completos = [a for a in A if not a["parcial"]]
+    lim_c, lim_n = REGLAS["cont_inferior"][0], REGLAS["n80_mediana"][0]
+    n_bajo = sum(a["percentil_continuidad"] <= lim_c for a in completos)
+    n_alto = sum(a["percentil_n80"] > lim_n for a in completos)
+    top = sorted(u["B"], key=lambda b: -b["minutos"])[:5]
+    C = u["C"]
+    tl = jug["liga"]["Tactical"]
+    Fa = f"jugadores_v1 › unidades[{club}, {ape(c)}] › A"
+    Fc = f"jugadores_v1 › unidades[{club}, {ape(c)}] › C"
+    if H["id"] == JARDINE:
+        exige(not C["M2"]["rechaza_casos"] and not C["FT"]["rechaza_casos"],
+              "2.8: el cambio tras el primer cambio ahora sobrevive a BH")
+        exige(C["M2"]["ic95"][0] < 0 < C["M2"]["ic95"][1] and C["FT"]["ic95"][0] < 0 < C["FT"]["ic95"][1],
+              "2.8: un IC tras el primer cambio ya no cruza el cero; cambia la redacción")
+    B = []
+    if completos:
+        B.append(M.frase("C", "Rotación: la continuidad del once quedó en el " +
+                         M.regla("cont_inferior", "15%") + " inferior de la liga en " +
+                         M.c(f"{n_bajo} de {len(completos)}", Fa + " › percentil_continuidad", "RotJ") +
+                         " torneos, y el número de jugadores que suman el 80% de los minutos (N80) "
+                         "quedó por encima de la " + M.regla("n80_mediana", "mediana") +
+                         " de la liga en " + M.c(f"{n_alto} de {len(completos)}", Fa + " › percentil_n80") +
+                         ". Hay partidos fuera de estos datos (otras competiciones) que pueden "
+                         "estar detrás de la rotación; no los medimos.",
+                         nota_adenda="El umbral del N80 (mediana) lo fija la adenda; ADR-58 no lo fijaba.",
+                         portada=4))
+    else:
+        B.append(M.hueco(1, "Rotación: la era no tiene torneos completos en jugadores_v1."))
+    B.append(M.frase("C", "Roles: los cinco jugadores con más minutos, con su posición más "
+                     "frecuente y dónde intervienen. Toca uno para ver su mapa."))
+    B.append(M.nulo("Tras sus primeros cambios, el equipo no se movió de forma detectable: "
+                    "remate " + M.c(f_pp(C["M2"]["theta"]), Fc + " › M2.theta") +
+                    M.ic(C["M2"]["ic95"], f_pp, Fc + " › M2.ic95") + "; field tilt " +
+                    M.c(f_pp(C["FT"]["theta"]), Fc + " › FT.theta") +
+                    M.ic(C["FT"]["ic95"], f_pp, Fc + " › FT.ic95") +
+                    ". No detectamos un cambio mayor a " +
+                    M.c(m_pp(margen(C["M2"]["ic95"])), Fc + " › M2.ic95 (extremo)") +
+                    " en remate ni a " +
+                    M.c(m_pp(margen(C["FT"]["ic95"])), Fc + " › FT.ic95 (extremo)") +
+                    " en field tilt.")
+             if not (C["M2"]["rechaza_casos"] or C["FT"]["rechaza_casos"]) else
+             frase_contraste(M, "Tras sus primeros cambios, field tilt:", C["FT"]["theta"],
+                             C["FT"]["ic95"], C["FT"].get("q_casos"), C["FT"]["rechaza_casos"],
+                             f_pp, m_pp, Fc + " › FT"))
+    if (C["M2"]["rechaza_casos"] or C["FT"]["rechaza_casos"]):
+        B.append(frase_contraste(M, "Tras sus primeros cambios, remate:", C["M2"]["theta"],
+                                 C["M2"]["ic95"], C["M2"].get("q_casos"), C["M2"]["rechaza_casos"],
+                                 f_pp, m_pp, Fc + " › M2"))
+    B.append(M.frase("C", "En la liga, tras el primer cambio cuando el equipo va perdiendo: "
+                     "remate " + M.c(f_pp(tl["M2"]["perdiendo"][0]),
+                                     "jugadores_v1 › liga.Tactical.M2.perdiendo[0]") +
+                     " y field tilt " + M.c(f_pp(tl["FT"]["perdiendo"][0]),
+                                            "jugadores_v1 › liga.Tactical.FT.perdiendo[0]") + ".",
+                     nota_adenda="ADR-59 la marcaba B; el JSON trae [delta, n], sin intervalo."))
+    B += [
+        M.fig("fig6", "Continuidad del once y N80, percentil en la liga",
+              "Cada anillo es un torneo. Continuidad baja = más cambios en el once.", A),
+        M.fig("roles", "Los cinco con más minutos", "Fuente: jugadores_v1 › B. Sin nombres: "
+              "el JSON solo trae el identificador del jugador.",
+              [{"id": b["player_id"], "pos": pos(b["posicion_modal"]), "min": b["minutos"],
+                "acc": b["acciones"],
+                "z": [b["zonas"][ix * NY:(ix + 1) * NY] for ix in range(NX)]} for b in top]),
+        M.nota("La red de pases por posición llega en la fase F4 (ADR-62)."),
+    ]
+    if top:
+        t0 = top[0]
+        Fb = f"jugadores_v1 › unidades[{club}, {ape(c)}] › B[jugador {t0['player_id']}]"
+        B.append(M.ejemplo("El jugador con más minutos (" + esc(pos(t0["posicion_modal"])) +
+                           ") sumó " + M.c(f"{t0['minutos']:.0f}", Fb + " › minutos") +
+                           " minutos y " + M.c(str(t0["acciones"]), Fb + " › acciones") +
+                           " acciones en los " + M.c(str(u["n_partidos"]),
+                                                     f"jugadores_v1 › unidades[{club}, {ape(c)}] › n_partidos") +
+                           " partidos de la era."))
+    else:
+        B.append(M.hueco(3, "La era no trae jugadores con minutos suficientes en jugadores_v1."))
+    rg = jug.get("reglas", {})
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        M.cita(rg.get("D58-A", "—"), "jugadores_v1 › reglas.D58-A") + ".",
+        M.cita(rg.get("D58-B", "—"), "jugadores_v1 › reglas.D58-B") + ".",
+        M.cita(rg.get("D58-C", "—"), "jugadores_v1 › reglas.D58-C") + ".",
+        "Familia: " + M.cita(rg.get("D58-familias", "—"), "jugadores_v1 › reglas.D58-familias") + "."],
+        [Fa, Fc]))
+    return B
+
+
+# ---------------------------------------------------------------------------
+# ACTO 3 · de dónde viene eso (por historia)
+# ---------------------------------------------------------------------------
+CLAVES_H4 = {"Santiago Solari": ("SolJ", "SolJic", "SolJq", ""),
+             "Fernando Ortiz": ("OrtJ", "OrtJic", "OrtJq", "OrtJmargen")}
+
+
+def s31(M: Modelo, H):
+    M.need("h4")
+    J, c = M.J, H["coach"]
+    ps = pares_de(J["h4"]["pares"], H["clubes"])
+    propios = [p for p in ps if c in (p["a"], p["b"])]
+    propios.sort(key=lambda p: (H["clubes"].index(p["club"]),
+                                primer_torneo(J, p["club"], p["b"] if p["a"] == c else p["a"])))
+    if H["id"] == JARDINE:
+        pjs, _ = par(J["h4"]["pares"], CLUB_J, FOCO, "Santiago Solari")
+        pjo, _ = par(J["h4"]["pares"], CLUB_J, FOCO, "Fernando Ortiz")
+        es, eo = pjs["did"]["E_T"], pjo["did"]["E_T"]
+        exige(es["rechaza_fdr"] and es["rel"] > 0, "3.1: Jardine–Solari ya no difiere (A)")
+        exige(not eo["rechaza_fdr"], "3.1: Jardine–Ortiz ahora sobrevive a BH; ya no es un nulo")
+    B = []
+    for p in propios:
+        a, b, club = p["a"], p["b"], p["club"]
+        otro = b if a == c else a
+        e = p["did"]["E_T"]
+        F = f"did_h4_v1 › pares[{club}, {ape(a)}–{ape(b)}] › did.E_T"
+        claves = (CLAVES_H4.get(otro, ("",) * 4)
+                  if H["id"] == JARDINE and club == CLUB_J else ("",) * 4)
+        etq = (f"Duración de la posesión, {ape(a)} frente a {ape(b)} {en_(club)} "
+               f"({ape(otro)} llegó {cuando(J, H, otro, club)}):")
+        B.append(frase_contraste(M, etq, e["rel"], e["ic95"], e["q"], e["rechaza_fdr"],
+                                 f_pct, m_pct, F, claves))
+    if not propios:
+        B.append(M.hueco(1, f"No hay parejas del mismo club con {ape(c)} en did_h4_v1."))
+    for club in H["clubes"]:
+        despues = [p for p in ps if p["club"] == club and c in (p["a"], p["b"])
+                   and cuando(J, H, p["b"] if p["a"] == c else p["a"], club) == "después"]
+        if not despues and any(p["club"] == club for p in ps):
+            B.append(M.frase("C", f"{en_(club)[0].upper()}{en_(club)[1:]} no hay una era analizable posterior a la de "
+                             f"{ape(c)} dentro de los datos."))
+    B += [
+        M.fig("fig3", "Parejas del mismo club: corregido contra crudo",
+              "Duración de la posesión, diferencia relativa. Punto lleno: comparación "
+              "contra la liga del mismo torneo. Aro: la resta cruda, sin corregir la deriva.",
+              [{"par": f"{ape(p['a'])} – {ape(p['b'])}", "club": p["club"],
+                "did": p["did"]["E_T"]["rel"], "did_ic": p["did"]["E_T"]["ic95"],
+                "q": p["did"]["E_T"]["q"], "rech": p["did"]["E_T"]["rechaza_fdr"],
+                "cru": p["crudo"]["E_T"]["rel"], "cru_ic": p["crudo"]["E_T"]["ic95"],
+                "cru_rech": p["crudo"]["E_T"]["rechaza_fdr"]} for p in ps]),
+        M.nota("Qué parte del cambio viene del plantel y qué parte del uso lo contesta la sección siguiente, "
+               "con ADR-60."),
+    ]
+    if propios:
+        p = propios[0]
+        Fp = f"did_h4_v1 › pares[{p['club']}, {ape(p['a'])}–{ape(p['b'])}]"
+        B.append(M.ejemplo(f"Sin corregir la deriva, {ape(p['a'])} frente a {ape(p['b'])} "
+                           f"{en_(p['club'])} daba " + M.c(f_pct(p["crudo"]["E_T"]["rel"]), Fp + " › crudo.E_T.rel") +
+                           "; comparando cada era con la liga del mismo torneo, " +
+                           M.c(f_pct(p["did"]["E_T"]["rel"]), Fp + " › did.E_T.rel") + "."))
+    else:
+        B.append(M.hueco(3, "Sin parejas, no hay ejemplo."))
+    rg = J["h4"]["reglas_preinscritas"]
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        "Diferencia en diferencias: cada era contra la liga del mismo torneo, y luego una era "
+        "contra la otra.",
+        "Familia: " + M.cita(rg.get("D53-1", "—"), "did_h4_v1 › reglas_preinscritas.D53-1") +
+        ", " + M.c(str(J["h4"]["n_pares"]), "did_h4_v1 › n_pares") + " pares. " +
+        M.cita(rg.get("D53-3", "—"), "did_h4_v1 › reglas_preinscritas.D53-3") + ".",
+        "Antes o después: según el primer torneo de cada era (" +
+        M.cita("did_h4_v1 › unidades[].torneos", "did_h4_v1 › unidades[].torneos") + ")."],
+        ["did_h4_v1 › pares[] › did.E_T", "did_h4_v1 › pares[] › crudo.E_T"]))
+    return B
+
+
+def _fila_era(J, club, coach, lim):
+    h = unidad(J, "h4", club, coach)
+    g = unidad(J, "met", club, coach)["global"]
+    a = [v for v in unidad(J, "jug", club, coach)["A"].values() if not v["parcial"]]
+    return {"era": f"{ape(coach)} · {club}", "club": club, "coach": coach,
             "pos": h["rel_E_T_vs_liga"], "pos_ic": h["rel_E_T_vs_liga_ic95"],
             "ft": g["field_tilt"]["dif"], "ft_ic": g["field_tilt"]["ic95"],
             "xg": g["npxg_favor"]["dif"], "xg_ic": g["npxg_favor"]["ic95"],
-            "cont": sum(v["percentil_continuidad"] <= lim for v in a), "cont_n": len(a)})
-    ja, sl_, oa, om = filas
-    exige(all(r["pos_ic"][0] > 0 and r["ft_ic"][0] > 0 for r in (ja, oa)),
-          "§8: en el América los dos ya no comparten posesión larga y dominio territorial")
-    exige(sl_["pos"] < 0 and sl_["ft"] < 0 and sl_["xg"] < 0,
-          "§8: el perfil de Jardine en San Luis ya no se invierte en las tres métricas")
-    exige(om["pos_ic"][0] > 0 and om["ft_ic"][0] <= 0,
-          "§8: Ortiz en Monterrey ya no conserva la posesión sin el dominio territorial")
+            "cont": sum(v["percentil_continuidad"] <= lim for v in a), "cont_n": len(a)}
+
+
+def s34(M: Modelo, H):
+    M.need("h4", "met", "jug", "ctx")
+    J, c = M.J, H["coach"]
+    lim = REGLAS["cont_inferior"][0]
+    if H["id"] == JARDINE:
+        eras = [(CLUB_J, FOCO), FUERA[0], (CLUB_J, "Fernando Ortiz"), FUERA[1]]
+    else:
+        eras = [(e["club"], c) for e in H["eras"]]
+    filas = [_fila_era(J, club, co, lim) for club, co in eras]
     k, n, lista = viajan_marcador(J["ctx"])
-    exige(k < 6, "§8: la predicción de ADR-57 ahora se cumple; cambia la redacción")
+    exige(k < 6, "3.4: la predicción de ADR-57 ahora se cumple; cambia la redacción")
     pj = J["ctx"]["predicciones"][-1]
-    sl = filas[1]
-    B = [
-        M.nota("La tabla junta las cuatro eras. Las tres primeras columnas son mediciones "
-               "contra la liga del mismo torneo, con intervalo (nivel B); la última es "
-               "descriptiva (nivel C)."),
-        M.fig("fig8", "El mismo técnico en otro club", "Toca una celda para ver el intervalo "
+    B = [M.nota("La tabla junta las eras. Las tres primeras columnas son mediciones contra la "
+                "liga del mismo torneo, con intervalo (nivel B); la última es descriptiva "
+                "(nivel C).")]
+    if H["id"] == JARDINE:
+        ja, sl, oa, om = filas
+        exige(all(r["pos_ic"][0] > 0 and r["ft_ic"][0] > 0 for r in (ja, oa)),
+              "3.4: en el América los dos ya no comparten posesión larga y dominio territorial")
+        exige(sl["pos"] < 0 and sl["ft"] < 0 and sl["xg"] < 0,
+              "3.4: el perfil de Jardine en San Luis ya no se invierte en las tres métricas")
+        exige(om["pos_ic"][0] > 0 and om["ft_ic"][0] <= 0,
+              "3.4: Ortiz en Monterrey ya no conserva la posesión sin el dominio territorial")
+        B += [
+            M.frase("C", "En el América, los dos técnicos muestran el mismo perfil: posesión "
+                    "larga y dominio territorial."),
+            M.frase("C", "Fuera del América, el perfil de Jardine se invierte en las tres "
+                    "métricas (posesión " +
+                    M.c(f_pct(sl["pos"]), "did_h4_v1 › unidades[Atlético San Luis, Jardine] › rel_E_T_vs_liga") +
+                    ", field tilt " +
+                    M.c(f_pp(sl["ft"]), "metricas_v1 › unidades[Atlético San Luis, Jardine] › global.field_tilt.dif") +
+                    "). Ortiz conserva la posesión larga en Monterrey y pierde casi todo el "
+                    "dominio territorial.", portada=5),
+            M.frase("C", "Lo que viaja depende del técnico y de la métrica. El dominio "
+                    "territorial es compatible con que sea más del contexto América que de "
+                    "quien lo dirige."),
+        ]
+    else:
+        def linea(nombre, k_v, k_ic, fuente, portada=None):
+            fmt = f_pct if k_v == "pos" else f_pp if k_v == "ft" else f_num
+            grupos = {1: [], -1: [], 0: []}
+            for r in filas:
+                grupos[direccion(r[k_ic])].append(
+                    el_(r["club"]) + " (" + M.c(fmt(r[k_v]), fuente.format(club=r["club"], ape=ape(c))) + ")")
+            partes = []
+            for s_, t in ((1, "por encima de la liga en"), (-1, "por debajo de la liga en"),
+                          (0, "sin separarse de la liga en")):
+                g = grupos[s_]
+                if g:
+                    partes.append(t + " " + (", ".join(g[:-1]) + " y " + g[-1] if len(g) > 1 else g[0]))
+            return M.frase("C", f"{nombre} bajo {ape(c)}: " + "; ".join(partes) + ".",
+                           portada=portada)
+        B += [
+            linea("Posesión contra la liga", "pos", "pos_ic",
+                  "did_h4_v1 › unidades[{club}, {ape}] › rel_E_T_vs_liga", portada=5),
+            linea("Field tilt", "ft", "ft_ic",
+                  "metricas_v1 › unidades[{club}, {ape}] › global.field_tilt.dif"),
+            linea("npxG a favor", "xg", "xg_ic",
+                  "metricas_v1 › unidades[{club}, {ape}] › global.npxg_favor.dif"),
+        ]
+    B += [
+        M.fig("fig8", f"El mismo técnico en otro club", "Toca una celda para ver el intervalo "
               "y la fuente.", filas),
-        M.frase("C", "En el América, los dos técnicos muestran el mismo perfil: posesión "
-                "larga y dominio territorial."),
-        M.frase("C", "Fuera del América, el perfil de Jardine se invierte en las tres "
-                "métricas (posesión " +
-                M.c(f_pct(sl["pos"]), "did_h4_v1 › unidades[San Luis, Jardine] › rel_E_T_vs_liga") +
-                ", field tilt " +
-                M.c(f_pp(sl["ft"]), "metricas_v1 › unidades[San Luis, Jardine] › global.field_tilt.dif") +
-                "). Ortiz conserva la posesión larga en Monterrey y pierde casi todo el "
-                "dominio territorial."),
-        M.frase("C", "Lo que viaja depende del técnico y de la métrica. El dominio "
-                "territorial es compatible con que sea más del contexto América que de "
-                "quien lo dirige. La comparación no separa plantel, presupuesto ni "
-                "calendario, que cambian con el club; y con dos técnicos no hay regla."),
+        M.frase("C", "La comparación entre clubes no separa plantel, presupuesto ni "
+                "calendario, que cambian con el club; es descriptiva (ADR-37)."),
         M.frase("C", "Entre los técnicos con varios clubes fuera del América, " +
                 M.c(f"{k} de {n}", "contexto_v1 › viaja_marcador_M1 (sin Jardine ni Ortiz)", "Viajan") +
                 " mantienen el signo de su ajuste al marcador de un club a otro. "
@@ -799,16 +1382,36 @@ def sec08(M: Modelo):
                 nota_adenda="Conteo sin Jardine ni Ortiz, como en 06_DECISIONS."),
         M.fig("viajan", "¿Viaja el ajuste al marcador?",
               "Técnicos con eras en varios clubes (ADR-57), métrica M1.",
-              [{"coach": c, "mismo": v} for c, v in lista]),
+              [{"coach": nom(co), "mismo": v} for co, v in lista]),
         M.nota("El JSON registra la predicción con los once técnicos, incluidos Jardine y "
                "Ortiz: " + M.c(f"{pj['valor'][0]} de {pj['valor'][1]}",
                                "contexto_v1 › predicciones[ADR-57, 1].valor") +
-               ". Con cualquiera de los dos conteos la predicción falla."),
+               ". Con cualquiera de los dos conteos la predicción falla. La distancia entre "
+               "eras del mismo técnico llega con ADR-60."),
     ]
+    a0, a1 = filas[0], filas[1] if len(filas) > 1 else None
+    if a1:
+        B.append(M.ejemplo(f"Con {ape(a0['coach'])} {en_(a0['club'])}, las posesiones iban " +
+                           M.c(f_pct(a0["pos"]), f"did_h4_v1 › unidades[{a0['club']}, {ape(a0['coach'])}] › rel_E_T_vs_liga") +
+                           f" respecto a la liga; con {ape(a1['coach'])} {en_(a1['club'])}, " +
+                           M.c(f_pct(a1["pos"]), f"did_h4_v1 › unidades[{a1['club']}, {ape(a1['coach'])}] › rel_E_T_vs_liga") + "."))
+    else:
+        B.append(M.hueco(3, "Una sola era: no hay traslado que mostrar."))
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        "Cada celda de las tres primeras columnas es la misma medición de las secciones de duración y de ocasiones, era por "
+        "era: nivel B. Juntar eras de clubes distintos es descriptivo (nivel C): ADR-37 no "
+        "compara técnicos entre clubes como resultado principal.",
+        "El ajuste al marcador que viaja es la primera predicción de ADR-57, sobre los técnicos con "
+        "varios clubes."],
+        ["did_h4_v1 › unidades[] › rel_E_T_vs_liga", "metricas_v1 › unidades[] › global",
+         "jugadores_v1 › unidades[] › A", "contexto_v1 › viaja_marcador_M1"]))
     return B
 
 
-def sec09(M: Modelo):
+# ---------------------------------------------------------------------------
+# CIERRE (común)
+# ---------------------------------------------------------------------------
+def c_credibilidad(M: Modelo):
     M.need("h4", "pres", "bp", "ctx", "jug")
     h4, pr = M.J["h4"], M.J["pres"]
     mk = marcador(M.J)
@@ -821,7 +1424,7 @@ def sec09(M: Modelo):
     Fh, Fp = "did_h4_v1", "did_presion_v1"
     resumen = ", ".join(f"ADR-{a} {M.c(f'{v[0]}/{v[1]}', 'marcador › ADR-' + str(a))}"
                         for a, v in sorted(por_adr.items()))
-    B = [
+    return [
         M.frase("C", "Corregir la deriva cambia el veredicto. En duración de posesión, los "
                 "pares que difieren pasan de " + M.c(str(h4["n_rechazados_crudo"]),
                                                      Fh + " › n_rechazados_crudo") +
@@ -843,48 +1446,77 @@ def sec09(M: Modelo):
                 " se cumplieron (" + resumen + "). Los fallos se muestran en la figura."),
         M.fig("fig9", "Predicciones preinscritas", "Punto lleno: se cumplió. Aro: falló. "
               "Toca cada una para leerla.", mk),
-        M.fig("bugs", "Anexo · errores silenciosos encontrados", "",
-              {"falta": "catálogo de errores (02_STATE_OF_PLAY §8 o equivalente)"}),
     ]
-    return B
 
 
-def sec10(M: Modelo):
+def c_limites(M: Modelo):
     return [
         M.frase("C", "Lo que el marco no captura:"),
         M.nota(LIMITES),
-        M.frase("C", "La simulación de posesiones (componente 06, opcional) no se incluye: "
-                "la cadena de Markov no reproduce la distribución de longitudes, y simular "
-                "desde ella arrastraría ese sesgo (ADR-21)."),
         M.nota("Nada de este informe es causal. Describe cómo jugaron los equipos bajo "
                "cada técnico, contra la liga del mismo torneo; no mide rendimiento ni "
                "intención."),
     ]
 
 
-SECCIONES = [
-    ("s1", "01", "5.6", "Cómo leer este informe", sec01),
-    ("s2", "02", "5.1 ofensiva", "El América de Jardine con el balón", sec02),
-    ("s3", "03", "5.1 defensiva", "El América de Jardine sin el balón", sec03),
-    ("s4", "04", "5.2 consistencia", "¿Se sostiene en el tiempo?", sec04),
-    ("s5", "05", "5.2 variabilidad", "¿Ajusta al contexto?", sec05),
-    ("s6", "06", "5.3", "El plantel", sec06),
-    ("s7", "07", "5.4", "Balón parado", sec07),
-    ("s8", "08", "diferenciador", "¿Qué es de Jardine y qué del América?", sec08),
-    ("s9", "09", "credibilidad", "¿El método distingue de verdad?", sec09),
-    ("s10", "10", "5.6", "Framework y límites", sec10),
+# ---------------------------------------------------------------------------
+# índice
+# ---------------------------------------------------------------------------
+# (id, número, componente del reto, título, función | None, pendiente)
+ACTO1 = [
+    ("a1-1", "1.1", "5.6", "La posesión y sus tres preguntas", a1_posesion, None),
+    ("a1-2", "1.2", "5.6", "La cadena: estados vivos y finales", a1_cadena, None),
+    ("a1-3", "1.3", "5.6", "Cómo se estiman las probabilidades", a1_estimacion, None),
+    ("a1-4", "1.4", "5.6", "En qué confiar", a1_confianza, None),
+    ("a1-5", "1.5", "5.6", "Por qué contra la liga del mismo torneo", a1_deriva, None),
+    ("a1-6", "1.6", "5.6", "Dónde vive una posesión viva", None,
+     {"adr": "ADR-61", "fase": "F3", "que": "la distribución cuasi-estacionaria de Q y su "
+      "valor propio, animadas sobre la cancha"}),
+    ("a1-7", "1.7", "5.6", "Por qué no simulamos", a1_simular, None),
+]
+ACTO2 = [
+    ("a2-1", "2.1", "5.1 ofensiva", "Con el balón: cuánto dura y dónde vive", s21, None),
+    ("a2-2", "2.2", "5.1 ofensiva", "Progresión: ¿llega al último tercio sin perderlo?", None,
+     {"adr": "ADR-61", "fase": "F3", "que": "la absorción con el último tercio como final y "
+      "los tiempos de primer paso"}),
+    ("a2-3", "2.3", "5.1 ofensiva", "Ocasiones y territorio", s23, None),
+    ("a2-4", "2.4", "5.1 defensiva", "Sin el balón", s24, None),
+    ("a2-5", "2.5", "5.2 consistencia", "¿La misma idea torneo tras torneo?", s25, None),
+    ("a2-6", "2.6", "5.2 variabilidad", "¿Ajusta al contexto?", s26, None),
+    ("a2-7", "2.7", "5.4", "Balón parado", s27, None),
+    ("a2-8", "2.8", "5.3", "Jugadores y minutos", s28, None),
+]
+ACTO3 = [
+    ("a3-1", "3.1", "5.3", "El club antes y después de él", s31, None),
+    ("a3-2", "3.2", "5.3", "¿Cambió el plantel o cambió el uso?", None,
+     {"adr": "ADR-60", "fase": "F2", "que": "la descomposición composición contra uso sobre "
+      "el mapa de 20 zonas y la distancia entre matrices con su nula"}),
+    ("a3-3", "3.3", "5.5", "Mapa de estilos", None,
+     {"adr": "ADR-60", "fase": "F2", "que": "el mapa de las eras con ejes nombrados, "
+      "elipses por remuestreo y una flecha por relevo y por traslado"}),
+    ("a3-4", "3.4", "diferenciador", "¿Qué viaja con él y qué se queda en el club?", s34, None),
+]
+CIERRE = [
+    ("c-1", "C.1", "credibilidad", "¿El método distingue de verdad?", c_credibilidad, None),
+    ("c-2", "C.2", "5.6", "Framework y límites", c_limites, None),
+    ("c-3", "C.3", "anexo", "Errores silenciosos encontrados", None,
+     {"adr": "catálogo de errores", "fase": "F7",
+      "que": "el catálogo de los errores silenciosos, con su fuente (adenda 1, punto 7)"}),
 ]
 
-DEF_MARKOV = (
+DEF_POSESION = (
     "<p><b>Posesión</b>: la cadena de acciones de un equipo desde que recupera el balón "
     "hasta que lo pierde, sale o remata. <b>Acción</b>: pase, conducción o remate. "
     "<b>Fase</b>: juego abierto, transición, reanudación o balón parado. "
-    "<b>Estado</b>: zona × fase (20 × 4).</p>"
-    "<p><b>Cadena</b>: cada acción mueve la posesión de un estado a otro con "
-    "probabilidad <i>Q<sub>ij</sub></i>, o la termina en remate, gol o pérdida con "
-    "probabilidad <i>R<sub>ik</sub></i>. Con la matriz fundamental "
-    "<i>N = (I − Q)<sup>−1</sup></i>, la duración esperada es <i>E[T] = N·1</i> y la "
-    "probabilidad de terminar en remate o gol es <i>B = N·R</i>.</p>"
+    "<b>Zona</b>: una de las 20 zonas de la cancha.</p>")
+
+DEF_MARKOV = (
+    "<p><b>Estado</b>: zona × fase (20 × 4). <b>Cadena</b>: cada acción mueve la posesión "
+    "de un estado a otro con probabilidad <i>Q<sub>ij</sub></i>, o la termina en remate, "
+    "gol o pérdida con probabilidad <i>R<sub>ik</sub></i>. La matriz completa tiene la forma "
+    "<i>P = (Q R ; 0 I)</i>: los finales no devuelven el balón.</p>"
+    "<p>Con la matriz fundamental <i>N = (I − Q)<sup>−1</sup></i>, la duración esperada es "
+    "<i>E[T] = N·1</i> y la probabilidad de terminar en remate o gol es <i>B = N·R</i>.</p>"
     "<p><b>Comparación</b>: θ = (era − liga del mismo torneo). En pares del mismo club, "
     "diferencia en diferencias. Intervalos por bootstrap por partido; corrección de "
     "Benjamini–Hochberg al 5% dentro de cada familia declarada antes de medir.</p>")
@@ -900,26 +1532,62 @@ LIMITES = (
 # ---------------------------------------------------------------------------
 # ensamblado
 # ---------------------------------------------------------------------------
+def _seccion(M, H, sid, num, comp, tit, fn, pend):
+    s = {"id": sid, "num": num, "comp": comp, "tit": tit}
+    if pend is not None:
+        s["pendiente"] = pend
+        return s
+    try:
+        s["bloques"] = fn(M, H) if H is not None else fn(M)
+    except LecturaCambio as e:
+        quien = f" (historia {H['id']})" if H else ""
+        sys.exit(f"LECTURA PREINSCRITA ROTA en {sid}{quien}: {e}. Revisar ADR-59 antes de publicar.")
+    except FaltaInsumo as e:
+        nombre, cmd = FUENTES[e.clave]
+        s.pop("bloques", None)
+        s["falta"] = {"archivo": nombre, "comando": cmd}
+    return s
+
+
 def construye(J: dict, traza: dict) -> tuple[dict, Modelo]:
-    M = Modelo(J)
-    secs = []
-    for sid, num, comp, tit, fn in SECCIONES:
-        try:
-            bloques = fn(M)
-            secs.append({"id": sid, "num": num, "comp": comp, "tit": tit,
-                         "bloques": bloques})
-        except LecturaCambio as e:
-            sys.exit(f"LECTURA PREINSCRITA ROTA en {sid}: {e}. Revisar ADR-59 antes de publicar.")
-        except FaltaInsumo as e:
-            nombre, cmd = FUENTES[e.clave]
-            secs.append({"id": sid, "num": num, "comp": comp, "tit": tit,
-                         "falta": {"archivo": nombre, "comando": cmd}})
-    return {"secciones": secs, "traza": traza, "reglas": REGLAS}, M
+    registro: list[dict] = []
+    M0 = Modelo(J, registro, exporta=True, hid="comun")
+    acto1 = [_seccion(M0, None, *x) for x in ACTO1]
+    hs = []
+    for hid, coach in HISTORIAS:
+        H = historia(J, hid, coach)
+        M = Modelo(J, registro, exporta=(hid == JARDINE), hid=hid)
+        if not H["eras"]:
+            vacias = [{"id": sid, "num": num, "comp": comp, "tit": tit,
+                       "falta": {"archivo": "metricas_v1.json", "comando": FUENTES["met"][1]}}
+                      for sid, num, comp, tit, _, _ in ACTO2 + ACTO3]
+            hs.append({**{k: H[k] for k in ("id", "coach", "nombre", "eras", "principal")},
+                       "acto2": vacias[:len(ACTO2)], "acto3": vacias[len(ACTO2):]})
+            continue
+        hs.append({**{k: H[k] for k in ("id", "coach", "nombre", "eras", "principal")},
+                   "acto2": [_seccion(M, H, *x) for x in ACTO2],
+                   "acto3": [_seccion(M, H, *x) for x in ACTO3]})
+    cierre = [_seccion(M0, None, *x) for x in CIERRE]
+    datos = {"acto1": acto1, "historias": hs, "cierre": cierre,
+             "traza": traza, "reglas": REGLAS}
+    M0.cifras = registro
+    return datos, M0
+
+
+def todas_las_secciones(datos):
+    """(historia, sección) de toda la página. Para los tests y el resumen."""
+    for s in datos["acto1"]:
+        yield "comun", s
+    for h in datos["historias"]:
+        for s in h["acto2"] + h["acto3"]:
+            yield h["id"], s
+    for s in datos["cierre"]:
+        yield "comun", s
 
 
 def escribe_tex(M: Modelo, ruta: Path):
     """Las cifras con clave, como macros para la guía LaTeX: la guía tampoco
-    teclea números. Ej.: \\cifraPosJ."""
+    teclea números. Solo Jardine y el acto 1 exportan (adenda 2 §9)."""
     def tex(s):
         return (s.replace("\\", r"\textbackslash{}").replace("%", r"\%")
                 .replace("−", "$-$").replace("&", r"\&").replace("_", r"\_")
@@ -938,13 +1606,14 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--reports", default=str(RAIZ / "reports"))
-    ap.add_argument("--parquet", default=str(RAIZ / PARQUET_AMERICA))
+    ap.add_argument("--datos", default=str(RAIZ),
+                    help="raíz bajo la que viven data/processed_api_<club>/ (mapas de zonas)")
     ap.add_argument("--out", default="reporte.html")
     ap.add_argument("--modelo", default=None, help="vuelca el modelo a JSON (tests)")
     ap.add_argument("--tex", default=None, help="macros de cifras para la guía LaTeX")
     args = ap.parse_args()
 
-    J, traza = recolecta(Path(args.reports), Path(args.parquet))
+    J, traza = recolecta(Path(args.reports), Path(args.datos))
     datos, M = construye(J, traza)
     pagina = HTML.replace("__DATOS__", json.dumps(datos, ensure_ascii=False)
                           .replace("</", "<\\/"))
@@ -966,9 +1635,17 @@ def main() -> None:
     if SIN_CLUB:
         print(f"AVISO: {len(SIN_CLUB)} entradas sin `club` descartadas: "
               + "; ".join(SIN_CLUB[:5]), file=sys.stderr)
-    faltan = [s["id"] for s in datos["secciones"] if "falta" in s]
     print(f"escrito: {salida.resolve()}  ({salida.stat().st_size / 1024:.0f} KB)")
-    print(f"cifras con fuente: {len(M.cifras)} · secciones sin insumo: {faltan or 'ninguna'}")
+    print(f"cifras con fuente: {len(M.cifras)}")
+    for h in datos["historias"]:
+        faltan = [s["num"] for s in h["acto2"] + h["acto3"] if "falta" in s]
+        pend = [s["num"] for s in h["acto2"] + h["acto3"] if "pendiente" in s]
+        huecos = sum(b["tipo"] == "hueco" for s in h["acto2"] + h["acto3"]
+                     for b in s.get("bloques", []))
+        z = J["zonas"].get((h["principal"], h["coach"]), {})
+        print(f"  {h['id']:9s} principal {h['principal']:<18s} eras {len(h['eras'])} · "
+              f"sin insumo {faltan or '-'} · pendientes {pend} · huecos {huecos} · "
+              f"zonas {'ok' if 'm' in z else 'FALTA'}")
     print(f"commit: {traza['commit']['hash']}"
           + (" (con cambios sin commitear)" if traza["commit"]["sucio"] else ""))
 
@@ -976,7 +1653,7 @@ def main() -> None:
 HTML = r"""<!DOCTYPE html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>El América de Jardine</title>
+<title>La historia de un entrenador</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -1423,6 +2100,9 @@ nav{background:var(--chrome)}
   --ap:#2a2a2f; --linea:#56565d;
   --cesped1:#1b1b20; --cesped2:#111114;
   --mono-bg:rgba(255,255,255,.06);
+  /* semáforo (adenda 2 §5): el ÚNICO color fuera del gris. Solo en las
+     etiquetas de nivel; ninguna figura lo usa. */
+  --sem-a:#30d158; --sem-b:#ffd60a; --sem-c:#8e8e96;
 }
 .aviso{background:var(--mono-bg);border-color:var(--brd);color:var(--tx2)}
 .chipd.ok{background:rgba(255,255,255,.12);color:var(--tx);border-color:var(--brd)}
@@ -1433,9 +2113,10 @@ h1 em{background:linear-gradient(120deg,#fff,#9a9aa2);-webkit-background-clip:te
 
 /* barra de secciones: el segmentado de iOS, ahora como índice */
 .navin{flex-wrap:nowrap}
-#segSec{overflow-x:auto;scrollbar-width:none;max-width:100%}
-#segSec::-webkit-scrollbar{display:none}
-#segSec button{font-family:var(--mono);padding:.42rem .7rem}
+#segHist,#segActo{overflow-x:auto;scrollbar-width:none;max-width:100%}
+#segHist::-webkit-scrollbar,#segActo::-webkit-scrollbar{display:none}
+#segActo button{font-family:var(--mono);padding:.42rem .7rem}
+@media(max-width:700px){.navin{flex-wrap:wrap}}
 .navtit{font-size:.83rem;font-weight:600;color:var(--tx2);white-space:nowrap;
  overflow:hidden;text-overflow:ellipsis;min-width:0}
 @media(max-width:700px){.navtit{display:none}}
@@ -1453,9 +2134,9 @@ h1 em{background:linear-gradient(120deg,#fff,#9a9aa2);-webkit-background-clip:te
 .nv{flex-shrink:0;display:inline-grid;place-items:center;min-width:28px;height:22px;
  padding:0 .4rem;border-radius:7px;font-family:var(--mono);font-size:.74rem;
  font-weight:700;letter-spacing:.04em;position:relative;top:-1px}
-.nv-A{background:var(--a1);color:#0b0b0e}
-.nv-B{border:1.5px solid var(--a1);color:var(--a1)}
-.nv-C{border:1.5px dashed var(--tx3);color:var(--tx2)}
+.nv-A{background:var(--sem-a);color:#0b0b0e}
+.nv-B{background:var(--sem-b);color:#0b0b0e}
+.nv-C{border:1.5px dashed var(--sem-c);color:var(--tx2)}
 .fr.nulo .nv::after{content:"· nulo";margin-left:.3rem;font-weight:500}
 .fr.nulo .nv{display:inline-flex;align-items:center;white-space:nowrap}
 .fr.nulo .tx{color:var(--tx2)}
@@ -1511,45 +2192,61 @@ table.t5{width:100%;border-collapse:collapse;font-size:.86rem}
 .plegable p{max-width:70ch}
 section{scroll-margin-top:4.5rem}
 footer{padding:4rem 0 6rem;color:var(--tx2);font-size:.88rem}
+
+/* ---------- tres actos (adenda 2) ---------- */
+body:not(.tecnica) .tec{display:none}
+.acto{margin:6rem 0 0;padding:2.2rem 0 0;border-top:1px solid var(--brd)}
+.acto h3{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;letter-spacing:-.04em}
+.acto p{color:var(--tx2);font-size:1.02rem;margin-top:.5rem;max-width:62ch;line-height:1.55}
+.acto .eyebrow{margin-bottom:.4rem}
+.pregunta{font-size:1.05rem;color:var(--tx2);margin:-.3rem 0 1.2rem;max-width:62ch}
+.ejemplo{background:var(--card2);border:1px solid var(--brd);border-left:3px solid var(--a1);
+ border-radius:var(--r-sm);padding:1rem 1.2rem;margin:1.2rem 0;font-size:1rem;line-height:1.6;
+ max-width:70ch}
+.ejemplo u{text-decoration:none;display:block;font-family:var(--mono);font-size:.7rem;
+ letter-spacing:.16em;text-transform:uppercase;color:var(--tx2);margin-bottom:.3rem}
+.hueco{background:transparent;border:1px dashed var(--brd);border-radius:var(--r-sm);
+ padding:.9rem 1.2rem;margin:1rem 0;color:var(--tx2);font-size:.95rem;line-height:1.55;max-width:70ch}
+.hueco u{text-decoration:none;font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;
+ text-transform:uppercase;margin-right:.5rem;color:var(--tx2)}
+.pendiente{background:var(--card2);border:1px dashed var(--brd);border-radius:var(--r-md);
+ padding:1.3rem 1.5rem;color:var(--tx2);font-size:.98rem;line-height:1.6}
+.pendiente b{color:var(--tx)}
+.cf.cita{white-space:normal;font-family:var(--sans);font-weight:400;font-size:1em}
+.portada{display:flex;flex-direction:column;gap:.2rem;margin-top:1.4rem;max-width:74ch}
+.portada a{color:inherit;text-decoration:none}
+.portada .fr{margin:.45rem 0}
+.portada .fr:hover .tx{color:var(--tx)}
+.portada .ir{font-family:var(--mono);font-size:.72rem;color:var(--tx2);margin-left:.4rem;white-space:nowrap}
+.eras{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1rem}
+.eras .chip.pr{border-color:var(--a1)}
+#segHist button{font-size:.84rem}
+#segModo button{font-size:.8rem}
+.sem{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
+@media(max-width:760px){.sem{grid-template-columns:1fr 1fr}}
+.sem .card{padding:1rem}
+.sem .nv{margin-bottom:.5rem}
+.sem p{font-size:.88rem;color:var(--tx2);line-height:1.5}
 </style></head><body>
 <div id="aura"></div>
 <div id="tip"></div>
 
 <header class="wrap">
-  <div class="kicker"><span class="dot"></span><span>Liga MX · fase regular</span></div>
-  <h1>El América<br><em>de Jardine</em></h1>
-  <p>Cómo jugó un equipo bajo un entrenador, y qué de eso viaja con él a otro club.</p>
-  <div class="traza" id="traza"></div>
+  <div class="kicker"><span class="dot"></span><span>Liga MX · fase regular · cinco historias</span></div>
+  <h1 id="titulo">La historia<br><em>de un entrenador</em></h1>
+  <p id="bajada">Cómo jugó un equipo bajo un entrenador, y qué de eso cambia cuando el entrenador cambia de club.</p>
+  <div class="eras" id="eras"></div>
+  <div class="portada" id="portada"></div>
+  <div class="traza tec" id="traza"></div>
 </header>
 
 <nav><div class="navin">
-  <div class="seg" id="segSec"><div class="pill"></div></div>
-  <span class="navtit" id="navtit"></span>
-  <button class="ayuda" id="btnGuia" style="margin-left:auto">¿Cómo se lee?</button>
+  <div class="seg" id="segHist"><div class="pill"></div></div>
+  <div class="seg" id="segActo"><div class="pill"></div></div>
+  <div class="seg" id="segModo" style="margin-left:auto"><div class="pill"></div></div>
 </div></nav>
 
 <div class="wrap">
-  <details class="guia" id="guia" open style="margin-top:2.4rem"><summary>Empieza por aquí: los tres niveles</summary>
-  <div class="paso"><div class="num">A</div><div>
-   <h4>Probado</h4>
-   <p>Un contraste escrito antes de medir, con intervalo por remuestreo, que sigue en pie
-   después de corregir por haber hecho muchas comparaciones. Se dice «difiere» y va con su q.</p></div></div>
-  <div class="paso"><div class="num">B</div><div>
-   <h4>Medido</h4>
-   <p>Una diferencia contra la liga del mismo torneo, con su intervalo, fuera de una
-   familia de contrastes. Se dice «por encima» o «por debajo de la liga».</p></div></div>
-  <div class="paso"><div class="num">C</div><div>
-   <h4>Descriptivo</h4>
-   <p>Percentiles, perfiles y comparaciones entre clubes. Sin intervalo y sin lenguaje de hallazgo.</p></div></div>
-  <div class="paso"><div class="num">·</div><div>
-   <h4>Un nulo no es «son iguales»</h4>
-   <p>Cuando no detectamos una diferencia, decimos el tamaño máximo que los datos permiten
-   descartar: el extremo del intervalo más lejano al cero.</p></div></div>
-  <div class="paso"><div class="num">↗</div><div>
-   <h4>Toca cualquier cifra</h4>
-   <p>Cada número subrayado muestra de qué archivo y de qué campo sale. Las figuras
-   responden al cursor y al dedo.</p></div></div>
-  </details>
   <main id="informe"></main>
   <footer id="pie"></footer>
 </div>
@@ -1563,10 +2260,10 @@ const C_FOCO="var(--a1)",C_RIV="var(--riv)",C_NEG="var(--neg)";
 const TERCIO=["propio","propio","medio","rival","rival"];
 const FRANJA=["banda izquierda","centro-izquierda","centro-derecha","banda derecha"];
 const NIVEL={
- A:"<b>A · probado</b>Contraste preinscrito, intervalo por bootstrap y corrección BH dentro de su familia.",
- B:"<b>B · medido</b>Diferencia contra la liga del mismo torneo, con intervalo; sin familia.",
- C:"<b>C · descriptivo</b>Percentiles, perfiles o comparaciones sin intervalo."};
-const ADENDA=m=>`<b>adenda 1 de ADR-59</b>${esc(m)}`;
+ A:"<b>verde · A · probado</b>Contraste preinscrito, intervalo por bootstrap y corrección BH dentro de su familia.",
+ B:"<b>ámbar · B · medido</b>Diferencia contra la liga del mismo torneo, con intervalo; sin familia.",
+ C:"<b>gris · C · descriptivo</b>Percentiles, perfiles o comparaciones sin intervalo."};
+const ADENDA=(m,n)=>`<b>adenda ${n||1} de ADR-59</b>${esc(m)}`;
 const fmtS=(v,d)=>{const r=(+v).toFixed(d);if(+r===0)return (0).toFixed(d);return (v>0?"+":"")+r.replace("-","−");};
 const pct=(v,d=1)=>fmtS(v*100,d)+"%";
 const ppt=(v,d=1)=>fmtS(v*100,d)+" pp";
@@ -1782,20 +2479,20 @@ const FIG={
   return linea(d.map(p=>({t:p.t,v:p.v,sd:p.sd,tip:`${p.v.toFixed(2)} acciones por posesión (± ${p.sd.toFixed(2)} entre clubes)`})),v=>v.toFixed(1));
  },
  fig2(d){
-  if(d.falta)return vacio("Falta el parquet de transiciones del América; el mapa se pinta al generarlo en la máquina del proyecto.",d.falta);
-  return mapaSVG(d.m,C_FOCO,"de las acciones del América de Jardine")+
+  if(d.falta)return vacio("Falta el parquet de transiciones de esta era; el mapa se pinta al generar el informe en la máquina del proyecto.",d.falta);
+  return mapaSVG(d.m,C_FOCO,"de las acciones de la era")+
    leyenda(rampa(C_FOCO,"pocas acciones","muchas"),"Los porcentajes suman 100.");
  },
  fig3(d,fid){
   const modo=ESTADO[fid]??"did";
-  const filas=d.map(p=>({etq:p.par,sub:`q = ${p.q.toFixed(3)}`,marcas:[
+  const filas=d.map(p=>({etq:p.par,sub:`${p.club||""} · q = ${p.q.toFixed(3)}`,marcas:[
    ...(modo!=="cru"?[{v:p.did,ic:p.did_ic,lleno:true,nombre:"corregido",q:p.q,nota:p.rech?"sobrevive a la corrección":"no sobrevive a la corrección"}]:[]),
    ...(modo!=="did"?[{v:p.cru,ic:p.cru_ic,lleno:false,nombre:"crudo",nota:"resta directa, con la deriva dentro"}]:[])]}));
   return seg(fid,[["did","corregido"],["cru","crudo"],["ambos","los dos"]])+
    bosque(filas,v=>pct(v))+leyenda(SW(C_FOCO,"contra la liga del mismo torneo"),SW("var(--tx2)","resta cruda",true));
  },
  fig3b(d){
-  return bosque(d.map(p=>({etq:p.par,sub:`q = ${p.q.toFixed(3)}`,marcas:[{v:p.t,ic:p.ic,lleno:p.r,q:p.q,
+  return bosque(d.map(p=>({etq:p.par,sub:`${p.club||""} · q = ${p.q.toFixed(3)}`,marcas:[{v:p.t,ic:p.ic,lleno:p.r,q:p.q,
    nota:p.r?"sobrevive a la corrección":"no sobrevive a la corrección"}]})),v=>ppt(v))+
    leyenda(SW(C_FOCO,"sobrevive"),SW("var(--tx2)","no sobrevive",true));
  },
@@ -1898,6 +2595,48 @@ const FIG={
    <div class="cifra"><u>SE CUMPLIERON</u><b class="marcador-total"><span data-num="${ok}" data-dec="0">0</span> / ${d.length}</b>
    <i>Las que fallaron se quedan a la vista.</i></div></div>`;
  },
+ eras_pos(d){
+  return bosque(d.map(r=>({etq:r.era,sub:`${r.n} partidos${r.principal?" · era principal":""}`,
+   marcas:[{v:r.v,ic:r.ic,lleno:r.principal,nota:r.principal?"era principal de la historia":"otra era del técnico"}]})),v=>pct(v),{refTxt:"LIGA DEL MISMO TORNEO"})+
+   leyenda(SW(C_FOCO,"era principal"),SW("var(--tx2)","otras eras",true));
+ },
+ concedido(d){
+  return bosque(d.map(r=>({etq:r.era,sub:`${r.n} partidos${r.principal?" · era principal":""}`,
+   marcas:[{v:r.v,ic:r.ic,lleno:r.principal}]})),v=>fmtS(v,2),{refTxt:"LIGA DEL MISMO TORNEO"})+
+   leyenda(SW(C_FOCO,"era principal"),SW("var(--tx2)","otras eras",true));
+ },
+ tarjetas(d){
+  return `<div class="grid g2f">${d.map(x=>{const f=x.u==="pp"?(v=>ppt(v)):(v=>fmtS(v,x.k==="prog_pases"?1:2));
+   return `<div class="card flat"><div class="eq">${esc(x.t)}</div>
+    <div class="c-val" style="font-size:1.9rem">${f(x.v)}</div>
+    <div class="tec">${mini(x.v,x.ic)}<div class="c-pie">[${f(x.ic[0])}, ${f(x.ic[1])}]</div></div></div>`;}).join("")}</div>`;
+ },
+ cadena(){
+  const n=[[70,60],[170,40],[170,120],[70,140]],f=[["remate",330,30],["gol",330,85],["pérdida",330,140]];
+  let g=`<svg viewBox="0 0 420 180">`;
+  [[0,1],[1,2],[2,3],[3,0],[0,2],[1,3]].forEach(([a,b])=>{g+=`<line x1="${n[a][0]}" y1="${n[a][1]}" x2="${n[b][0]}" y2="${n[b][1]}" stroke="var(--tx2)" stroke-width="1.4" opacity=".6"/>`;});
+  [[1,0],[2,1],[2,2]].forEach(([a,k])=>{g+=`<path d="M${n[a][0]+14} ${n[a][1]} L${f[k][1]-36} ${f[k][2]}" stroke="var(--a1)" stroke-width="1.6" fill="none" stroke-dasharray="5 4"/>
+   <path d="M${f[k][1]-36} ${f[k][2]} l-7 -4 v8 z" fill="var(--a1)"/>`;});
+  n.forEach(([x,y],i)=>{g+=`<circle cx="${x}" cy="${y}" r="15" fill="var(--a1)" opacity=".85"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" fill="#0b0b0e" font-weight="700">vivo</text>`;});
+  f.forEach(([t,x,y])=>{g+=`<rect x="${x-34}" y="${y-13}" width="84" height="26" rx="8" fill="none" stroke="var(--a1)" stroke-width="1.6"/><text x="${x+8}" y="${y+4}" text-anchor="middle" font-size="12" fill="var(--tx)">${t}</text>`;});
+  g+=`<text x="120" y="172" text-anchor="middle" font-size="11" fill="var(--tx2)">transitorios: se pasan el balón</text>
+   <text x="338" y="172" text-anchor="middle" font-size="11" fill="var(--tx2)">absorbentes: sin regreso</text></svg>`;
+  return g;
+ },
+ estimacion(){
+  const barra=(x,h,t,op)=>`<rect x="${x}" y="${130-h}" width="70" height="${h}" rx="8" fill="var(--a1)" opacity="${op}"/>
+   <text x="${x+35}" y="152" text-anchor="middle" font-size="12" fill="var(--tx2)">${t}</text>`;
+  return `<svg viewBox="0 0 420 165">${barra(30,95,"lo observado",.9)}${barra(175,55,"la liga",.35)}${barra(320,80,"lo que se usa",.65)}
+   <path d="M108 70 C140 70 150 90 170 95" stroke="var(--tx2)" fill="none" stroke-width="1.4"/>
+   <path d="M253 95 C280 90 295 70 315 70" stroke="var(--tx2)" fill="none" stroke-width="1.4"/></svg>`;
+ },
+ semaforo(){
+  const c=(n,t,p,nulo)=>`<div class="card flat"><span class="nv nv-${n}"${nulo?' style="display:inline-flex;gap:.3rem"':""}>${n}${nulo?" · nulo":""}</span><h4 style="margin:.2rem 0 .3rem">${t}</h4><p>${p}</p></div>`;
+  return `<div class="sem">${c("A","Probado","Escrito antes de medir, sobrevive a la corrección. Se dice «difiere».")}
+   ${c("A","Nulo","Probado sin diferencia: dice el tamaño máximo que descarta.",true)}
+   ${c("B","Medido","Contra la liga del mismo torneo, con intervalo.")}
+   ${c("C","Descriptivo","Percentiles y comparaciones, sin lenguaje de hallazgo.")}</div>`;
+ },
  bugs(d){return vacio(`Pendiente: falta la fuente del catálogo en el paquete de insumos.`,d.falta);},
 };
 function mini(v,ic){
@@ -1908,7 +2647,7 @@ function mini(v,ic){
 }
 
 /* ================= bloques y secciones ================= */
-const FIGDATOS={};
+let FIGDATOS={};
 function pintaFig(fid){
  const el=document.querySelector(`[data-fig-id="${fid}"] .lienzo`);if(!el)return;
  const {id,datos}=FIGDATOS[fid];
@@ -1920,57 +2659,93 @@ function pintaFig(fid){
   ESTADO[it.dataset.fig]=it.dataset.jug;pintaFig(it.dataset.fig);}));
  animaNumeros(el);
 }
+function frase(b){
+ const ad=b.adenda?`<span class="adenda" data-tip="${esc(ADENDA(b.adenda,b.n_adenda))}">adenda ${b.n_adenda||1}</span>`:"";
+ return `<p class="fr${b.nulo?" nulo":""}" data-nivel="${b.nivel}" data-capa="1"${b.portada?` data-portada="${b.portada}"`:""}><span class="nv nv-${b.nivel}" data-tip="${esc(NIVEL[b.nivel])}">${b.nivel}</span><span class="tx">${b.html}${ad}</span></p>`;
+}
 function bloque(b,sid,i){
- if(b.tipo==="frase"){
-  const ad=b.adenda?`<span class="adenda" data-tip="${esc(ADENDA(b.adenda))}">adenda 1</span>`:"";
-  return `<p class="fr${b.nulo?" nulo":""}" data-nivel="${b.nivel}"><span class="nv nv-${b.nivel}" data-tip="${esc(NIVEL[b.nivel])}">${b.nivel}</span><span class="tx">${b.html}${ad}</span></p>`;}
+ const cp=b.capa?` data-capa="${b.capa}"`:"";
+ if(b.tipo==="frase")return frase(b);
  if(b.tipo==="nota")return `<div class="nota">${b.html}</div>`;
- if(b.tipo==="plegable")return `<details class="plegable"><summary>${esc(b.titulo)}</summary>${b.html}</details>`;
+ if(b.tipo==="ejemplo")return `<div class="ejemplo"${cp}><u>en un partido</u>${b.html}</div>`;
+ if(b.tipo==="hueco")return `<div class="hueco"${cp}><u>${["","frase","figura","ejemplo","método"][b.capa]||"hueco"} · pendiente</u>${b.html}</div>`;
+ if(b.tipo==="plegable")return `<details class="plegable${b.capa===4?" metodo":""}"${cp}${MODO==="tecnica"&&b.capa===4?" open":""}><summary>${esc(b.titulo)}</summary>${b.html}</details>`;
  if(b.tipo==="fig"){
   const fid=`${sid}-${b.id}`;FIGDATOS[fid]={id:b.id,datos:b.datos};
-  return `<div class="fig" data-fig-id="${fid}" data-fig="${b.id}"><div class="card">
+  return `<div class="fig" data-fig-id="${fid}" data-fig="${b.id}"${cp}><div class="card">
    <div class="fig-tit">${esc(b.titulo)}</div>${b.pie?`<div class="nota" style="margin-top:.1rem;margin-bottom:.9rem">${esc(b.pie)}</div>`:""}
    <div class="lienzo"></div></div></div>`;}
  return "";
 }
 function seccion(s){
- const cuerpo=s.falta?vacio(`Falta <b>${esc(s.falta.archivo)}</b>. Esta sección no se pinta sin él.`,s.falta.comando)
-  :s.bloques.map((b,i)=>bloque(b,s.id,i)).join("");
- return `<section id="${s.id}" class="rev"><div class="eyebrow">${s.num} · componente ${esc(s.comp)}</div>
+ let cuerpo;
+ if(s.pendiente)cuerpo=`<div class="pendiente" data-pendiente="1"><b>Pendiente.</b> Esta sección mostrará ${esc(s.pendiente.que)}. Llega con ${esc(s.pendiente.adr)} (fase ${esc(s.pendiente.fase)}), preinscrita antes de medir.</div>`;
+ else if(s.falta)cuerpo=vacio(`Falta <b>${esc(s.falta.archivo)}</b>. Esta sección no se pinta sin él.`,s.falta.comando);
+ else cuerpo=s.bloques.map((b,i)=>bloque(b,s.id,i)).join("");
+ return `<section id="${s.id}" class="rev" data-num="${esc(s.num)}"><div class="eyebrow">${esc(s.num)} · componente ${esc(s.comp)}</div>
   <h2>${esc(s.tit)}</h2>${cuerpo}</section>`;
+}
+const ACTOS=[
+ ["acto1","Acto 1","El marco","Cómo se lee una posesión y en qué confiar. Es igual para las cinco historias."],
+ ["acto2","Acto 2","Cómo juega","La era principal del técnico, contra la liga del mismo torneo."],
+ ["acto3","Acto 3","De dónde viene eso","El club antes y después de él, y qué cambia cuando cambia de club."],
+ ["cierre","Cierre","¿Nos creen?","El método puesto a prueba, sus límites y lo que falta."]];
+function cabeza([id,n,t,p]){
+ return `<div class="acto" id="${id}"><div class="eyebrow">${n}</div><h3>${t}</h3><p>${p}</p></div>`;
 }
 function traza(){
  const t=D.traza,c=t.commit;
  $("traza").innerHTML=`<span class="chip" data-tip="<b>código</b>commit con el que se generó esta página">commit ${esc(c.hash)}${c.sucio?" · con cambios":""}</span>`+
   t.insumos.map(x=>x.sha?`<span class="chip" data-tip="<b>${esc(x.archivo)}</b>sha256 ${esc(x.sha)}… · corrida del ${esc(x.fecha)}">${esc(x.archivo.replace(".json",""))} <span>${esc(x.fecha)}</span></span>`
    :`<span class="chip falta" data-tip="<b>falta</b>${esc(x.comando)}">${esc(x.archivo.replace(".json",""))} <span>falta</span></span>`).join("");
- $("pie").innerHTML=`Generado ${esc(t.generado)}. Los JSON de reports/ no se versionan: la huella de cada uno está arriba.`;
+ $("pie").innerHTML=`Generado ${esc(t.generado)}. Los JSON de reports/ no se versionan: la huella de cada uno está en la portada (modo técnico).`;
+}
+let HIST=null,MODO="sencilla";
+function portada(h){
+ const fr=[];
+ h.acto2.concat(h.acto3).forEach(s=>(s.bloques||[]).forEach(b=>{if(b.tipo==="frase"&&b.portada)fr.push([b,s]);}));
+ fr.sort((x,y)=>x[0].portada-y[0].portada);
+ return fr.map(([b,s])=>`<a href="#${s.id}" data-ancla="${s.id}">${frase(b).replace('<p class="fr','<p data-en-portada="1" class="fr').replace("</span></p>",`<span class="ir">→ ${esc(s.num)}</span></span></p>`)}</a>`).join("");
+}
+function render(hid){
+ HIST=D.historias.find(h=>h.id===hid)||D.historias[0];
+ FIGDATOS={};
+ const h=HIST;
+ $("titulo").innerHTML=`${esc(h.nombre.split(" ").slice(0,-1).join(" "))}<br><em>${esc(h.nombre.split(" ").slice(-1)[0])}</em>`;
+ $("eras").innerHTML=h.eras.map(e=>`<span class="chip${e.club===h.principal?" pr":""}" data-tip="<b>${esc(e.club)}</b>${e.n} partidos${e.club===h.principal?" · era principal":""}">${esc(e.club)} <span>${e.n} partidos</span></span>`).join("");
+ $("portada").innerHTML=portada(h);
+ $("informe").innerHTML=cabeza(ACTOS[0])+D.acto1.map(seccion).join("")+
+  cabeza(ACTOS[1])+h.acto2.map(seccion).join("")+
+  cabeza(ACTOS[2])+h.acto3.map(seccion).join("")+
+  cabeza(ACTOS[3])+D.cierre.map(seccion).join("");
+ Object.keys(FIGDATOS).forEach(pintaFig);
+ document.querySelectorAll("#informe section").forEach(s=>s.classList.add("on"));
+ if(typeof IntersectionObserver!=="function")return;
+}
+function modo(m){
+ MODO=m;document.body.classList.toggle("tecnica",m==="tecnica");
+ document.querySelectorAll("details.metodo").forEach(d=>{d.open=(m==="tecnica");});
+}
+function segmento(el,ops,on,cb){
+ el.innerHTML=`<div class="pill"></div>`+ops.map(([k,t])=>`<button data-k="${esc(k)}" class="${k===on?"on":""}">${esc(t)}</button>`).join("");
+ el.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  el.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));colocaPill(el);cb(b.dataset.k);}));
+ colocaPill(el);
 }
 function nav(){
- const sg=$("segSec");
- sg.innerHTML=`<div class="pill"></div>`+D.secciones.map((s,i)=>`<button data-s="${s.id}" class="${i?"":"on"}" title="${esc(s.tit)}">${s.num}</button>`).join("");
- $("navtit").textContent=D.secciones[0].tit;
- const marca=id=>{sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.s===id));
-  const s=D.secciones.find(x=>x.id===id);if(s)$("navtit").textContent=s.tit;colocaPill(sg);};
- sg.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
-  const el=$(b.dataset.s);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"start"});marca(b.dataset.s);}));
- const secs=document.querySelectorAll("#informe section");
- if(typeof IntersectionObserver==="function"){
-  const vis=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("on");}),{threshold:.08});
-  const esp=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)marca(e.target.id);}),{rootMargin:"-45% 0px -50% 0px"});
-  secs.forEach(s=>{vis.observe(s);esp.observe(s);});
- }else secs.forEach(s=>s.classList.add("on"));
- colocaPill(sg);
+ segmento($("segHist"),D.historias.map(h=>[h.id,h.nombre.split(" ").slice(-1)[0]]),D.historias[0].id,k=>{render(k);});
+ segmento($("segActo"),ACTOS.map(a=>[a[0],a[1]]),"acto1",k=>{const el=$(k);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"start"});});
+ segmento($("segModo"),[["sencilla","sencilla"],["tecnica","técnica"]],"sencilla",k=>modo(k));
 }
 function arranca(){
  traza();
- $("informe").innerHTML=D.secciones.map(seccion).join("");
- Object.keys(FIGDATOS).forEach(pintaFig);
+ render(D.historias[0].id);
  nav();
- $("btnGuia").onclick=()=>{const g=$("guia");g.open=true;g.scrollIntoView({behavior:"smooth",block:"start"});};
+ modo("sencilla");
 }
 arranca();
 </script></body></html>"""
+
 
 if __name__ == "__main__":
     main()
