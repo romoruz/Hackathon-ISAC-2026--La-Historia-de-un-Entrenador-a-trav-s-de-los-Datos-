@@ -1,16 +1,18 @@
-"""Clave compuesta (club, entrenador) en 12_reporte_html.defensa -- h2_11.
+"""Clave compuesta (club, entrenador) en 12_reporte_html -- h2_11, reescrito en h2_30.
 
-Patron del bug #17: el reporte filtraba los JSON de presion solo por nombre
-de era. Con el mismo entrenador (o el mismo PAR, como Ambriz-Paiva en Toluca y
-Leon) en dos clubes, el valor mostrado dependia del orden del glob.
+Patrón del bug #17: el reporte filtraba por nombre de era. Con el mismo
+entrenador (Jardine en América y en San Luis) o el mismo PAR de nombres en dos
+clubes, el valor mostrado dependía del orden de los archivos.
 
-El test pide que CADA club reciba SU valor. La version sin filtro no puede
-cumplir las dos aserciones a la vez: devuelve lo mismo para ambos clubes.
+Los cuatro primeros tests probaban `defensa()` y `_es_del_club()` del reporte
+viejo (retirados con el tablero en h2_29). Aquí se prueba la misma intención
+sobre `unidad()` y `par()` del reporte de ADR-59: cada club recibe SU valor,
+en cualquier orden, y una entrada sin `club` nunca se usa.
 """
 from __future__ import annotations
 
 import importlib.util
-import json
+import itertools
 from pathlib import Path
 
 import pytest
@@ -19,66 +21,65 @@ RAIZ = Path(__file__).resolve().parent.parent
 
 
 @pytest.fixture
-def rep(monkeypatch, tmp_path):
+def rep():
     spec = importlib.util.spec_from_file_location(
-        "reporte_html", RAIZ / "scripts" / "12_reporte_html.py")
+        "reporte_html_clave", RAIZ / "scripts" / "12_reporte_html.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    monkeypatch.setattr(mod, "REPORTS", tmp_path)
-    if hasattr(mod, "_SIN_CLUB"):
-        mod._SIN_CLUB.clear()
+    mod.SIN_CLUB.clear()
     return mod
 
 
-def _escribe(carpeta: Path, nombre: str, d: dict) -> None:
-    (carpeta / nombre).write_text(json.dumps(d, ensure_ascii=False))
+UNIDADES = [
+    {"club": "América", "coach": "Andre Jardine", "rel_E_T_vs_liga": 0.111},
+    {"club": "Atlético San Luis", "coach": "Andre Jardine", "rel_E_T_vs_liga": 0.999},
+]
 
 
-def test_calibracion_por_club(rep, tmp_path):
-    # mismo entrenador en dos clubes, dos archivos de calibracion
-    _escribe(tmp_path, "calibracion_andrejardine_fernandoortiz.json", {
-        "club": "América",
-        "eras": {"Andre Jardine": {"efecto_corregido": 0.111, "p": 0.01}}})
-    _escribe(tmp_path, "calibracion_andrejardine_domenectorrent.json", {
-        "club": "Atlético San Luis",
-        "eras": {"Andre Jardine": {"efecto_corregido": 0.999, "p": 0.01}}})
-    ame = rep.defensa(["Andre Jardine", "Fernando Ortiz"], "América")
-    asl = rep.defensa(["Andre Jardine", "Domenec Torrent"], "Atlético San Luis")
-    assert ame["instrumento"]["Andre Jardine"]["efecto"] == 0.111
-    assert asl["instrumento"]["Andre Jardine"]["efecto"] == 0.999
+@pytest.mark.parametrize("orden", list(itertools.permutations(range(2))))
+def test_mismo_entrenador_en_dos_clubes(rep, orden):
+    J = {"h4": {"unidades": [UNIDADES[i] for i in orden]}}
+    assert rep.unidad(J, "h4", "América", "Andre Jardine")["rel_E_T_vs_liga"] == 0.111
+    assert rep.unidad(J, "h4", "Atlético San Luis", "Andre Jardine")["rel_E_T_vs_liga"] == 0.999
 
 
-def test_mismo_par_en_dos_clubes_q_y_nivel(rep, tmp_path):
-    for club, pa, q in (("Toluca", 0.30, 0.01), ("León", 0.70, 0.90)):
-        _escribe(tmp_path, f"nivel_calibracion_x_{club[:3]}.json", {
-            "club": club, "era_a": "Ignacio Ambriz", "era_b": "Renato Paiva",
-            "k0": 3, "nivel": {"pi_a": pa, "pi_b": 0.2, "diff": pa - 0.2,
-                               "n_a": 100, "n_b": 100}})
-    _escribe(tmp_path, "fdr_presion.json", {"contrastes": [
-        {"club": "Toluca", "tipo": "nivel", "a": "Ignacio Ambriz",
-         "b": "Renato Paiva", "detalle": "k>=3", "q": 0.01},
-        {"club": "León", "tipo": "nivel", "a": "Ignacio Ambriz",
-         "b": "Renato Paiva", "detalle": "k>=3", "q": 0.90}]})
-    lista = ["Ignacio Ambriz", "Renato Paiva"]
-    tol = rep.defensa(lista, "Toluca")["pares"]["Ignacio Ambriz|Renato Paiva"]["nivel"]
-    leo = rep.defensa(lista, "León")["pares"]["Ignacio Ambriz|Renato Paiva"]["nivel"]
-    assert (tol["pa"], tol["q"]) == (0.30, 0.01)
-    assert (leo["pa"], leo["q"]) == (0.70, 0.90)
+PARES = [
+    {"club": "Toluca", "a": "Ignacio Ambriz", "b": "Renato Paiva", "q": 0.01},
+    {"club": "León", "a": "Renato Paiva", "b": "Ignacio Ambriz", "q": 0.90},
+]
 
 
-def test_json_sin_club_se_descarta_y_se_avisa(rep, tmp_path):
-    _escribe(tmp_path, "calibracion_viejo.json", {
-        "eras": {"Andre Jardine": {"efecto_corregido": 0.5, "p": 0.01}}})
-    d = rep.defensa(["Andre Jardine", "Fernando Ortiz"], "América")
-    assert "Andre Jardine" not in d["instrumento"]
-    assert "calibracion_viejo.json" in rep._SIN_CLUB
+@pytest.mark.parametrize("orden", list(itertools.permutations(range(2))))
+def test_mismo_par_en_dos_clubes(rep, orden):
+    lista = [PARES[i] for i in orden]
+    tol, tol_a = rep.par(lista, "Toluca", "Ignacio Ambriz", "Renato Paiva")
+    leo, leo_a = rep.par(lista, "León", "Ignacio Ambriz", "Renato Paiva")
+    assert (tol["q"], tol_a) == (0.01, True)
+    # en León el par viene invertido: el generador debe saber voltear el signo
+    assert (leo["q"], leo_a) == (0.90, False)
 
 
-def test_es_del_club(rep):
-    assert rep._es_del_club({"club": "León"}, "León", "x")
-    assert not rep._es_del_club({"club": "Cruz Azul"}, "León", "x")
-    assert not rep._es_del_club({}, "León", "sin_club.json")
-    assert "sin_club.json" in rep._SIN_CLUB
+def test_entrada_sin_club_se_descarta_y_se_avisa(rep):
+    J = {"h4": {"unidades": [{"coach": "Andre Jardine", "rel_E_T_vs_liga": 0.5}]}}
+    with pytest.raises(KeyError):
+        rep.unidad(J, "h4", "América", "Andre Jardine")
+    assert any("Andre Jardine" in s for s in rep.SIN_CLUB)
+    with pytest.raises(KeyError):
+        rep.par([{"a": "Ignacio Ambriz", "b": "Renato Paiva"}], "Toluca",
+                "Ignacio Ambriz", "Renato Paiva")
+    assert any("Renato Paiva" in s for s in rep.SIN_CLUB)
+
+
+def test_sin_club_no_tapa_a_la_buena(rep):
+    J = {"h4": {"unidades": [{"coach": "Andre Jardine", "rel_E_T_vs_liga": 0.5},
+                             UNIDADES[0]]}}
+    assert rep.unidad(J, "h4", "América", "Andre Jardine")["rel_E_T_vs_liga"] == 0.111
+
+
+def test_duplicado_en_el_mismo_club_falla(rep):
+    J = {"h4": {"unidades": [UNIDADES[0], dict(UNIDADES[0], rel_E_T_vs_liga=0.2)]}}
+    with pytest.raises(KeyError, match="2 unidades"):
+        rep.unidad(J, "h4", "América", "Andre Jardine")
 
 
 def test_25_ya_no_llama_ic_al_rango_de_submuestreo():
