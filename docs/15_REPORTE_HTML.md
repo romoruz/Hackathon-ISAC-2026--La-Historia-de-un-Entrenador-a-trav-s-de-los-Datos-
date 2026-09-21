@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-18 (h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-21 (h2_32; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -40,8 +40,11 @@ data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principa
 ```
 
 - **Si falta un JSON, la sección no miente**: muestra el comando que lo genera.
-- **Si falta el parquet**, el mapa de zonas dice qué ruta buscó, o que la ruta
-  existe pero no hay filas con ese `team` y ese `coach`.
+- **Si falta el parquet**, el mapa de zonas dice qué ruta buscó (hueco legítimo).
+  **Si existe y no se puede usar** (Python sin polars, archivo roto, 0 filas con
+  ese `team` y ese `coach`), el generador termina con `ZONAS ILEGIBLES` y no
+  escribe nada (h2_32). Antes salía `zonas FALTA` con código 0 al correrlo
+  fuera de `.venv`.
 - **No lee `reports/barrido/`** (adenda 2 §2). Las distancias del barrido
   entran con ADR-60.
 - Los archivos por pareja de la etapa vieja (`ic_*`, `plantel_*`, `huella_*`,

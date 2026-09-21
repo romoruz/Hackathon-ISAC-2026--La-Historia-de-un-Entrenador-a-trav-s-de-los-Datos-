@@ -323,27 +323,46 @@ def _commit() -> dict:
         return {"hash": "sin git", "sucio": None}
 
 
+class ZonasIlegibles(Exception):
+    """El parquet de una era EXISTE y no se pudo usar. No es un hueco: es un
+    error de entorno o de datos, y la página no se escribe (h2_32)."""
+
+
 def _zonas_parquet(ruta: Path, club: str, coach: str):
-    """Mapa 'dónde vive' de una era. Filtra por equipo Y por técnico; si no
-    queda ninguna fila lo dice (no pinta una cancha vacía)."""
+    """Mapa 'dónde vive' de una era. Filtra por equipo Y por técnico.
+
+    - Si el parquet NO existe, el mapa se declara como faltante (hueco legítimo:
+      tests, humo, una máquina sin datos).
+    - Si EXISTE y no se puede leer (sin polars, archivo roto, columnas que no
+      están) o no deja ninguna fila para la era, se aborta. Antes esto salía
+      como `zonas FALTA` con código 0: un error silencioso más.
+    """
     if not ruta.exists():
         return {"falta": str(ruta)}
     try:
         import numpy as np
         import polars as pl
-    except ImportError:
-        return {"falta": f"{ruta} (sin polars/numpy en este entorno)"}
-    t = pl.read_parquet(ruta, columns=["team", "coach", "from_state"])
+    except ImportError as e:
+        raise ZonasIlegibles(f"{ruta} existe, pero este Python no tiene polars/numpy "
+                             f"({e}). ¿Está activo .venv?") from e
+    try:
+        t = pl.read_parquet(ruta, columns=["team", "coach", "from_state"])
+    except Exception as e:
+        raise ZonasIlegibles(f"{ruta} existe, pero no se pudo leer: {e}") from e
     t = t.filter((pl.col("team") == club) & (pl.col("coach") == coach))
     if not t.height:
-        return {"falta": f"{ruta}: 0 filas con team = {club!r} y coach = {coach!r}"}
+        raise ZonasIlegibles(f"{ruta}: 0 filas con team = {club!r} y coach = {coach!r}; "
+                             "el nombre del club o del técnico no coincide con el del JSON")
     m = np.zeros((NX, NY))
     z = t["from_state"].to_numpy().astype(int) // 4
+    fuera = 0
     for a, b in zip(z // NY, z % NY):
         if 0 <= a < NX and 0 <= b < NY:
             m[a, b] += 1
+        else:
+            fuera += 1
     tot = max(m.sum(), 1e-9)
-    return {"m": (m / tot).round(5).tolist(), "n": int(m.sum())}
+    return {"m": (m / tot).round(5).tolist(), "n": int(m.sum()), "fuera": fuera}
 
 
 def recolecta(reports: Path, datos: Path) -> tuple[dict, dict]:
@@ -1614,7 +1633,10 @@ def main() -> None:
     args = ap.parse_args()
 
     J, traza = recolecta(Path(args.reports), Path(args.datos))
-    datos, M = construye(J, traza)
+    try:
+        datos, M = construye(J, traza)
+    except ZonasIlegibles as e:
+        sys.exit(f"ZONAS ILEGIBLES: {e}. No se escribe nada.")
     pagina = HTML.replace("__DATOS__", json.dumps(datos, ensure_ascii=False)
                           .replace("</", "<\\/"))
 
@@ -1645,7 +1667,8 @@ def main() -> None:
         z = J["zonas"].get((h["principal"], h["coach"]), {})
         print(f"  {h['id']:9s} principal {h['principal']:<18s} eras {len(h['eras'])} · "
               f"sin insumo {faltan or '-'} · pendientes {pend} · huecos {huecos} · "
-              f"zonas {'ok' if 'm' in z else 'FALTA'}")
+              "zonas " + (f"ok ({z['n']} acciones, {z['fuera']} fuera de la malla)" if "m" in z
+                          else "FALTA (no hay parquet)"))
     print(f"commit: {traza['commit']['hash']}"
           + (" (con cambios sin commitear)" if traza["commit"]["sucio"] else ""))
 

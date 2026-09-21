@@ -48,3 +48,6 @@ data/raw_api/frames/
 data/prior_liga/
 data/processed_*/
 reports/_respaldo_h2_11/
+REVERTIR_*.sh
+logs/
+nohup.out
