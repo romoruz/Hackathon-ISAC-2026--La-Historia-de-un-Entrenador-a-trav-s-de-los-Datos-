@@ -302,10 +302,69 @@ def der():
                             "acc_por_posesion_cruda_sd_clubes": .7} for i, t in enumerate(T)]}
 
 
+# --------------------------------------------------------------- relevos ---
+def rel():
+    """relevos_v1 (ADR-60) con la forma de 42_relevos.py y sus casos límite:
+    una pareja que rechaza, una sin uso estimable, una inestable al umbral y
+    una predicción no evaluable."""
+    ordenes = {k: min(T.index(t) for t in ts) for k, ts in ERAS.items()}
+    pares = []
+    for p in h4()["pares"]:
+        c, a, b = p["club"], p["a"], p["b"]
+        if ordenes[(c, a)] > ordenes[(c, b)]:
+            a, b = b, a
+        k = len(pares)
+        Tv = .02 + .03 * (k % 4)
+        estimable = (c, a, b) != ("Santos Laguna", "Eduardo Fentanes", "Ignacio Ambriz")
+        phi = .3 + .1 * (k % 5)
+        estable = (c, b) != ("Tijuana", "Juan Carlos Osorio")
+        um = {str(u): {"compartidos": (0 if not estimable else 6 + k % 5), "U": Tv * phi, "C": Tv * (1 - phi),
+                       "phi_U": (None if not estimable else
+                                 min(1, phi + (0 if u == 200 or estable else (.2 if u == 100 else -.2))))}
+              for u in (100, 200, 400)}
+        d = [rng.uniform(-.02, .02) for _ in range(20)]
+        u_ = [x * phi for x in d]
+        pares.append({"club": c, "a": a, "b": b, "T": Tv, "p": .001 if k % 3 == 0 else .4,
+                      "q": .01 if k % 3 == 0 else .6, "rechaza": k % 3 == 0, "T_nula_p95": .03,
+                      "ic95": {"T": [Tv * .7, Tv * 1.4], "U": [0, Tv], "C": [0, Tv],
+                               "phi_U": [max(0, phi - .15), min(1, phi + .15)] if estimable else None},
+                      "umbrales": um, "estimable": estimable, "estable": estimable and estable,
+                      "mapas": {"delta": d, "U": u_, "C": [x - y for x, y in zip(d, u_)]},
+                      "n_partidos_a": 34, "n_partidos_b": 34, "js_Q_crudo": .05})
+    return {"adr": "ADR-60", "parametros": {"umbral": 200, "umbrales_sensibilidad": [100, 400],
+                                            "estable_si_dif_menor_a": .1},
+            "reglas": {"D60-1": "T = ½‖Δ‖₁ en exceso de la liga del mismo torneo",
+                       "D60-2": "nula por permutación de partidos", "D60-3": "punto medio",
+                       "D60-4": "compartido = al menos 200 acciones", "D60-5": "familia F60, BH 5%"},
+            "pares": pares, "control_negativo": {"p": .5},
+            "predicciones": [{"n": i, "texto": f"rel {i}", "cumple": (None if i == 5 else i != 2)}
+                             for i in range(1, 7)]}
+
+
+# --------------------------------------------------------------- estilos ---
+def est():
+    eras = [{"club": c, "coach": co, "PC1": rng.uniform(-3, 3), "PC2": rng.uniform(-2, 2),
+             "n_partidos": 17 * len(ts)} for (c, co), ts in ERAS.items()]
+    pos = {(e["club"], e["coach"]): e for e in eras}
+    rel_ = [{"club": p["club"], "a": p["a"], "b": p["b"], "distancia": 1.5, "percentil": .3}
+            for p in h4()["pares"]]
+    tras = []
+    for co in ("Andre Jardine", "Nicolas Larcamon", "Ignacio Ambriz", "Miguel Herrera", "Fernando Ortiz"):
+        cl = sorted(c for (c, x) in ERAS if x == co)
+        for i in range(len(cl)):
+            for j in range(i + 1, len(cl)):
+                tras.append({"coach": co, "club_a": cl[i], "club_b": cl[j], "distancia": 2.2, "percentil": .45})
+    del pos
+    return {"ejes": {"PC1": "dominio con balón", "PC2": "rotación", "varianza": [.47, .2]},
+            "metricas": ["posesion", "field_tilt"], "cargas": {}, "eras": eras,
+            "distancias_todas": {"n": 1378, "mediana": 2.88, "p10": 1.08, "p90": 5.39},
+            "relevos": rel_, "traslados": tras}
+
+
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
               "balon_parado_v2.json": bp, "contexto_v1.json": ctx,
               "jugadores_v1.json": jug, "metricas_v1.json": met,
-              "deriva_proveedor.json": der}
+              "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est}
 
 
 def escribe_sinteticos(d: Path):
@@ -354,6 +413,13 @@ def main():
         corre(gen, rep, out)
         ok &= dom(out, "completo")
         shutil.copy(out, a.deja)
+
+        print("== sin relevos_v1.json")
+        (rep / "relevos_v1.json").rename(rep / "relevos_v1.aparte")
+        out3 = Path(tmp) / "sin_rel.html"
+        corre(gen, rep, out3)
+        ok &= dom(out3, "sin_relevos")
+        (rep / "relevos_v1.aparte").rename(rep / "relevos_v1.json")
 
         print("== sin contexto_v1.json")
         (rep / "contexto_v1.json").unlink()

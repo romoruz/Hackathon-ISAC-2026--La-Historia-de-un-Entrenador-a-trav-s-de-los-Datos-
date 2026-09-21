@@ -30,6 +30,9 @@ PROHIBIDAS: list[tuple[str, str]] = [
     (r"\bpesa\w* mas que\b", "comparación de pesos entre club y técnico (ADR-59 §8)"),
     (r"\bdemuestra\w* que\b", "lenguaje de prueba fuera de nivel A"),
     (r"\bsu idea\b", "rasgo fijo del técnico"),
+    # ADR-60 §7: la descomposición es un reparto contable, no una causa
+    (r"\bse debe[n]? al?\b", "causal (ADR-60 §7)"),
+    (r"\bpor culpa de\b", "causal (ADR-60 §7)"),
 ]
 
 # "se adapta" solo vale dentro de "es compatible con ..." (nivel C)

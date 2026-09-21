@@ -49,7 +49,7 @@ def test_seccion_sin_insumo_declara_comando(tmp_path):
 def test_marcador_real():
     datos, M, _ = modelo_desde(REPORTS)
     J, _ = gen.recolecta(REPORTS, REPORTS / "x")
-    mk = gen.marcador(J)
+    mk = [p for p in gen.marcador(J) if p["adr"] <= 58]   # ADR-60 se cuenta aparte
     por = {}
     for p in mk:
         por.setdefault(p["adr"], [0, 0])

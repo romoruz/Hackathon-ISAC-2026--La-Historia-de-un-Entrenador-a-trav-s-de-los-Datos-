@@ -16,6 +16,8 @@ from frases_prohibidas import revisa
     "el equipo se adapta al rival",
     # adenda 2 §8
     "el club pesa más que el técnico", "esto demuestra que viaja", "su idea sí viaja",
+    # ADR-60 §7
+    "el cambio se debe al plantel", "por culpa de los fichajes",
 ])
 def test_la_lista_detecta(frase):
     assert revisa(frase), frase

@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-21 (h2_32; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-21 (h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -36,6 +36,8 @@ reports/contexto_v1.json        θ por contexto, casos de ADR-57 (ADR-56/57)
 reports/jugadores_v1.json       rotación, roles, primer cambio (ADR-58)
 reports/metricas_v1.json        npxG, OBV, pases progresivos, field tilt (D59-P)
 reports/deriva_proveedor.json   la deriva del proveedor, por torneo
+reports/relevos_v1.json         T, composición contra uso, predicciones (ADR-60; scripts/42_relevos.py)
+reports/estilos_v1.json         mapa de estilos y distancias (ADR-60 §5; scripts/43_mapa_estilos.py)
 data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principal
 ```
 
@@ -45,8 +47,8 @@ data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principa
   ese `team` y ese `coach`), el generador termina con `ZONAS ILEGIBLES` y no
   escribe nada (h2_32). Antes salía `zonas FALTA` con código 0 al correrlo
   fuera de `.venv`.
-- **No lee `reports/barrido/`** (adenda 2 §2). Las distancias del barrido
-  entran con ADR-60.
+- **No lee `reports/barrido/`** (adenda 2 §2). Las distancias entran por
+  `estilos_v1.json`, recalculado desde los JSON; un test lo compara con el barrido.
 - Los archivos por pareja de la etapa vieja (`ic_*`, `plantel_*`, `huella_*`,
   `campo_presion_*`, `presion_indice_*`, `calibracion_*`) **no se usan**.
 
@@ -77,10 +79,10 @@ cierre         común: credibilidad, límites, anexo
 | `a2-6` | contexto | `contexto_v1` | se pinta |
 | `a2-7` | balón parado | `balon_parado_v2` | se pinta |
 | `a2-8` | jugadores y minutos | `jugadores_v1` | se pinta |
-| `a3-1` | el club antes y después de él | `did_h4 › pares` | se pinta |
-| `a3-2` | plantel contra uso | ADR-60 | pendiente |
-| `a3-3` | mapa de estilos | ADR-60 | pendiente |
-| `a3-4` | qué viaja y qué se queda | `did_h4`, `metricas_v1`, `jugadores_v1`, `contexto_v1` | se pinta |
+| `a3-1` | el club antes y después de él | `did_h4 › pares`, `relevos_v1` (T, nivel A) | se pinta |
+| `a3-2` | plantel contra uso | `relevos_v1` (U, C, φ_U; nivel B, o C si depende del umbral) | se pinta |
+| `a3-3` | mapa de estilos | `estilos_v1` (nivel C, sin elipses) | se pinta |
+| `a3-4` | qué viaja y qué se queda | `did_h4`, `metricas_v1`, `jugadores_v1`, `contexto_v1`, `estilos_v1` | se pinta |
 | `c-1` | ¿el método distingue? | todos | se pinta |
 | `c-2` | límites | texto | se pinta |
 | `c-3` | anexo de errores | catálogo | pendiente |

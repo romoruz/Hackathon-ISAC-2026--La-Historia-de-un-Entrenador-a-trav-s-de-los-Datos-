@@ -45,7 +45,20 @@ D.historias.forEach(h => {
     return !CUATRO.every(c => capas.has(c));
   }).map(s => s.id);
   ok(incompletas.length === 0, `${h.id}: toda sección trae sus cuatro capas o se declara (${incompletas})`);
-  ["a2-2", "a3-2", "a3-3"].forEach(id => ok(document.querySelector(`#${id} [data-pendiente]`), `${h.id}: ${id} pendiente`));
+  ok(document.querySelector("#a2-2 [data-pendiente]"), `${h.id}: a2-2 pendiente (ADR-61)`);
+  if (modo !== "sin_relevos") {
+    ["fig_T", "cu", "mapas_dif", "estilos"].forEach(f => {
+      const el = document.querySelector(`[data-fig="${f}"] .lienzo`);
+      ok(el && el.innerHTML.trim().length > 40, `${h.id}: figura ${f} (ADR-60)`);
+    });
+    ok(/Uso del campo tras el relevo/.test(document.getElementById("a3-1").textContent), `${h.id}: 3.1 trae T`);
+    ok(document.querySelectorAll("#a3-2 .fr").length >= 1, `${h.id}: 3.2 con frases`);
+    ok(document.querySelectorAll('[data-fig="estilos"] circle').length >= 20, `${h.id}: el mapa pinta las eras`);
+  } else {
+    ok(/relevos_v1\.json/.test(document.getElementById("a3-2").textContent) && document.querySelector("#a3-2 code"),
+      `${h.id}: 3.2 muestra el comando que falta`);
+    ok(document.querySelector("#a3-1 .hueco"), `${h.id}: 3.1 declara que falta T`);
+  }
   const port = [...document.querySelectorAll("#portada a")];
   ok(port.length === 5 || modo === "sin_contexto", `${h.id}: portada con cinco frases (${port.length})`);
   ok(port.every(a => document.getElementById(a.dataset.ancla)), `${h.id}: cada frase de portada apunta a su sección`);
@@ -148,6 +161,10 @@ if (modo === "completo") {
   const pts = document.querySelectorAll('[data-fig="fig9"] .pto');
   ok(pts.length >= 20, `marcador con ${pts.length} predicciones`);
   ok(document.querySelectorAll('[data-fig="fig9"] .pto.no').length > 0, "los fallos se ven");
+  const f9 = D.cierre.flatMap(x => x.bloques || []).find(b => b.id === "fig9");
+  const nNE = f9 ? f9.datos.filter(p => p.cumple === null || p.cumple === undefined).length : 0;
+  ok(document.querySelectorAll('[data-fig="fig9"] .pto.ne').length === nNE, `las no evaluables se ven punteadas (${nNE})`);
+  ok(/ADR-60/.test(document.getElementById("c-1").textContent), "el cierre cuenta las predicciones de ADR-60");
   ok(document.querySelector("#c-3 [data-pendiente]"), "anexo de errores declarado como pendiente");
 }
 if (modo === "sin_contexto") {

@@ -90,7 +90,7 @@ def test_pendientes_declarados(sint):
     _, datos, _, _ = sint
     for h in datos["historias"]:
         pend = {s["id"]: s["pendiente"]["adr"] for s in h["acto2"] + h["acto3"] if "pendiente" in s}
-        assert pend == {"a2-2": "ADR-61", "a3-2": "ADR-60", "a3-3": "ADR-60"}, h["id"]
+        assert pend == {"a2-2": "ADR-61"}, h["id"]
 
 
 def test_presion_fuera_de_adr54_se_declara(real):
@@ -178,3 +178,36 @@ def test_otra_historia_no_tiene_lectura_preinscrita(tmp_path):
     s23 = next(s for s in _h(datos, "larcamon")["acto2"] if s["id"] == "a2-3")
     ft = next(b for b in s23["bloques"] if b.get("portada") == 2)
     assert "por encima de la liga" in ft["html"]
+
+
+def test_T_y_descomposicion_en_cada_historia(sint):
+    """ADR-60: 3.1 lleva T (A o nulo), 3.2 la descomposición, 3.3 el mapa."""
+    _, datos, _, _ = sint
+    for h in datos["historias"]:
+        s31 = next(s for s in h["acto3"] if s["id"] == "a3-1")
+        assert any("Uso del campo tras el relevo" in b.get("html", "") for b in s31["bloques"]), h["id"]
+        s32 = next(s for s in h["acto3"] if s["id"] == "a3-2")
+        niveles = {b["nivel"] for b in s32["bloques"] if b["tipo"] == "frase"}
+        assert niveles <= {"B", "C"}, (h["id"], niveles)
+        s33 = next(s for s in h["acto3"] if s["id"] == "a3-3")
+        assert all(b["nivel"] == "C" for b in s33["bloques"] if b["tipo"] == "frase")
+
+
+def test_inestable_baja_a_C_y_lo_dice(sint):
+    _, datos, _, _ = sint
+    s32 = next(s for s in _h(datos, "herrera")["acto3"] if s["id"] == "a3-2")
+    inest = [b for b in s32["bloques"] if b["tipo"] == "frase" and "depende del umbral" in b["html"]]
+    assert inest and all(b["nivel"] == "C" for b in inest)
+
+
+def test_sin_uso_estimable_no_da_cifra(sint):
+    _, datos, _, _ = sint
+    s32 = next(s for s in _h(datos, "ambriz")["acto3"] if s["id"] == "a3-2")
+    assert any("no se estima" in b["html"] for b in s32["bloques"] if b["tipo"] == "frase")
+
+
+def test_marcador_separa_adr60_y_no_evaluables(sint):
+    _, datos, _, _ = sint
+    c1 = next(s for s in datos["cierre"] if s["id"] == "c-1")
+    txt = " ".join(b.get("html", "") for b in c1["bloques"])
+    assert "Relevos (ADR-60)" in txt and "no se pudo evaluar" in txt

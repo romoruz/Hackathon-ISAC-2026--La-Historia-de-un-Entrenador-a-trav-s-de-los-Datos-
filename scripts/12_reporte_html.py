@@ -59,6 +59,8 @@ FUENTES = {
     "jug":  ("jugadores_v1.json",     "python scripts/38_jugadores.py"),
     "met":  ("metricas_v1.json",      "python scripts/40_panel_55.py"),
     "der":  ("deriva_proveedor.json", "script de deriva del proveedor (ver 06_DECISIONS)"),
+    "rel":  ("relevos_v1.json",       "python scripts/42_relevos.py"),
+    "est":  ("estilos_v1.json",       "python scripts/43_mapa_estilos.py"),
 }
 
 # Las cinco historias (adenda 2 §2). El orden es el del selector.
@@ -568,6 +570,9 @@ def marcador(J) -> list[dict]:
             for p in J["ctx"]["predicciones"]]
     out += [{"adr": 58, "n": p["n"], "texto": p["texto"], "cumple": p["cumple"]}
             for p in J["jug"]["predicciones"]]
+    if J.get("rel"):
+        out += [{"adr": 60, "n": p["n"], "texto": p["texto"], "cumple": p["cumple"]}
+                for p in J["rel"]["predicciones"]]
     return out
 
 
@@ -1247,6 +1252,41 @@ def s28(M: Modelo, H):
 # ---------------------------------------------------------------------------
 # ACTO 3 · de dónde viene eso (por historia)
 # ---------------------------------------------------------------------------
+def rel_par(J, club, x, y):
+    """La pareja de relevos_v1 (ADR-60) en ese club, en cualquier orden."""
+    hall = [p for p in J["rel"]["pares"] if p.get("club") == club and {p["a"], p["b"]} == {x, y}]
+    if len(hall) > 1:
+        raise KeyError(f"relevos_v1: {len(hall)} parejas para {club}: {x} / {y}")
+    return hall[0] if hall else None
+
+
+def rel_de(J, H):
+    """Parejas de F60 de la historia, en orden de club y de tiempo."""
+    ps = [p for p in J["rel"]["pares"] if p.get("club") in H["clubes"] and H["coach"] in (p["a"], p["b"])]
+    return sorted(ps, key=lambda p: (H["clubes"].index(p["club"]), primer_torneo(J, p["club"], p["a"]),
+                                     primer_torneo(J, p["club"], p["b"])))
+
+
+def f3(v):
+    return f"{v:.3f}"
+
+
+def fpct0(v):
+    return f"{v * 100:.0f}%"
+
+
+def frase_T(M: Modelo, r) -> dict:
+    """ADR-60 §4: T es nivel A; un nulo se lee por el extremo superior del IC."""
+    F = f"relevos_v1 › pares[{r['club']}, {ape(r['a'])}→{ape(r['b'])}]"
+    base = (f"Uso del campo tras el relevo {ape(r['a'])} → {ape(r['b'])} {en_(r['club'])}: T = " +
+            M.c(f3(r["T"]), F + " › T") + M.ic(r["ic95"]["T"], f3, F + " › ic95.T") +
+            M.q(r["q"], F + " › q"))
+    if r["rechaza"]:
+        return M.frase("A", base + ". Cambió más de lo que da el azar al barajar los partidos.")
+    return M.nulo(base + ". No detectamos un cambio en el uso del campo mayor a " +
+                  M.c(f3(r["ic95"]["T"][1]), F + " › ic95.T[1] (extremo)") + ".")
+
+
 CLAVES_H4 = {"Santiago Solari": ("SolJ", "SolJic", "SolJq", ""),
              "Fernando Ortiz": ("OrtJ", "OrtJic", "OrtJq", "OrtJmargen")}
 
@@ -1276,6 +1316,13 @@ def s31(M: Modelo, H):
                f"({ape(otro)} llegó {cuando(J, H, otro, club)}):")
         B.append(frase_contraste(M, etq, e["rel"], e["ic95"], e["q"], e["rechaza_fdr"],
                                  f_pct, m_pct, F, claves))
+        if J.get("rel"):
+            r = rel_par(J, club, a, b)
+            B.append(frase_T(M, r) if r else
+                     M.hueco(1, f"La pareja {ape(a)}–{ape(b)} no está en relevos_v1.json."))
+    if propios and not J.get("rel"):
+        B.append(M.hueco(1, "El cambio en el uso del campo (T, ADR-60) sale de <b>relevos_v1.json</b> (" +
+                         esc(FUENTES["rel"][1]) + ")."))
     if not propios:
         B.append(M.hueco(1, f"No hay parejas del mismo club con {ape(c)} en did_h4_v1."))
     for club in H["clubes"]:
@@ -1293,9 +1340,15 @@ def s31(M: Modelo, H):
                 "q": p["did"]["E_T"]["q"], "rech": p["did"]["E_T"]["rechaza_fdr"],
                 "cru": p["crudo"]["E_T"]["rel"], "cru_ic": p["crudo"]["E_T"]["ic95"],
                 "cru_rech": p["crudo"]["E_T"]["rechaza_fdr"]} for p in ps]),
-        M.nota("Qué parte del cambio viene del plantel y qué parte del uso lo contesta la sección siguiente, "
-               "con ADR-60."),
+        M.nota("Qué parte del cambio viene del plantel y qué parte del uso lo contesta la sección siguiente."),
     ]
+    if J.get("rel") and rel_de(J, H):
+        B.append(M.fig("fig_T", "Cuánto cambió el uso del campo en cada relevo",
+                       "T: distancia de variación total entre las ocupaciones en exceso de la liga "
+                       "(cero: igual; uno: nada en común). Punto lleno: sobrevive a la corrección.",
+                       [{"par": f"{ape(r['a'])} → {ape(r['b'])}", "club": r["club"], "v": r["T"],
+                         "ic": r["ic95"]["T"], "q": r["q"], "r": r["rechaza"],
+                         "nula95": r.get("T_nula_p95")} for r in rel_de(J, H)]))
     if propios:
         p = propios[0]
         Fp = f"did_h4_v1 › pares[{p['club']}, {ape(p['a'])}–{ape(p['b'])}]"
@@ -1313,8 +1366,143 @@ def s31(M: Modelo, H):
         ", " + M.c(str(J["h4"]["n_pares"]), "did_h4_v1 › n_pares") + " pares. " +
         M.cita(rg.get("D53-3", "—"), "did_h4_v1 › reglas_preinscritas.D53-3") + ".",
         "Antes o después: según el primer torneo de cada era (" +
-        M.cita("did_h4_v1 › unidades[].torneos", "did_h4_v1 › unidades[].torneos") + ")."],
-        ["did_h4_v1 › pares[] › did.E_T", "did_h4_v1 › pares[] › crudo.E_T"]))
+        M.cita("did_h4_v1 › unidades[].torneos", "did_h4_v1 › unidades[].torneos") + ")."] +
+        ([M.cita(J["rel"]["reglas"]["D60-1"], "relevos_v1 › reglas.D60-1") + ". " +
+          M.cita(J["rel"]["reglas"]["D60-2"], "relevos_v1 › reglas.D60-2") + ". Familia: " +
+          M.cita(J["rel"]["reglas"]["D60-5"], "relevos_v1 › reglas.D60-5") + "."] if J.get("rel") else []),
+        ["did_h4_v1 › pares[] › did.E_T", "did_h4_v1 › pares[] › crudo.E_T"] +
+        (["relevos_v1 › pares[] › T, q"] if J.get("rel") else [])))
+    return B
+
+
+def s32(M: Modelo, H):
+    M.need("rel")
+    J, c = M.J, H["coach"]
+    rel = J["rel"]
+    ps = rel_de(J, H)
+    u0 = str(rel["parametros"]["umbral"])
+    B = []
+    for r in ps:
+        F = f"relevos_v1 › pares[{r['club']}, {ape(r['a'])}→{ape(r['b'])}]"
+        base = r["umbrales"][u0]
+        etq = f"Relevo {ape(r['a'])} → {ape(r['b'])} {en_(r['club'])}: "
+        k = M.c(str(base["compartidos"]), F + f" › umbrales.{u0}.compartidos")
+        if not r["estimable"]:
+            B.append(M.frase("C", etq + "solo " + k + (" jugador tuvo" if base["compartidos"] == 1 else
+                                                        " jugadores tuvieron") + " al menos " +
+                             M.c(u0, "relevos_v1 › parametros.umbral") + " acciones en las dos eras; "
+                             "la parte del uso no se estima."))
+            continue
+        phi = M.c(fpct0(base["phi_U"]), F + f" › umbrales.{u0}.phi_U")
+        txt = (etq + "del cambio en el uso del campo, " + phi)
+        if r["estable"]:
+            B.append(M.frase("B", txt + M.ic(r["ic95"]["phi_U"], fpct0, F + " › ic95.phi_U") +
+                             " corresponde a cómo cambiaron de zonas los " + k +
+                             " jugadores que siguieron; el resto, a quién jugó."))
+        else:
+            alt = "; ".join("con " + M.c(str(u), "relevos_v1 › parametros.umbrales_sensibilidad") + " acciones, " +
+                            (M.c(fpct0(r["umbrales"][str(u)]["phi_U"]), F + f" › umbrales.{u}.phi_U")
+                             if r["umbrales"][str(u)]["phi_U"] is not None else "no se estima")
+                            for u in rel["parametros"]["umbrales_sensibilidad"])
+            B.append(M.frase("C", txt + " corresponde a los " + k + " jugadores que siguieron. "
+                             "La cifra depende del umbral de compartidos (" + alt + ")."))
+    if not ps:
+        B.append(M.hueco(1, f"No hay parejas de {ape(c)} en relevos_v1.json."))
+    B += [
+        M.fig("cu", "Composición contra uso, por relevo",
+              "½‖C‖₁: quién jugó. ½‖U‖₁: cómo cambiaron de zonas los que siguieron. "
+              "Sin intervalo en la barra; el intervalo de la parte del uso va en el texto.",
+              [{"par": f"{ape(r['a'])} → {ape(r['b'])}", "club": r["club"],
+                "U": r["umbrales"][u0]["U"], "C": r["umbrales"][u0]["C"],
+                "phi": r["umbrales"][u0]["phi_U"], "estimable": r["estimable"]} for r in ps]),
+        M.fig("mapas_dif", "Dónde cambió: el cambio total, la parte del uso y la de composición",
+              "Diferencia de ocupación en exceso de la liga, entrante menos saliente, en puntos "
+              "porcentuales. Mismo rango de color en las tres canchas.",
+              [{"par": f"{ape(r['a'])} → {ape(r['b'])} · {r['club']}", **r["mapas"]} for r in ps]),
+    ]
+    if ps:
+        r = ps[0]
+        F = f"relevos_v1 › pares[{r['club']}, {ape(r['a'])}→{ape(r['b'])}]"
+        B.append(M.ejemplo(f"En el relevo {ape(r['a'])} → {ape(r['b'])} {en_(r['club'])}, " +
+                           M.c(str(r["umbrales"][u0]["compartidos"]), F + f" › umbrales.{u0}.compartidos") +
+                           " jugadores tuvieron al menos " + M.c(u0, "relevos_v1 › parametros.umbral") +
+                           " acciones con los dos técnicos: ellos forman la parte del uso. Todos los "
+                           "demás, y el cambio de minutos de estos, son la composición."))
+    else:
+        B.append(M.hueco(3, "Sin parejas, no hay ejemplo."))
+    sens = "; ".join(
+        f"{ape(r['a'])} → {ape(r['b'])}: " + ", ".join(
+            (M.c(fpct0(r["umbrales"][str(u)]["phi_U"]), f"relevos_v1 › pares[{r['club']}, "
+                 f"{ape(r['a'])}→{ape(r['b'])}] › umbrales.{u}.phi_U")
+             if r["umbrales"][str(u)]["phi_U"] is not None else "—")
+            for u in (100, 200, 400)) for r in ps)
+    js = "; ".join(f"{ape(r['a'])} → {ape(r['b'])} " +
+                   M.c(f3(r["js_Q_crudo"]), f"relevos_v1 › pares[{r['club']}, {ape(r['a'])}→{ape(r['b'])}] › js_Q_crudo")
+                   for r in ps if r.get("js_Q_crudo") is not None)
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        M.cita(rel["reglas"]["D60-3"], "relevos_v1 › reglas.D60-3") + ": la identidad cierra sin residuo "
+        "y la interacción se reparte, por convención, mitad y mitad.",
+        M.cita(rel["reglas"]["D60-4"], "relevos_v1 › reglas.D60-4") + ". La parte del uso con los "
+        "tres umbrales, en ese orden: " + (sens or "—") + ". Se llama estable si los dos alternos "
+        "caen a menos de " + M.c(f"{rel['parametros']['estable_si_dif_menor_a']:.2f}",
+                                 "relevos_v1 › parametros.estable_si_dif_menor_a") + " del valor base.",
+        "Sensibilidad cruda, sin corregir la deriva ni familia: distancia de Jensen–Shannon entre "
+        "las matrices de transición de las dos eras. " + (js or "—") + ".",
+        "Es un reparto contable: no dice por qué cambió el equipo."],
+        ["relevos_v1 › pares[] › umbrales, ic95, mapas"]))
+    return B
+
+
+def s33(M: Modelo, H):
+    M.need("est")
+    J, c = M.J, H["coach"]
+    est = J["est"]
+    Fe = "estilos_v1"
+    mias = [e for e in est["eras"] if e["coach"] == c]
+    pos = {(e["club"], e["coach"]): (e["PC1"], e["PC2"]) for e in est["eras"]}
+    flechas = []
+    for r in est["relevos"]:
+        if r["club"] in H["clubes"] and c in (r["a"], r["b"]):
+            if (r["club"], r["a"]) in pos and (r["club"], r["b"]) in pos:
+                flechas.append({"tipo": "relevo", "de": pos[(r["club"], r["a"])], "a": pos[(r["club"], r["b"])],
+                                "etq": f"{ape(r['a'])} → {ape(r['b'])} · {r['club']}"})
+    for t in est["traslados"]:
+        if t["coach"] == c:
+            flechas.append({"tipo": "traslado", "de": pos[(t["club_a"], c)], "a": pos[(t["club_b"], c)],
+                            "etq": f"{ape(c)}: {t['club_a']} → {t['club_b']}"})
+    d = est["distancias_todas"]
+    B = [
+        M.frase("C", "Cada punto es una era. El eje horizontal resume el " + esc(est["ejes"]["PC1"]) +
+                " (" + M.c(fpct0(est["ejes"]["varianza"][0]), Fe + " › ejes.varianza[0]") +
+                " de la variación entre las " + M.c(str(len(est["eras"])), Fe + " › eras (conteo)") +
+                " eras) y el vertical, la " + esc(est["ejes"]["PC2"]) + " (" +
+                M.c(fpct0(est["ejes"]["varianza"][1]), Fe + " › ejes.varianza[1]") +
+                "). Los nombres de los ejes se eligieron viendo las cargas."),
+        M.frase("C", f"Las eras de {ape(c)} van resaltadas; las flechas unen cada relevo y cada "
+                "cambio de club. Es un mapa descriptivo, sin intervalos."),
+        M.fig("estilos", "Mapa de estilos", "Componentes principales de nueve métricas medidas "
+              "contra la liga del mismo torneo. Toca un punto para ver la era.",
+              {"eras": est["eras"], "coach": c, "flechas": flechas,
+               "ejes": [est["ejes"]["PC1"], est["ejes"]["PC2"]],
+               # hacia dónde crece cada nombre: el signo de la carga que lo define
+               "dir": [-1 if est["cargas"].get("field_tilt", [1, 1])[0] < 0 else 1,
+                       -1 if est["cargas"].get("n80", [1, 1])[1] < 0 else 1]}),
+        M.ejemplo("La distancia entre dos eras cualesquiera tiene mediana " +
+                  M.c(f"{d['mediana']:.2f}", Fe + " › distancias_todas.mediana") + ", y nueve de cada diez quedan por debajo de " +
+                  M.c(f"{d['p90']:.2f}", Fe + " › distancias_todas.p90") + " sobre " +
+                  M.c(str(d["n"]), Fe + " › distancias_todas.n") + " parejas: es la escala para leer "
+                  "cualquier flecha del mapa."),
+        plegable_fuente(M, "Cómo lo medimos", [
+            "Componentes principales de las eras sobre nueve métricas estandarizadas: " +
+            M.cita(", ".join(est["metricas"]), Fe + " › metricas") + ". Mismo cálculo que el barrido "
+            "exploratorio, recalculado desde los JSON.",
+            "Sin elipses: cinco de las nueve métricas no tienen réplicas por partido y unas elipses "
+            "armadas con intervalos marginales inventarían una covarianza (ADR-60).",
+            "La escala de distancias es contexto, nunca criterio de rechazo."],
+            [Fe + " › eras[] › PC1, PC2", Fe + " › cargas"]),
+    ]
+    if not mias:
+        B.insert(1, M.hueco(1, f"Ninguna era de {ape(c)} tiene las nueve métricas completas."))
     return B
 
 
@@ -1392,6 +1580,12 @@ def s34(M: Modelo, H):
     B += [
         M.fig("fig8", f"El mismo técnico en otro club", "Toca una celda para ver el intervalo "
               "y la fuente.", filas),
+        *([M.frase("C", f"En el mapa de estilos, {ape(c)} entre {el_(t['club_a'])} y {el_(t['club_b'])}: "
+                   "distancia " + M.c(f"{t['distancia']:.2f}", f"estilos_v1 › traslados[{ape(c)}, {t['club_a']}–{t['club_b']}] › distancia") +
+                   ", más lejos que " + M.c(fpct0(t["percentil"]), f"estilos_v1 › traslados[{ape(c)}, {t['club_a']}–{t['club_b']}] › percentil") +
+                   " de las parejas de eras de la liga.")
+            for t in J["est"]["traslados"] if t["coach"] == c] if J.get("est") else
+          [M.nota("La distancia en el mapa de estilos sale de estilos_v1.json (" + esc(FUENTES["est"][1]) + ").")]),
         M.frase("C", "La comparación entre clubes no separa plantel, presupuesto ni "
                 "calendario, que cambian con el club; es descriptiva (ADR-37)."),
         M.frase("C", "Entre los técnicos con varios clubes fuera del América, " +
@@ -1405,8 +1599,7 @@ def s34(M: Modelo, H):
         M.nota("El JSON registra la predicción con los once técnicos, incluidos Jardine y "
                "Ortiz: " + M.c(f"{pj['valor'][0]} de {pj['valor'][1]}",
                                "contexto_v1 › predicciones[ADR-57, 1].valor") +
-               ". Con cualquiera de los dos conteos la predicción falla. La distancia entre "
-               "eras del mismo técnico llega con ADR-60."),
+               ". Con cualquiera de los dos conteos la predicción falla."),
     ]
     a0, a1 = filas[0], filas[1] if len(filas) > 1 else None
     if a1:
@@ -1433,7 +1626,9 @@ def s34(M: Modelo, H):
 def c_credibilidad(M: Modelo):
     M.need("h4", "pres", "bp", "ctx", "jug")
     h4, pr = M.J["h4"], M.J["pres"]
-    mk = marcador(M.J)
+    todo = marcador(M.J)
+    mk = [p for p in todo if p["adr"] <= 58]
+    m60 = [p for p in todo if p["adr"] == 60]
     ok = sum(p["cumple"] for p in mk)
     por_adr = {}
     for p in mk:
@@ -1463,8 +1658,15 @@ def c_credibilidad(M: Modelo):
         M.frase("C", "Marcador de predicciones escritas antes de medir: " +
                 M.c(f"{ok} de {len(mk)}", "marcador (predicciones de los JSON + ADR-53 recalculada)", "Marcador") +
                 " se cumplieron (" + resumen + "). Los fallos se muestran en la figura."),
+        *([M.frase("C", "Relevos (ADR-60), escritas antes de calcularlos: " +
+                   M.c(f"{sum(p['cumple'] is True for p in m60)} de {sum(p['cumple'] is not None for p in m60)}",
+                       "relevos_v1 › predicciones") + " se cumplieron" +
+                   ("; " + M.c(str(sum(p['cumple'] is None for p in m60)), "relevos_v1 › predicciones (no evaluables)") +
+                    " no se pudo evaluar" if any(p["cumple"] is None for p in m60) else "") +
+                   ". Cuatro de las seis estaban informadas por el barrido exploratorio y valen menos.")]
+          if m60 else []),
         M.fig("fig9", "Predicciones preinscritas", "Punto lleno: se cumplió. Aro: falló. "
-              "Toca cada una para leerla.", mk),
+              "Punteado: no evaluable. Toca cada una para leerla.", todo),
     ]
 
 
@@ -1507,12 +1709,8 @@ ACTO2 = [
 ]
 ACTO3 = [
     ("a3-1", "3.1", "5.3", "El club antes y después de él", s31, None),
-    ("a3-2", "3.2", "5.3", "¿Cambió el plantel o cambió el uso?", None,
-     {"adr": "ADR-60", "fase": "F2", "que": "la descomposición composición contra uso sobre "
-      "el mapa de 20 zonas y la distancia entre matrices con su nula"}),
-    ("a3-3", "3.3", "5.5", "Mapa de estilos", None,
-     {"adr": "ADR-60", "fase": "F2", "que": "el mapa de las eras con ejes nombrados, "
-      "elipses por remuestreo y una flecha por relevo y por traslado"}),
+    ("a3-2", "3.2", "5.3", "¿Cambió el plantel o cambió el uso?", s32, None),
+    ("a3-3", "3.3", "5.5", "Mapa de estilos", s33, None),
     ("a3-4", "3.4", "diferenciador", "¿Qué viaja con él y qué se queda en el club?", s34, None),
 ]
 CIERRE = [
@@ -2202,6 +2400,7 @@ table.t5{width:100%;border-collapse:collapse;font-size:.86rem}
 .pto{width:22px;height:22px;border-radius:50%;border:2px solid var(--a1);cursor:help}
 .pto.si{background:var(--a1)}
 .pto.no{background:transparent;border-style:solid;border-color:var(--tx3)}
+.pto.ne{background:transparent;border-style:dashed;border-color:var(--tx3)}
 .marcador-total{font-family:var(--mono);font-size:2.6rem;font-weight:700;
  letter-spacing:-.04em;line-height:1}
 
@@ -2372,6 +2571,20 @@ function mapaSVG(m,c,tag,vmax){
     class="pctz">${p}%</text></g>`;
   }
   return g;});
+}
+/* mapa con signo: más (--a1) o menos (--neg) que antes, rango común vm */
+function mapaDif(v,vm){
+ return pitch((s)=>{let g="";
+  for(let ix=0;ix<NX;ix++)for(let iy=0;iy<NY;iy++){
+   const x=v[ix*NY+iy],a=Math.min(1,Math.abs(x)/vm),X0=ix*cw*s,Y0=iy*ch*s;
+   /* un solo tono (15 §5.5): más = lleno, menos = aro punteado; el número va escrito */
+   const t=`${x>=0?"+":"−"}${Math.abs(x*100).toFixed(1)}`;
+   g+=`<g class="celda" data-tip="<b>${esc(FRANJA[iy])}, tercio ${esc(TERCIO[ix])}</b>${t} pp"><rect x="${X0+2.5}" y="${Y0+2.5}" width="${cw*s-5}" height="${ch*s-5}" rx="8"
+    fill="${x>=0?C_FOCO:"none"}" fill-opacity="${x>=0?(.05+.8*a).toFixed(2):0}" stroke="${x>=0?"#fff":C_FOCO}"
+    stroke-opacity="${x>=0?.14:(.25+.7*a).toFixed(2)}" stroke-width="${x>=0?1:1.2+2.4*a}" ${x>=0?"":'stroke-dasharray="4 3"'}/>
+    <text x="${X0+cw*s/2}" y="${Y0+ch*s/2+4}" text-anchor="middle" font-size="10.5" font-family="var(--mono)"
+     fill="${x>=0&&a>.55?"#0b0b0e":"var(--tx)"}" pointer-events="none">${t}</text></g>`;}
+  return g;},300);
 }
 function anillo(v,tit,sub,dec=2,marca){
  const R=54,ini=-.4,fin=.4,C=2*Math.PI*R,largo=C*(fin-ini);
@@ -2610,12 +2823,12 @@ const FIG={
    <div class="nota">de ${x.de}</div></div>`).join("")}</div>`;
  },
  fig9(d){
-  const ok=d.filter(p=>p.cumple).length,grupos={};
+  const ok=d.filter(p=>p.cumple===true&&p.adr<=58).length,n58=d.filter(p=>p.adr<=58).length,grupos={};
   d.forEach(p=>(grupos[p.adr]=grupos[p.adr]||[]).push(p));
   return `<div class="grid duo"><div class="puntos">${Object.entries(grupos).map(([a,ps])=>
-   `<div class="grupo-adr"><u>ADR-${a}</u>${ps.map(p=>`<span class="pto ${p.cumple?"si":"no"}"
-    data-tip="<b>ADR-${a} · predicción ${p.n}</b>${esc(p.texto)}<br>${p.cumple?"se cumplió":"falló"}"></span>`).join("")}</div>`).join("")}</div>
-   <div class="cifra"><u>SE CUMPLIERON</u><b class="marcador-total"><span data-num="${ok}" data-dec="0">0</span> / ${d.length}</b>
+   `<div class="grupo-adr"><u>ADR-${a}</u>${ps.map(p=>`<span class="pto ${p.cumple===null||p.cumple===undefined?"ne":p.cumple?"si":"no"}"
+    data-tip="<b>ADR-${a} · predicción ${p.n}</b>${esc(p.texto)}<br>${p.cumple===null||p.cumple===undefined?"no evaluable":p.cumple?"se cumplió":"falló"}"></span>`).join("")}</div>`).join("")}</div>
+   <div class="cifra"><u>SE CUMPLIERON · ADR-53 A 58</u><b class="marcador-total"><span data-num="${ok}" data-dec="0">0</span> / ${n58}</b>
    <i>Las que fallaron se quedan a la vista.</i></div></div>`;
  },
  eras_pos(d){
@@ -2659,6 +2872,47 @@ const FIG={
    ${c("A","Nulo","Probado sin diferencia: dice el tamaño máximo que descarta.",true)}
    ${c("B","Medido","Contra la liga del mismo torneo, con intervalo.")}
    ${c("C","Descriptivo","Percentiles y comparaciones, sin lenguaje de hallazgo.")}</div>`;
+ },
+ fig_T(d){
+  return bosque(d.map(p=>({etq:p.par,sub:`${p.club} · q = ${(+p.q).toFixed(3)}`,marcas:[{v:p.v,ic:p.ic,lleno:p.r,q:p.q,
+   nota:(p.r?"sobrevive a la corrección":"no sobrevive a la corrección")+(p.nula95!=null?` · percentil 95 de la nula ${(+p.nula95).toFixed(3)}`:"")}]})),
+   v=>(+v).toFixed(3),{refTxt:"SIN CAMBIO"})+leyenda(SW(C_FOCO,"sobrevive"),SW("var(--tx2)","no sobrevive",true));
+ },
+ cu(d){
+  if(!d.length)return vacio("Sin relevos de esta historia en relevos_v1.json.");
+  const mx=Math.max(...d.map(x=>x.U+x.C),1e-9);
+  return `<div class="lista">${d.map(x=>`<div class="item" data-tip="<b>${esc(x.par)} · ${esc(x.club)}</b>uso ${(+x.U).toFixed(3)} · composición ${(+x.C).toFixed(3)}${x.estimable?` · parte del uso ${Math.round(100*x.phi)}%`:" · uso no estimable"}">
+   <div class="it-tx"><div class="it-nom">${esc(x.par)}</div><div class="it-sub">${esc(x.club)}</div></div>
+   <div class="it-bar" style="width:180px"><i style="background:var(--a1);width:${(100*x.U/mx).toFixed(1)}%" data-w="${(100*x.U/mx).toFixed(1)}"></i><i style="background:var(--riv);width:${(100*x.C/mx).toFixed(1)}%" data-w="${(100*x.C/mx).toFixed(1)}"></i></div>
+   <div class="it-val">${x.estimable?Math.round(100*x.phi)+"%":"—"}</div></div>`).join("")}</div>`+
+   leyenda(SW(C_FOCO,"uso"),SW("var(--riv)","composición"),`<span class="leg">a la derecha: parte del uso</span>`);
+ },
+ mapas_dif(d,fid){
+  if(!d.length)return vacio("Sin relevos de esta historia en relevos_v1.json.");
+  const on=+(ESTADO[fid]??0),x=d[Math.min(on,d.length-1)];
+  const vm=Math.max(...["delta","U","C"].flatMap(k=>x[k].map(Math.abs)),1e-9);
+  const sel=d.length>1?seg(fid,d.map((p,i)=>[String(i),p.par])):"";
+  return sel+`<div class="grid g3">${[["delta","cambio total"],["U","uso"],["C","composición"]].map(([k,t])=>
+   `<div class="panel"><div class="mapcap">${t}</div>${mapaDif(x[k],vm)}</div>`).join("")}</div>`+
+   leyenda(SW(C_FOCO,"más que antes"),SW(C_FOCO,"menos que antes (aro)",true),`<span class="leg">escala común ±${(vm*100).toFixed(1)} pp</span>`);
+ },
+ estilos(d){
+  const W=840,H=520,m=46,xs=d.eras.map(e=>e.PC1),ys=d.eras.map(e=>e.PC2);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const X=v=>m+(v-x0)/((x1-x0)||1)*(W-2*m),Y=v=>H-m-(v-y0)/((y1-y0)||1)*(H-2*m);
+  let g=`<svg viewBox="0 0 ${W} ${H}" data-estilos="1"><defs><marker id="punta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--a1)"/></marker></defs>
+   <line x1="${m}" x2="${W-m}" y1="${H-m}" y2="${H-m}" stroke="#fff" stroke-opacity=".2"/><line x1="${m}" x2="${m}" y1="${m}" y2="${H-m}" stroke="#fff" stroke-opacity=".2"/>
+   ${(d.dir||[1,1])[0]>0?`<text x="${W-m}" y="${H-m+30}" text-anchor="end" fill="var(--tx2)" font-size="12">más ${esc(d.ejes[0])} →</text>`
+     :`<text x="${m}" y="${H-m+30}" fill="var(--tx2)" font-size="12">← más ${esc(d.ejes[0])}</text>`}
+   ${(d.dir||[1,1])[1]>0?`<text x="${m-30}" y="${m}" fill="var(--tx2)" font-size="12" transform="rotate(-90 ${m-30} ${m})" text-anchor="end">más ${esc(d.ejes[1])} →</text>`
+     :`<text x="${m-30}" y="${H-m}" fill="var(--tx2)" font-size="12" transform="rotate(-90 ${m-30} ${H-m})">← más ${esc(d.ejes[1])}</text>`}`;
+  d.flechas.forEach(f=>{g+=`<line x1="${X(f.de[0])}" y1="${Y(f.de[1])}" x2="${X(f.a[0])}" y2="${Y(f.a[1])}" stroke="var(--a1)"
+   stroke-width="${f.tipo==="traslado"?2.4:1.4}" ${f.tipo==="traslado"?"":'stroke-dasharray="5 4"'} marker-end="url(#punta)" opacity=".85"><title>${esc(f.etq)}</title></line>`;});
+  d.eras.forEach(e=>{const mia=e.coach===d.coach;
+   g+=`<g data-tip="<b>${esc(e.coach)} · ${esc(e.club)}</b>${e.n_partidos} partidos"><circle cx="${X(e.PC1)}" cy="${Y(e.PC2)}" r="${mia?8:5}"
+    fill="${mia?"var(--a1)":"var(--bg)"}" stroke="${mia?"var(--a1)":"var(--tx3)"}" stroke-width="1.6"/>${mia?`<text x="${X(e.PC1)+11}" y="${Y(e.PC2)+4}" fill="var(--tx)" font-size="12">${esc(e.club)}</text>`:""}</g>`;});
+  return g+`</svg>`+leyenda(SW(C_FOCO,"eras del técnico"),SW("var(--tx3)","otras eras",true),
+   `<span class="leg">línea continua: cambio de club · punteada: relevo</span>`);
  },
  bugs(d){return vacio(`Pendiente: falta la fuente del catálogo en el paquete de insumos.`,d.falta);},
 };
