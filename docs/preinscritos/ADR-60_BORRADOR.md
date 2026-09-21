@@ -1,6 +1,6 @@
 # ADR-60 — Relevos: cuánto cambia el uso del campo y qué parte viene del plantel
 
-> **BORRADOR PREINSCRITO, 2026-09-21.** Escrito antes de `scripts/42_relevos.py`
+> **BORRADOR PREINSCRITO, 2026-09-21 (v2: aditividad explícita, sensibilidad del umbral, n de P5).** Escrito antes de `scripts/42_relevos.py`
 > y de `scripts/43_mapa_estilos.py`. Se commitea solo, antes del código
 > (paquete h2_33).
 >
@@ -70,12 +70,36 @@ es lo que protege de la deriva del proveedor (ADR-53).
 **Descomposición composición / uso.** Cada era es la suma de sus jugadores:
 `p_e = Σ_j w_{j,e} · z_{j,e}`, donde `w` es la fracción de acciones del jugador
 y `z` su ocupación. En exceso, `z*_{j,e} = z_{j,e} − L̄_e`. Como `Σ_j w = 1` en
-cada era, Δ se reparte exactamente en dos partes:
+cada era, `Δ = Σ_j (w_{j,b} z*_{j,b} − w_{j,a} z*_{j,a})`.
 
-- **U (uso)** = `Σ_{j ∈ S} w̄_j · (z*_{j,b} − z*_{j,a})`, con *S* los jugadores
-  compartidos y `w̄` la media de sus dos pesos;
-- **C (composición)** = Δ − U: la entrada y salida de jugadores, el cambio de
-  peso de los compartidos y el resto.
+Para un jugador compartido se usa la descomposición de punto medio (Shapley,
+dos factores), con `w̄ = (w_a + w_b)/2` y `z̄* = (z*_a + z*_b)/2`:
+
+```
+w_b z*_b − w_a z*_a  =  w̄ · Δz*  +  Δw · z̄*        (identidad exacta)
+```
+
+La identidad no deja residuo, pero el término de interacción no desaparece: se
+reparte. Abriendo cada parte,
+
+```
+w̄ · Δz*  = w_a · Δz* + ½ · Δw · Δz*
+Δw · z̄*  = Δw · z*_a + ½ · Δw · Δz*
+```
+
+es decir, **la interacción Δw·Δz\* va mitad a uso y mitad a composición**. Es
+una convención: se elige el punto medio porque no depende de qué era se toma
+como referencia (con los pesos de *a* la interacción iría entera a
+composición; con los de *b*, entera a uso). Se declara aquí para que nadie lea
+el reparto como único.
+
+- **U (uso)** = `Σ_{j ∈ S} w̄_j · (z*_{j,b} − z*_{j,a})`, con *S* los compartidos;
+- **C (composición)** = `Σ_{j ∈ S} Δw_j · z̄*_j` + `Σ_{j ∉ S} (w_{j,b} z*_{j,b} − w_{j,a} z*_{j,a})`,
+  que junta el cambio de peso de los compartidos, la entrada y salida de
+  jugadores y el resto.
+
+Por la identidad, Δ = U + C sin residuo. Un test del script comprueba
+‖Δ − U − C‖∞ < 1e-12 en cada pareja y cada réplica.
 
 **Compartido** significa **al menos 200 acciones en cada una de las dos eras**
 (umbral fijado aquí). Los jugadores bajo el umbral se agrupan en un "resto"
@@ -85,6 +109,13 @@ compartidos, U no se estima y se declara.
 Se publican ½‖C‖₁, ½‖U‖₁ y **φ_U = ‖U‖₁ / (‖U‖₁ + ‖C‖₁)**, la parte del cambio
 que corresponde al uso. C y U pueden compensarse zona a zona; por eso se
 publican las dos normas y el mapa de cada una, no solo φ_U.
+
+**Sensibilidad al umbral.** φ_U depende de quién cuenta como compartido. El
+valor publicado usa 200 acciones; el script calcula también φ_U con **100 y
+400 acciones** y los tres van en el plegable de método. Criterio fijado aquí:
+la cifra de una pareja se llama **estable** si φ_U(100) y φ_U(400) caen a menos
+de 0.10 de φ_U(200); si no, la frase lo dice ("depende del umbral de
+compartidos") y la cifra baja a nivel C. T no depende del umbral.
 
 **Sensibilidad, sin familia:** la distancia de Jensen–Shannon entre las
 matrices Q de las dos eras, en crudo y sin corregir la deriva. Va en el
@@ -119,20 +150,26 @@ estandarización y el mismo signo. Los nombres de los ejes, "dominio con balón"
 - La distancia de cada traslado se da con su percentil entre las distancias de
   todas las parejas de eras (contexto, nivel C).
 - Un test compara el mapa con `reports/barrido/eras.csv` y falla si alguna
-  coordenada difiere en más de 1e-6.
+  coordenada difiere en más de 5e-4 (el CSV guarda tres decimales).
 
 ## 6. Predicciones (antes de calcular T, C y U)
 
 | # | predicción | informada por el barrido |
 |---|---|---|
-| P1 | Tijuana, Herrera → Osorio (15 compartidos): T rechaza tras BH y φ_U ≥ 0.5 | sí |
+| P1 | Tijuana, Herrera → Osorio (15 compartidos con ≥ 450 minutos en ambas, según el barrido): T rechaza tras BH y φ_U ≥ 0.5 | sí |
 | P2 | León, Holan → Larcamón: T **no** rechaza | sí |
 | P3 | Santos, Fentanes → Ambriz: T rechaza | sí |
 | P4 | San Luis, Jardine → {Torrent, Abascal, Leal}: rechazan a lo sumo 1 de 3 | sí |
-| P5 | En las parejas de F60 con U estimable, la correlación de Spearman entre compartidos y φ_U es > 0 | no |
+| P5 | En las parejas de F60 con U estimable (umbral 200), la correlación de Spearman entre compartidos y φ_U es > 0 | no |
 | P6 | Control: Cocca I → Cocca II no rechaza (p > 0.05 sin corregir) | no |
 
 Se cuentan en el marcador del cierre, con las que fallen a la vista.
+
+**Alcance de P5.** Es una predicción de signo, sin contraste: con a lo sumo
+21 parejas (menos las que tengan menos de 3 compartidos) una correlación de
+rangos es frágil. El JSON registra el n. Si n < 10, P5 se marca **no
+evaluable**: no cuenta como cumplida ni como fallida y se muestra aparte en el
+marcador. P1 usa φ_U con el umbral base de 200.
 
 ## 7. Redacción
 
