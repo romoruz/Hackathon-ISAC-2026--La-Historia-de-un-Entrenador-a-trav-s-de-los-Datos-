@@ -61,6 +61,7 @@ FUENTES = {
     "der":  ("deriva_proveedor.json", "script de deriva del proveedor (ver 06_DECISIONS)"),
     "rel":  ("relevos_v1.json",       "python scripts/42_relevos.py"),
     "est":  ("estilos_v1.json",       "python scripts/43_mapa_estilos.py"),
+    "pla":  ("placebo_v1.json",       "python scripts/44_placebo_T.py"),
 }
 
 # Las cinco historias (adenda 2 §2). El orden es el del selector.
@@ -1320,6 +1321,27 @@ def s31(M: Modelo, H):
             r = rel_par(J, club, a, b)
             B.append(frase_T(M, r) if r else
                      M.hueco(1, f"La pareja {ape(a)}–{ape(b)} no está en relevos_v1.json."))
+    if propios and J.get("rel"):
+        # ADR-60 adenda 1 §2 y §4: qué dice el control y el placebo, sacado de los JSON
+        cn = J["rel"]["control_negativo"]
+        Fc = "relevos_v1 › control_negativo"
+        B.append(M.frase("C", f"El control no aisló al técnico: {ape(cn['a'])} → {ape(cn['b'])} {en_(cn['club'])}, "
+                         "el mismo técnico en el mismo club, da T = " + M.c(f3(cn["T"]), Fc + " › T") +
+                         ", por encima del " + M.c("percentil 95", Fc + " › T_nula_p95 (cuantil 0.95 de la nula)") + " de su nula (" + M.c(f3(cn["T_nula_p95"]), Fc + " › T_nula_p95") +
+                         "). Por eso un T que rechaza dice que el uso del campo cambió entre las dos eras, "
+                         "no que lo cambió el técnico.", nota_adenda="Lectura fijada en la adenda 1 de ADR-60 tras el fallo del control.", adenda=1))
+        if J.get("pla"):
+            pl_ = J["pla"]
+            Fp = "placebo_v1"
+            B.append(M.frase("C", "Placebo exploratorio: partiendo cada era en dos mitades por fecha, el uso del "
+                             "campo cambia con mediana T = " + M.c(f3(pl_["resumen"]["mediana"]), Fp + " › resumen.mediana") +
+                             " y " + M.c("percentil 90", Fp + " › resumen.p90 (cuantil 0.9, adenda 1 §4)") + " de " + M.c(f3(pl_["resumen"]["p90"]), Fp + " › resumen.p90") + " sin "
+                             "cambiar de técnico. " + M.c(f"{pl_['k']} de {pl_['de']}", Fp + " › k") +
+                             " relevos quedan por encima de ese corte: " + esc(pl_["lectura_texto"]) + ".",
+                             nota_adenda="Placebo definido en la adenda 1 de ADR-60 antes de calcularlo; lectura fijada de antemano.",
+                             adenda=1))
+        else:
+            B.append(M.hueco(1, "El placebo de T sale de <b>placebo_v1.json</b> (" + esc(FUENTES["pla"][1]) + ")."))
     if propios and not J.get("rel"):
         B.append(M.hueco(1, "El cambio en el uso del campo (T, ADR-60) sale de <b>relevos_v1.json</b> (" +
                          esc(FUENTES["rel"][1]) + ")."))
@@ -1346,9 +1368,10 @@ def s31(M: Modelo, H):
         B.append(M.fig("fig_T", "Cuánto cambió el uso del campo en cada relevo",
                        "T: distancia de variación total entre las ocupaciones en exceso de la liga "
                        "(cero: igual; uno: nada en común). Punto lleno: sobrevive a la corrección.",
-                       [{"par": f"{ape(r['a'])} → {ape(r['b'])}", "club": r["club"], "v": r["T"],
-                         "ic": r["ic95"]["T"], "q": r["q"], "r": r["rechaza"],
-                         "nula95": r.get("T_nula_p95")} for r in rel_de(J, H)]))
+                       {"filas": [{"par": f"{ape(r['a'])} → {ape(r['b'])}", "club": r["club"], "v": r["T"],
+                                   "ic": r["ic95"]["T"], "q": r["q"], "r": r["rechaza"],
+                                   "nula95": r.get("T_nula_p95")} for r in rel_de(J, H)],
+                        "placebo90": J["pla"]["resumen"]["p90"] if J.get("pla") else None}))
     if propios:
         p = propios[0]
         Fp = f"did_h4_v1 › pares[{p['club']}, {ape(p['a'])}–{ape(p['b'])}]"
@@ -1448,7 +1471,10 @@ def s32(M: Modelo, H):
                                  "relevos_v1 › parametros.estable_si_dif_menor_a") + " del valor base.",
         "Sensibilidad cruda, sin corregir la deriva ni familia: distancia de Jensen–Shannon entre "
         "las matrices de transición de las dos eras. " + (js or "—") + ".",
-        "Es un reparto contable: no dice por qué cambió el equipo."],
+        "Es un reparto contable: no dice por qué cambió el equipo.",
+        "Con menos compartidos, más cambio cae en composición por construcción: la correlación entre "
+        "compartidos y la parte del uso es en parte mecánica y no debe leerse como evidencia externa "
+        "(adenda 1 de ADR-60)."],
         ["relevos_v1 › pares[] › umbrales, ic95, mapas"]))
     return B
 
@@ -2873,10 +2899,13 @@ const FIG={
    ${c("B","Medido","Contra la liga del mismo torneo, con intervalo.")}
    ${c("C","Descriptivo","Percentiles y comparaciones, sin lenguaje de hallazgo.")}</div>`;
  },
- fig_T(d){
+ fig_T(D_){
+  const d=D_.filas||D_,p90=D_.placebo90;
   return bosque(d.map(p=>({etq:p.par,sub:`${p.club} · q = ${(+p.q).toFixed(3)}`,marcas:[{v:p.v,ic:p.ic,lleno:p.r,q:p.q,
    nota:(p.r?"sobrevive a la corrección":"no sobrevive a la corrección")+(p.nula95!=null?` · percentil 95 de la nula ${(+p.nula95).toFixed(3)}`:"")}]})),
-   v=>(+v).toFixed(3),{refTxt:"SIN CAMBIO"})+leyenda(SW(C_FOCO,"sobrevive"),SW("var(--tx2)","no sobrevive",true));
+   v=>(+v).toFixed(3),p90!=null?{ref:p90,refTxt:"P90 DEL PLACEBO"}:{refTxt:"SIN CAMBIO"})+
+   leyenda(SW(C_FOCO,"sobrevive"),SW("var(--tx2)","no sobrevive",true),
+    p90!=null?`<span class="leg">línea punteada: percentil 90 del placebo (${(+p90).toFixed(3)}), contexto y no criterio</span>`:"");
  },
  cu(d){
   if(!d.length)return vacio("Sin relevos de esta historia en relevos_v1.json.");

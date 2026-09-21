@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-21 (h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-21 (h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -38,6 +38,7 @@ reports/metricas_v1.json        npxG, OBV, pases progresivos, field tilt (D59-P)
 reports/deriva_proveedor.json   la deriva del proveedor, por torneo
 reports/relevos_v1.json         T, composición contra uso, predicciones (ADR-60; scripts/42_relevos.py)
 reports/estilos_v1.json         mapa de estilos y distancias (ADR-60 §5; scripts/43_mapa_estilos.py)
+reports/placebo_v1.json         placebo exploratorio de T, nivel C (ADR-60 adenda 1 §4; scripts/44_placebo_T.py)
 data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principal
 ```
 
@@ -79,7 +80,7 @@ cierre         común: credibilidad, límites, anexo
 | `a2-6` | contexto | `contexto_v1` | se pinta |
 | `a2-7` | balón parado | `balon_parado_v2` | se pinta |
 | `a2-8` | jugadores y minutos | `jugadores_v1` | se pinta |
-| `a3-1` | el club antes y después de él | `did_h4 › pares`, `relevos_v1` (T, nivel A) | se pinta |
+| `a3-1` | el club antes y después de él | `did_h4 › pares`, `relevos_v1` (T, nivel A; control, nivel C), `placebo_v1` (nivel C) | se pinta |
 | `a3-2` | plantel contra uso | `relevos_v1` (U, C, φ_U; nivel B, o C si depende del umbral) | se pinta |
 | `a3-3` | mapa de estilos | `estilos_v1` (nivel C, sin elipses) | se pinta |
 | `a3-4` | qué viaja y qué se queda | `did_h4`, `metricas_v1`, `jugadores_v1`, `contexto_v1`, `estilos_v1` | se pinta |
@@ -189,6 +190,8 @@ proyecto compilaban. Lo que hay que comprobar es que la página **se pinta**.
 - Nada causal. "El club pesa más que el técnico" y "su idea viaja" tampoco.
 - Ninguna cifra de presión sin decir que es **por acción del rival** (ADR-48).
 - Ninguna distancia del barrido antes de ADR-60.
+- Que un T que rechaza lo "causó" el técnico: el control Cocca I → II también
+  rechaza (adenda 1 de ADR-60). El placebo es contexto, nunca criterio.
 
 ## 9. El generador sintético tiene que reproducir el esquema REAL
 

@@ -336,7 +336,8 @@ def rel():
             "reglas": {"D60-1": "T = ½‖Δ‖₁ en exceso de la liga del mismo torneo",
                        "D60-2": "nula por permutación de partidos", "D60-3": "punto medio",
                        "D60-4": "compartido = al menos 200 acciones", "D60-5": "familia F60, BH 5%"},
-            "pares": pares, "control_negativo": {"p": .5},
+            "pares": pares, "control_negativo": {"club": "Atlas", "a": "Diego Cocca I", "b": "Diego Cocca II",
+                                                 "T": .11, "p": .0002, "T_nula_p95": .03},
             "predicciones": [{"n": i, "texto": f"rel {i}", "cumple": (None if i == 5 else i != 2)}
                              for i in range(1, 7)]}
 
@@ -361,10 +362,20 @@ def est():
             "relevos": rel_, "traslados": tras}
 
 
+def pla():
+    r = rel()
+    return {"nivel": "C", "resumen": {"n": 30, "mediana": .03, "p90": .05, "min": .01, "max": .08},
+            "relevos": [{"club": p["club"], "a": p["a"], "b": p["b"], "T": p["T"],
+                         "percentil_placebo": .5, "sobre_p90": p["T"] > .05} for p in r["pares"]],
+            "k": 3, "de": len(r["pares"]), "lectura": "B",
+            "lectura_texto": "no distinguimos el cambio que acompaña a un relevo del que ya ocurre dentro de una misma era"}
+
+
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
               "balon_parado_v2.json": bp, "contexto_v1.json": ctx,
               "jugadores_v1.json": jug, "metricas_v1.json": met,
-              "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est}
+              "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est,
+              "placebo_v1.json": pla}
 
 
 def escribe_sinteticos(d: Path):

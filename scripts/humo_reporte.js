@@ -52,6 +52,8 @@ D.historias.forEach(h => {
       ok(el && el.innerHTML.trim().length > 40, `${h.id}: figura ${f} (ADR-60)`);
     });
     ok(/Uso del campo tras el relevo/.test(document.getElementById("a3-1").textContent), `${h.id}: 3.1 trae T`);
+    ok(/El control no aisló al técnico/.test(document.getElementById("a3-1").textContent), `${h.id}: 3.1 dice qué pasó con el control`);
+    ok(/Placebo exploratorio/.test(document.getElementById("a3-1").textContent), `${h.id}: 3.1 trae el placebo`);
     ok(document.querySelectorAll("#a3-2 .fr").length >= 1, `${h.id}: 3.2 con frases`);
     ok(document.querySelectorAll('[data-fig="estilos"] circle').length >= 20, `${h.id}: el mapa pinta las eras`);
   } else {
