@@ -31,7 +31,21 @@ ok(!/<script[^>]+src=|<link[^>]+href=["']?http|@import/i.test(html), "sin depend
   const el = document.querySelector(`#acto1 ~ section [data-fig="${f}"] .lienzo, [data-fig="${f}"] .lienzo`);
   ok(el && el.innerHTML.trim().length > 40, `acto 1: figura ${f}`);
 });
-ok(document.querySelector("#a1-6 [data-pendiente]"), "1.6 declarada pendiente (ADR-61)");
+const PROG = modo !== "sin_progresion";
+ok(!/se comunican entre sí;/.test(document.getElementById("a1-2").textContent), "1.2 ya no dice que todos los estados vivos se comunican");
+if (PROG) {
+  ok(/conserva la fase/.test(document.getElementById("a1-2").textContent), "1.2 con la corrección de ADR-61 §0");
+  ["viva", "superv"].forEach(f => {
+    const el = document.querySelector(`[data-fig="${f}"] .lienzo`);
+    ok(el && el.innerHTML.trim().length > 40, `acto 1: figura ${f} (ADR-61)`);
+  });
+  const segv = document.querySelectorAll('[data-fig="viva"] [data-seg] button');
+  ok(segv.length === 3, "1.6: tres pasos de la animación");
+  if (segv.length === 3) { click(segv[2]); ok(/cuasi-estacionaria/.test(document.querySelector('[data-fig="viva"]').textContent), "1.6: el último paso es la cuasi-estacionaria"); }
+} else {
+  ok(/supervivencia_v1\.json/.test(document.getElementById("a1-6").textContent) && document.querySelector("#a1-6 code"), "1.6 sin insumo: muestra el comando");
+  ok(/supervivencia_v1\.json/.test(document.getElementById("a1-7").textContent), "1.7 sin insumo: lo declara");
+}
 
 /* 3. cada historia */
 const CUATRO = [1, 2, 3, 4];
@@ -45,7 +59,27 @@ D.historias.forEach(h => {
     return !CUATRO.every(c => capas.has(c));
   }).map(s => s.id);
   ok(incompletas.length === 0, `${h.id}: toda sección trae sus cuatro capas o se declara (${incompletas})`);
-  ok(document.querySelector("#a2-2 [data-pendiente]"), `${h.id}: a2-2 pendiente (ADR-61)`);
+  if (PROG) {
+    ok(!document.querySelector("#a2-2 [data-pendiente]"), `${h.id}: 2.2 ya no está pendiente`);
+    ok(/franja del área/.test(document.getElementById("a2-2").textContent), `${h.id}: 2.2 habla de la franja del área`);
+    const fp = document.querySelector('#a2-2 [data-fig="prog"] .lienzo');
+    ok(fp && fp.querySelectorAll("circle").length >= 4, `${h.id}: 2.2 figura de las cinco eras`);
+    /* lo esperado sale de los datos embebidos, no de los casos del sintético */
+    const hj = D.historias.find(x => x.id === h.id);
+    const b22 = (hj.acto2.find(x => x.id === "a2-2").bloques || []);
+    const conJug = b22.some(b => b.tipo === "fig" && b.id === "jugada");
+    const jugOk = conJug ? !!document.querySelector('#a2-2 [data-fig="jugada"] circle')
+                         : b22.some(b => b.tipo === "hueco" && b.capa === 3);
+    ok(jugOk, `${h.id}: jugada de ejemplo ${conJug ? "dibujada" : "declarada como hueco"}`);
+    ok(document.querySelector('#a2-2 [data-fig="p4"] circle'), `${h.id}: dispersión de P4`);
+    const b21 = (hj.acto2.find(x => x.id === "a2-1").bloques || []);
+    const conViva = b21.some(b => b.tipo === "fig" && b.id === "viva_era");
+    const vivaOk = conViva ? !!document.querySelector('#a2-1 [data-fig="viva_era"] svg')
+                           : /no es evaluable|progresion_v1/.test(document.getElementById("a2-1").textContent);
+    ok(vivaOk, `${h.id}: 2.1 ${conViva ? "trae dónde vive una posesión viva" : "declara por qué no la trae"}`);
+  } else {
+    ok(/progresion_v1\.json/.test(document.getElementById("a2-2").textContent) && document.querySelector("#a2-2 code"), `${h.id}: 2.2 sin insumo: muestra el comando`);
+  }
   if (modo !== "sin_relevos") {
     ["fig_T", "cu", "mapas_dif", "estilos"].forEach(f => {
       const el = document.querySelector(`[data-fig="${f}"] .lienzo`);

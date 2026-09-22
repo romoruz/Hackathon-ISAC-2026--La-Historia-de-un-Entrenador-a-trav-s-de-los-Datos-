@@ -371,11 +371,86 @@ def pla():
             "lectura_texto": "no distinguimos el cambio que acompaña a un relevo del que ya ocurre dentro de una misma era"}
 
 
+# ------------------------------------------------------------ progresión ---
+HIST = [("jardine", "Andre Jardine"), ("larcamon", "Nicolas Larcamon"), ("ambriz", "Ignacio Ambriz"),
+        ("herrera", "Miguel Herrera"), ("ortiz", "Fernando Ortiz")]
+
+
+def _principal(coach):
+    eras = [(c, ts) for (c, co), ts in ERAS.items() if co == coach]
+    return max(eras, key=lambda e: (len(e[1]), -T.index(e[1][0])))
+
+
+def _pi(sesgo):
+    v = [1 + sesgo * (z // 4) + .3 * (z % 4 in (1, 2)) for z in range(20)]
+    t = sum(v)
+    return [x / t for x in v]
+
+
+def prog():
+    """progresion_v1 (ADR-61) con la forma de 45_progresion.py y sus casos límite:
+    una era que rechaza, un nulo con intervalo que no toca el cero, un τ no
+    evaluable, una cuasi-estacionaria no evaluable, una era sin jugada y una
+    predicción no evaluable."""
+    eras = []
+    for i, (hid, coach) in enumerate(HIST):
+        club, ts = _principal(coach)
+        d = [.18, .04, -.03, .02, .06][i]
+        w = [.05, .08, .06, .03, .09][i]
+
+        def est(v, rech, ok=True, tau_=False):
+            if not ok:
+                return {"evaluable": False, "replicas_validas": 3950, "replicas_no_finitas": 50,
+                        "era": .4, "base": .38, "D": .05, "rel": .05}
+            b0 = 4.2 if tau_ else .42
+            return {"evaluable": True, "era": b0 * (1 + v), "base": b0, "D": v, "rel": v,
+                    "ic95": [v - w, v + w], "ic95_rel": [v - w, v + w], "p": .001 if rech else .2,
+                    "q": .01 if rech else .3, "rechaza": rech, "replicas_validas": 4000,
+                    "replicas_no_finitas": 0}
+        L = est(d, i == 0)
+        tau = est(-d / 2, False, ok=(hid != "herrera"), tau_=True)
+        if hid == "herrera":
+            tau["rechaza"] = False
+        cu = ({"evaluable": False, "era": None, "base": None} if hid == "ambriz" else
+              {"evaluable": True, "era": {"pi": _pi(.4 + i / 10), "lambda1": .82, "vida": 5.6},
+               "base": {"pi": _pi(.3), "lambda1": .8, "vida": 5.0}})
+        jug = None if hid == "ortiz" else {
+            "objetivo": 4, "acciones": 4, "fecha": "2024-03-0%d" % (i + 1), "pid": f"{club}|{i}",
+            "zonas": [1, 5, 10, 14, 18], "fase": "open", "tipos": ["Pass", "Carry", "Pass", "Pass"],
+            "jugadores": ["Uno", "Dos", "Tres", "Cuatro"]}
+        eras.append({"hid": hid, "club": club, "coach": coach, "torneos": ts, "n_partidos": 17 * len(ts),
+                     "n_poss": 4000, "n_poss_fuera": 3900, "n_partidos_base": 600,
+                     "verif": {"E_T": 6.0, "E_T_base": 5.5}, "sens_ix3": {"era": .7, "base": .66, "rel": .06},
+                     "L": L, "tau": tau, "cuasi": cu, "jugada": jug})
+    preds = [{"n": 1, "texto": "prog 1", "cumple": True, "valor": {}},
+             {"n": 2, "texto": "prog 2", "cumple": True, "valor": {}},
+             {"n": 3, "texto": "prog 3", "cumple": None, "valor": {}},
+             {"n": 4, "texto": "prog 4", "cumple": True, "valor": {"rho": .4, "n": 5},
+              "puntos": [{"hid": e["hid"], "D_L": e["L"]["D"], "rel_E_T": .05 * k} for k, e in enumerate(eras)]}]
+    return {"adr": "ADR-61", "reglas_preinscritas": {"D61-1": "franja ix 4"},
+            "parametros": {"franja_ix": 4, "franja": "franja del área: ix = 4, de 96 a 120", "n_boot": 4000},
+            "eras": eras, "familia": {"m": 9, "n_rechazados": 1}, "predicciones": preds}
+
+
+def sup():
+    frames = [_pi(-.2 + k / 10) for k in range(12)]
+    por = [{"torneo": t, "n_poss": 20000 + 100 * i, "descartadas_L1": 0,
+            "S_obs": [max(0, 1 - k / 25) ** 1.3 for k in range(30)],
+            "S_mod": [max(0, 1 - k / 22) ** 1.6 for k in range(30)], "ks": .05,
+            "encima_12": i != 3, "debajo_5": True} for i, t in enumerate(T)]
+    return {"adr": "ADR-61", "fase": {"n": 1500000, "cambian": 0, "f": 0.0, "rama": "bloques", "por_club": []},
+            "liga_16": {"torneo": "A2024", "n_poss": 21000,
+                        "lambda_bloques": {"open": .82, "transition": .7, "restart": .78, "set_piece": .75},
+                        "pi": _pi(.9), "lambda1": .82, "vida": 5.6, "frames": frames},
+            "supervivencia": {"k_max": 30, "por_torneo": por, "torneo_figura": "C2026",
+                              "encima_12": 9, "debajo_5": 10, "de": 10}}
+
+
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
               "balon_parado_v2.json": bp, "contexto_v1.json": ctx,
               "jugadores_v1.json": jug, "metricas_v1.json": met,
               "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est,
-              "placebo_v1.json": pla}
+              "placebo_v1.json": pla, "progresion_v1.json": prog, "supervivencia_v1.json": sup}
 
 
 def escribe_sinteticos(d: Path):
@@ -431,6 +506,15 @@ def main():
         corre(gen, rep, out3)
         ok &= dom(out3, "sin_relevos")
         (rep / "relevos_v1.aparte").rename(rep / "relevos_v1.json")
+
+        print("== sin progresion_v1.json ni supervivencia_v1.json")
+        for n in ("progresion_v1", "supervivencia_v1"):
+            (rep / f"{n}.json").rename(rep / f"{n}.aparte")
+        out4 = Path(tmp) / "sin_prog.html"
+        corre(gen, rep, out4)
+        ok &= dom(out4, "sin_progresion")
+        for n in ("progresion_v1", "supervivencia_v1"):
+            (rep / f"{n}.aparte").rename(rep / f"{n}.json")
 
         print("== sin contexto_v1.json")
         (rep / "contexto_v1.json").unlink()

@@ -20,6 +20,7 @@ BLANCA = [
     r"P = \(Q R ; 0 I\)",           # la matriz por bloques, en el plegable de 1.2
     r"\bF\d\b",                    # fases del roadmap en los huecos declarados
     r"componente 06",
+    r"1/\(1 − λ₁\)",   # notación de la cuasi-estacionaria (ADR-61)
 ]
 
 

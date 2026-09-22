@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-21 (h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-21 (h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -39,6 +39,8 @@ reports/deriva_proveedor.json   la deriva del proveedor, por torneo
 reports/relevos_v1.json         T, composición contra uso, predicciones (ADR-60; scripts/42_relevos.py)
 reports/estilos_v1.json         mapa de estilos y distancias (ADR-60 §5; scripts/43_mapa_estilos.py)
 reports/placebo_v1.json         placebo exploratorio de T, nivel C (ADR-60 adenda 1 §4; scripts/44_placebo_T.py)
+reports/progresion_v1.json      llegada a la franja del área, cuasi-estacionaria por era, jugada, predicciones (ADR-61; scripts/45_progresion.py)
+reports/supervivencia_v1.json   diagnóstico de fase, cuasi-estacionaria de la liga, supervivencia por torneo (ADR-61; scripts/45_progresion.py)
 data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principal
 ```
 
@@ -66,14 +68,19 @@ cierre         común: credibilidad, límites, anexo
 | id | sección | fuente | en h2_31 |
 |---|---|---|---|
 | `a1-1` | la posesión y sus tres preguntas | esquema | se pinta |
-| `a1-2` | la cadena: transitorios y absorbentes | esquema | se pinta |
+| `a1-2` | la cadena: transitorios y absorbentes | esquema; clases desde `supervivencia_v1 › fase` (corregida en h2_35) | se pinta |
 | `a1-3` | cómo se estiman las probabilidades | esquema | se pinta |
 | `a1-4` | en qué confiar (semáforo) | esquema | se pinta |
 | `a1-5` | por qué contra la liga del mismo torneo | `deriva_proveedor`, `did_h4 › firma_temporal` | se pinta |
-| `a1-6` | dónde vive una posesión viva | ADR-61 | pendiente |
-| `a1-7` | por qué no simulamos | texto; la curva es ADR-61 | se pinta, con hueco |
-| `a2-1` | cuánto dura y dónde vive | `did_h4 › unidades`, parquet | se pinta |
-| `a2-2` | progresión | ADR-61 | pendiente |
+| `a1-6` | dónde vive una posesión viva | `supervivencia_v1 › liga_16` (nivel C, bloque de juego abierto) | se pinta |
+| `a1-7` | por qué no simulamos | texto y `supervivencia_v1 › supervivencia` (por torneo) | se pinta |
+| `a2-1` | cuánto dura y dónde vive | `did_h4 › unidades`, parquet, `progresion_v1 › eras[].cuasi` (nivel C) | se pinta |
+| `a2-2` | progresión: llegar a la franja del área | `progresion_v1 › eras` (L y τ, nivel A, F61), jugada por regla, P4 | se pinta |
+
+> **Desvío declarado de ADR-61 §7 (P4).** La ADR pedía la dispersión de P4 *dentro* del plegable de 2.2.
+> Va como figura justo **después** del plegable: el plegable es texto y `test_cifras_trazables` no admite
+> números sueltos en él (los ejes y rótulos los tendrían). El contenido es el mismo: los cinco pares
+> (D_L, ΔE[T]) de `progresion_v1 › predicciones[n=4].puntos` y su ρ.
 | `a2-3` | ocasiones y territorio | `metricas_v1 › global` | se pinta |
 | `a2-4` | sin el balón | `metricas_v1`, `did_presion_v1` | se pinta; presión como hueco fuera de ADR-54 |
 | `a2-5` | torneo tras torneo | `did_h4 › serie_por_torneo`, `metricas_v1 › por_torneo` | se pinta |
@@ -155,11 +162,14 @@ declara con un bloque `hueco` que dice por qué:
 
 | trampa | síntoma | causa |
 |---|---|---|
+| "los estados vivos se comunican" | frase falsa en 1.2 hasta h2_34 | la fase es la del origen de la posesión y no cambia: Q es diagonal por bloques (ADR-61 §0) |
+| "explicación" en una nota | el filtro de frases prohibidas aborta | `\bexplic` es causal; decir "frase" o "texto" |
 | nombre por subcadena | un jugador "Herrera" se cuela en la historia | buscar por `in` en vez de `==` sobre `coach` |
 | `"Club América"` vs `"América"` | el mapa de zonas dice 0 filas | `team` es el valor **de la columna** |
 | par con otro orden | el signo sale al revés | `par()` devuelve si viene invertido; las frases citan el orden del JSON ("A frente a B") |
 | clave `adn` en el JSON embebido | el filtro de frases prohibidas aborta | `\badn\b` es "ADN"; no nombrar así ninguna clave |
 | número en prosa | `test_cifras_trazables` en rojo | escribir "primer acto", no "acto 1"; citar con `M.cita()` |
+| chequeo del humo copiado del sintético | FALLA sobre el informe real aunque la página esté bien | el humo exigía los casos límite del sintético (Ambriz sin cuasi, Ortiz sin jugada); lo esperado se lee de `D` (h2_35b) |
 | `var(--x)` sin declarar | texto gris sin error | una `var()` inválida hereda; `verifica_reporte.py` lo detecta |
 | `color-mix` | barra vacía en navegadores viejos | color plano antes del gradiente |
 
@@ -190,6 +200,7 @@ proyecto compilaban. Lo que hay que comprobar es que la página **se pinta**.
 - Nada causal. "El club pesa más que el técnico" y "su idea viaja" tampoco.
 - Ninguna cifra de presión sin decir que es **por acción del rival** (ADR-48).
 - Ninguna distancia del barrido antes de ADR-60.
+- Que llegar más a la franja del área es jugar "mejor" o "más eficiente" (ADR-61 §8).
 - Que un T que rechaza lo "causó" el técnico: el control Cocca I → II también
   rechaza (adenda 1 de ADR-60). El placebo es contexto, nunca criterio.
 

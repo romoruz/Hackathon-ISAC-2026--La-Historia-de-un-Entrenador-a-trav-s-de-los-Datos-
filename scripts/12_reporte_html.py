@@ -62,6 +62,8 @@ FUENTES = {
     "rel":  ("relevos_v1.json",       "python scripts/42_relevos.py"),
     "est":  ("estilos_v1.json",       "python scripts/43_mapa_estilos.py"),
     "pla":  ("placebo_v1.json",       "python scripts/44_placebo_T.py"),
+    "prog": ("progresion_v1.json",    "python scripts/45_progresion.py"),
+    "sup":  ("supervivencia_v1.json", "python scripts/45_progresion.py"),
 }
 
 # Las cinco historias (adenda 2 §2). El orden es el del selector.
@@ -574,6 +576,9 @@ def marcador(J) -> list[dict]:
     if J.get("rel"):
         out += [{"adr": 60, "n": p["n"], "texto": p["texto"], "cumple": p["cumple"]}
                 for p in J["rel"]["predicciones"]]
+    if J.get("prog"):
+        out += [{"adr": 61, "n": p["n"], "texto": p["texto"], "cumple": p["cumple"]}
+                for p in J["prog"]["predicciones"]]
     return out
 
 
@@ -606,14 +611,84 @@ def a1_cadena(M: Modelo):
                 "cancha junto con la fase del juego. Mientras la posesión sigue viva, pasa "
                 "entre estados <b>transitorios</b>; cuando termina en remate, gol o pérdida, "
                 "cae en un estado <b>absorbente</b> del que ya no sale."),
-        M.frase("C", "Los estados transitorios se comunican entre sí; cada final es una clase "
-                "cerrada. Por eso la distribución estacionaria de la cadena completa es "
-                "trivial (todo acaba en un final) y lo que interesa es dónde vive una "
-                "posesión <i>mientras sigue viva</i>: la distribución cuasi-estacionaria."),
+        *a1_clases(M),
         M.fig("cadena", "Transitorios y absorbentes",
               "Esquema: cuatro estados vivos que se pasan el balón y tres salidas sin "
               "regreso.", None),
         M.plegable("La matriz de la cadena", DEF_MARKOV, capa=None),
+    ]
+
+
+def a1_clases(M: Modelo):
+    """ADR-61 §0 (D61-0): la fase es la del origen de la posesión y no cambia, así
+    que la cadena se parte en cuatro bloques. Hasta h2_34 aquí se decía que todos
+    los estados vivos se comunicaban: era falso."""
+    sup = M.J.get("sup")
+    if not sup:
+        return [M.hueco(1, "La estructura de clases de la cadena sale de <b>supervivencia_v1.json</b> (" +
+                        esc(FUENTES["sup"][1]) + ").")]
+    f = sup["fase"]
+    F = "supervivencia_v1 › fase"
+    return [
+        M.frase("C", "Una posesión conserva la fase con la que empezó: de " +
+                M.c(f"{f['n']:,}".replace(",", " "), F + " › n") + " pasos entre estados vivos de la "
+                "liga, " + M.c(str(f["cambian"]), F + " › cambian") + " cambian de fase. Por eso la "
+                "cadena se parte en cuatro bloques que no se comunican; dentro de cada bloque, las "
+                "zonas sí. Cada final es una clase cerrada: la distribución estacionaria de la cadena "
+                "completa es trivial (todo acaba en un final) y lo que interesa es dónde vive una "
+                "posesión <i>mientras sigue viva</i>, la distribución cuasi-estacionaria."),
+        M.nota("Corrección (ADR-61 §0): hasta la versión anterior esta frase decía que todos los "
+               "estados vivos se comunicaban entre sí. No es así, porque la fase describe cómo empezó "
+               "la posesión. Nada de lo medido cambia; solo esta frase."),
+    ]
+
+
+FASE_ES = {"open": "juego abierto", "transition": "transición",
+           "restart": "reinicio (saque de banda o de meta)", "set_piece": "balón parado"}
+FRANJA_Y = ["banda izquierda", "centro-izquierda", "centro-derecha", "banda derecha"]
+COLUMNA_X = ["cerca de su portería", "en su mitad", "en el medio", "en campo rival",
+             "en la franja del área rival"]
+
+
+def zona_txt(z: int) -> str:
+    ix, iy = divmod(int(z), 4)
+    return f"{FRANJA_Y[iy]}, {COLUMNA_X[ix]}"
+
+
+def matriz(v):
+    return [[v[ix * 4 + iy] for iy in range(4)] for ix in range(5)]
+
+
+def a1_viva(M: Modelo):
+    M.need("sup")
+    l = M.J["sup"]["liga_16"]
+    F = "supervivencia_v1 › liga_16"
+    pi = l["pi"]
+    zm = max(range(len(pi)), key=lambda i: pi[i])
+    lb = l["lambda_bloques"]
+    fmax = max(lb, key=lambda k: lb[k])
+    return [
+        M.frase("C", "Si una posesión de juego abierto sobrevive muchas acciones, deja de importar "
+                "dónde empezó: se reparte siempre igual sobre la cancha. En la liga del torneo " +
+                M.c(l["torneo"], F + " › torneo") + " (el de más posesiones, " +
+                M.c(f"{l['n_poss']:,}".replace(",", " "), F + " › n_poss") + "), esa distribución "
+                "se concentra en " + M.c(zona_txt(zm), F + " › pi (zona de más masa)") + ", con " +
+                M.c(m_pct(pi[zm]), F + " › pi") + ". A una posesión así le quedan, en promedio, " +
+                M.c(m_num(l["vida"], 1), F + " › vida") + " acciones."),
+        M.fig("viva", "Dónde vive una posesión viva, paso a paso",
+              "Juego abierto, liga completa. Al empezar, las posesiones están donde arrancan; paso "
+              "a paso se acomodan en la distribución cuasi-estacionaria, que ya no cambia.",
+              {"frames": l["frames"], "pi": pi, "torneo": l["torneo"]}),
+        M.frase("C", "Los cuatro bloques no terminan al mismo ritmo: el que más tarda en terminar "
+                "es el de " + M.c(FASE_ES.get(fmax, fmax), F + " › lambda_bloques") + ", con λ₁ = " +
+                M.c(m_num(lb[fmax], 3), F + f" › lambda_bloques.{fmax}") + ". A la larga, la "
+                "cuasi-estacionaria de la cadena completa vive en ese bloque."),
+        M.plegable("La cuenta", "<p>π es el vector propio izquierdo de <i>Q</i> del bloque de juego "
+                   "abierto con el valor propio más grande, λ₁ (Perron–Frobenius): π<i>Q</i> = λ₁π. "
+                   "Se verifica iterando: cada paso multiplica la distribución por <i>Q</i> y la "
+                   "renormaliza, desde donde empiezan las posesiones. Las acciones que le quedan a una posesión "
+                   "que ya duró mucho son 1/(1 − λ₁); no es la duración media, que se mide desde "
+                   "el inicio (ADR-61 §3).</p>", capa=None),
     ]
 
 
@@ -672,8 +747,30 @@ def a1_simular(M: Modelo):
         M.frase("C", "La simulación de posesiones (componente 06, opcional) no se incluye: "
                 "la cadena de Markov no reproduce la distribución de longitudes, y simular "
                 "desde ella arrastraría ese sesgo (ADR-21)."),
-        M.hueco(2, "La curva de supervivencia observada contra la de la cadena llega con "
-                "ADR-61 (fase F3)."),
+        *a1_curva(M),
+    ]
+
+
+def a1_curva(M: Modelo):
+    sup = M.J.get("sup")
+    if not sup:
+        return [M.hueco(2, "La curva de supervivencia observada contra la de la cadena sale de "
+                        "<b>supervivencia_v1.json</b> (" + esc(FUENTES["sup"][1]) + ").")]
+    sv = sup["supervivencia"]
+    F = "supervivencia_v1 › supervivencia"
+    t = next(x for x in sv["por_torneo"] if x["torneo"] == sv["torneo_figura"])
+    return [
+        M.frase("C", "Torneo por torneo, para no mezclar la deriva del proveedor: la proporción de "
+                "posesiones que siguen vivas tras " + M.c("12", "ADR-61 §4 (k fijado de antemano)") +
+                " acciones queda por encima de la que predice la cadena en " +
+                M.c(f"{sv['encima_12']} de {sv['de']}", F + " › encima_12") + " torneos, y por debajo "
+                "tras " + M.c("5", "ADR-61 §4 (k fijado de antemano)") + " en " +
+                M.c(f"{sv['debajo_5']} de {sv['de']}", F + " › debajo_5") + ". Hay más posesiones "
+                "muy largas y menos medianas de las que la cadena espera."),
+        M.fig("superv", "Posesiones que siguen vivas, observadas contra la cadena",
+              "Torneo con más posesiones. Proporción de posesiones que superan cada número de "
+              "acciones, entre las de al menos dos (el filtro de la cadena).",
+              {"t": t["torneo"], "obs": t["S_obs"], "mod": t["S_mod"], "ks": t["ks"]}),
     ]
 
 
@@ -715,6 +812,7 @@ def s21(M: Modelo, H):
               filas),
         M.fig("fig2", f"Dónde vive {el_(club)} de {ape(c)}",
               "Porcentaje de las acciones de la cadena en cada zona.", zonas_de(J, club, c)),
+        *s21_viva(M, H),
         M.ejemplo("Una posesión " + del_(club) + f" de {ape(c)} tuvo de media " +
                   M.c(m_num(u["E_T"], 1), Fu + " › E_T") + " acciones; la de la liga en los "
                   "mismos torneos, " + M.c(m_num(u["E_T_base"], 1), Fu + " › E_T_base") + "."),
@@ -726,6 +824,122 @@ def s21(M: Modelo, H):
             " réplicas bootstrap por partido. Nivel B: no pertenece a una familia corregida."],
             [Fu + " › rel_E_T_vs_liga", Fu + " › rel_E_T_vs_liga_ic95"]),
     ]
+    return B
+
+
+def era_prog(J, H):
+    e = next((x for x in J["prog"]["eras"] if x.get("hid") == H["id"]), None)
+    if e is None:
+        return None
+    if e["club"] != H["principal"] or e["coach"] != H["coach"]:
+        sys.exit(f"progresion_v1: la era de {H['id']} es {e['club']} y la página dice {H['principal']}")
+    return e
+
+
+def s21_viva(M: Modelo, H):
+    if not M.J.get("prog"):
+        return [M.nota("Dónde vive una posesión viva de esta era sale de <b>progresion_v1.json</b> (" +
+                       esc(FUENTES["prog"][1]) + ").")]
+    e = era_prog(M.J, H)
+    cq = e["cuasi"] if e else None
+    if not cq or not cq["evaluable"]:
+        return [M.nota("La distribución cuasi-estacionaria de esta era no es evaluable: el bloque de "
+                       "juego abierto no conecta todas las zonas (ADR-61 §3).")]
+    F = f"progresion_v1 › eras[{H['id']}].cuasi"
+    a, b = cq["era"], cq["base"]
+    za = max(range(20), key=lambda i: a["pi"][i])
+    zb = max(range(20), key=lambda i: b["pi"][i])
+    return [
+        M.frase("C", f"En juego abierto, una posesión larga {del_(H['principal'])} de {ape(H['coach'])} "
+                "se concentra en " + M.c(zona_txt(za), F + ".era.pi (zona de más masa)") + " (" +
+                M.c(m_pct(a["pi"][za]), F + ".era.pi") + "); en la liga de los mismos torneos, en " +
+                M.c(zona_txt(zb), F + ".base.pi (zona de más masa)") + " (" +
+                M.c(m_pct(b["pi"][zb]), F + ".base.pi") + "). A esas posesiones les quedan en promedio " +
+                M.c(m_num(a["vida"], 1), F + ".era.vida") + " acciones; en la liga, " +
+                M.c(m_num(b["vida"], 1), F + ".base.vida") + "."),
+        M.fig("viva_era", "Dónde vive una posesión viva: la era y la liga",
+              "Distribución cuasi-estacionaria del bloque de juego abierto. Misma escala en las dos "
+              "canchas.", {"era": matriz(a["pi"]), "base": matriz(b["pi"]),
+                           "etq": [f"{H['principal']} · {ape(H['coach'])}", "liga, mismos torneos"]}),
+    ]
+
+
+def s22(M: Modelo, H):
+    M.need("prog")
+    J, c, club = M.J, H["coach"], H["principal"]
+    P = J["prog"]
+    e = era_prog(J, H)
+    if e is None:
+        return [M.hueco(1, f"progresion_v1.json no trae la era principal de {ape(c)}.")]
+    Fe = f"progresion_v1 › eras[{H['id']}]"
+    B = []
+    L, T = e["L"], e["tau"]
+    if L["evaluable"]:
+        B.append(frase_contraste(
+            M, f"Con {ape(c)}, una posesión {del_(club)} que empieza fuera de la franja del área "
+            "llega a ella antes de terminar con probabilidad " + M.c(m_pct(L["era"]), Fe + " › L.era") +
+            "; la liga de los mismos torneos, desde los mismos puntos de partida, " +
+            M.c(m_pct(L["base"]), Fe + " › L.base") + ". Diferencia relativa:",
+            L["rel"], L["ic95_rel"], L["q"], L["rechaza"], f_pct, m_pct, Fe + " › L.rel"))
+    else:
+        B.append(M.hueco(1, "La probabilidad de llegar no es evaluable para esta era: " +
+                         M.c(str(L["replicas_no_finitas"]), Fe + " › L.replicas_no_finitas") +
+                         " réplicas sin llegadas (ADR-61 §2)."))
+    if T["evaluable"]:
+        B.append(frase_contraste(
+            M, "Cuando llega, tarda " + M.c(m_num(T["era"], 1), Fe + " › tau.era") + " acciones; la "
+            "liga, " + M.c(m_num(T["base"], 1), Fe + " › tau.base") + ". Diferencia relativa:",
+            T["rel"], T["ic95_rel"], T["q"], T["rechaza"], f_pct, m_pct, Fe + " › tau.rel"))
+    else:
+        B.append(M.hueco(1, "El tiempo hasta llegar no es evaluable para esta era: " +
+                         M.c(str(T["replicas_no_finitas"]), Fe + " › tau.replicas_no_finitas") +
+                         " réplicas sin llegadas (ADR-61 §2)."))
+    filas = []
+    for x in P["eras"]:
+        fila = {"etq": f"{x['club']} · {ape(x['coach'])}", "mia": x["hid"] == H["id"]}
+        for k in ("L", "tau"):
+            y = x[k]
+            fila[k] = ({"v": y["rel"], "ic": y["ic95_rel"], "q": y["q"], "r": y["rechaza"]}
+                       if y["evaluable"] else None)
+        filas.append(fila)
+    B.append(M.fig("prog", "Llegar a la franja del área: las cinco eras principales",
+                   "Diferencia relativa contra la liga de los mismos torneos, con su intervalo. Punto "
+                   "lleno: sobrevive a la corrección.", filas))
+    j = e.get("jugada")
+    if j:
+        B.append(M.ejemplo("Una posesión real, elegida por regla y no por ser vistosa (la que tarda en "
+                           "llegar lo más parecido a la media redondeada, " +
+                           M.c(str(j["objetivo"]), Fe + " › jugada.objetivo") + "): el " +
+                           M.c(j["fecha"], Fe + " › jugada.fecha") + ", " + el_(club) + " llegó a la "
+                           "franja del área en " + M.c(str(j["acciones"]), Fe + " › jugada.acciones") +
+                           " acciones, en " + M.c(FASE_ES.get(j["fase"], j["fase"]), Fe + " › jugada.fase") + "."))
+        B.append(M.fig("jugada", "La posesión, zona por zona",
+                       "Cada punto es una acción; el número es su orden. Toca un punto para ver quién "
+                       "la hizo.", j))
+    else:
+        B.append(M.hueco(3, "No hay jugada de ejemplo: el tiempo hasta llegar no se pudo calcular."))
+    s3 = e["sens_ix3"]
+    fam = P["familia"]
+    B.append(plegable_fuente(M, "Cómo lo medimos", [
+        "<b>Franja del área</b>: " + M.cita(P["parametros"]["franja"], "progresion_v1 › parametros.franja") + ".",
+        "<b>Estimandos</b>: <i>L</i> = probabilidad de llegar a la franja antes de que la posesión "
+        "termine, y τ = acciones hasta llegar, entre las que llegan. Solo cuentan las posesiones que "
+        "empiezan fuera de la franja, y la liga se evalúa desde los puntos de partida de la era.",
+        "<b>Comparación</b>: diferencia en logaritmos contra la liga sin el club, en los mismos torneos "
+        "y con su misma mezcla. Intervalo basic con " + M.c(str(L["replicas_validas"]), Fe + " › L.replicas_validas") +
+        " réplicas bootstrap por partido (en la duración de la posesión, arriba, el remuestreo es por posesión).",
+        "<b>Familia</b>: " + M.c(str(fam["m"]), "progresion_v1 › familia.m") + " contrastes (cinco eras × "
+        "dos estimandos), BH al 5%; rechazan " + M.c(str(fam["n_rechazados"]), "progresion_v1 › familia.n_rechazados") + ".",
+        "<b>Sensibilidad</b> (nivel C, fuera de la familia): con las dos últimas columnas como franja, "
+        "la era llega con probabilidad " + M.c(m_pct(s3["era"]), Fe + " › sens_ix3.era") + " y la liga " +
+        M.c(m_pct(s3["base"]), Fe + " › sens_ix3.base") + "."],
+        [Fe + " › L", Fe + " › tau", "progresion_v1 › familia"]))
+    p4 = next((p for p in P["predicciones"] if p["n"] == 4), None)
+    if p4 and p4.get("puntos"):
+        B.append(M.fig("p4", "Llegar no es durar: la llegada contra la duración (P4)",
+                       "Cada punto es una era principal: diferencia de llegada (vertical) contra "
+                       "diferencia de duración de ADR-53 (horizontal).",
+                       {**p4, "puntos": [{**q, "nom": ape(dict(HISTORIAS)[q["hid"]])} for q in p4["puntos"]]}))
     return B
 
 
@@ -1655,6 +1869,7 @@ def c_credibilidad(M: Modelo):
     todo = marcador(M.J)
     mk = [p for p in todo if p["adr"] <= 58]
     m60 = [p for p in todo if p["adr"] == 60]
+    m61 = [p for p in todo if p["adr"] == 61]
     ok = sum(p["cumple"] for p in mk)
     por_adr = {}
     for p in mk:
@@ -1691,6 +1906,13 @@ def c_credibilidad(M: Modelo):
                     " no se pudo evaluar" if any(p["cumple"] is None for p in m60) else "") +
                    ". Cuatro de las seis estaban informadas por el barrido exploratorio y valen menos.")]
           if m60 else []),
+        *([M.frase("C", "Progresión y supervivencia (ADR-61), escritas antes de calcularlas: " +
+                   M.c(f"{sum(p['cumple'] is True for p in m61)} de {sum(p['cumple'] is not None for p in m61)}",
+                       "progresion_v1 › predicciones") + " se cumplieron" +
+                   ("; " + M.c(str(sum(p['cumple'] is None for p in m61)), "progresion_v1 › predicciones (no evaluables)") +
+                    " no se pudo evaluar" if any(p["cumple"] is None for p in m61) else "") +
+                   ". Una estaba informada por ADR-53 y otra replica ADR-21: valen menos.")]
+          if m61 else []),
         M.fig("fig9", "Predicciones preinscritas", "Punto lleno: se cumplió. Aro: falló. "
               "Punteado: no evaluable. Toca cada una para leerla.", todo),
     ]
@@ -1716,16 +1938,12 @@ ACTO1 = [
     ("a1-3", "1.3", "5.6", "Cómo se estiman las probabilidades", a1_estimacion, None),
     ("a1-4", "1.4", "5.6", "En qué confiar", a1_confianza, None),
     ("a1-5", "1.5", "5.6", "Por qué contra la liga del mismo torneo", a1_deriva, None),
-    ("a1-6", "1.6", "5.6", "Dónde vive una posesión viva", None,
-     {"adr": "ADR-61", "fase": "F3", "que": "la distribución cuasi-estacionaria de Q y su "
-      "valor propio, animadas sobre la cancha"}),
+    ("a1-6", "1.6", "5.6", "Dónde vive una posesión viva", a1_viva, None),
     ("a1-7", "1.7", "5.6", "Por qué no simulamos", a1_simular, None),
 ]
 ACTO2 = [
     ("a2-1", "2.1", "5.1 ofensiva", "Con el balón: cuánto dura y dónde vive", s21, None),
-    ("a2-2", "2.2", "5.1 ofensiva", "Progresión: ¿llega al último tercio sin perderlo?", None,
-     {"adr": "ADR-61", "fase": "F3", "que": "la absorción con el último tercio como final y "
-      "los tiempos de primer paso"}),
+    ("a2-2", "2.2", "5.1 ofensiva", "Progresión: ¿llega a la franja del área sin perderla?", s22, None),
     ("a2-3", "2.3", "5.1 ofensiva", "Ocasiones y territorio", s23, None),
     ("a2-4", "2.4", "5.1 defensiva", "Sin el balón", s24, None),
     ("a2-5", "2.5", "5.2 consistencia", "¿La misma idea torneo tras torneo?", s25, None),
@@ -2942,6 +3160,71 @@ const FIG={
     fill="${mia?"var(--a1)":"var(--bg)"}" stroke="${mia?"var(--a1)":"var(--tx3)"}" stroke-width="1.6"/>${mia?`<text x="${X(e.PC1)+11}" y="${Y(e.PC2)+4}" fill="var(--tx)" font-size="12">${esc(e.club)}</text>`:""}</g>`;});
   return g+`</svg>`+leyenda(SW(C_FOCO,"eras del técnico"),SW("var(--tx3)","otras eras",true),
    `<span class="leg">línea continua: cambio de club · punteada: relevo</span>`);
+ },
+ viva(d,fid){
+  const n=d.frames.length,ops=[["0","al empezar"],[String(Math.floor(n/2)),"a mitad"],["pi","a la larga"]];
+  const on=ESTADO[fid]??"0",v=on==="pi"?d.pi:d.frames[Math.min(+on,n-1)];
+  const vm=Math.max(...d.pi,...d.frames.flat());
+  const m=[];for(let ix=0;ix<NX;ix++){m.push([]);for(let iy=0;iy<NY;iy++)m[ix].push(v[ix*NY+iy]);}
+  return seg(fid,ops)+`<div data-viva="1">${mapaSVG(m,C_FOCO,"de las posesiones vivas",vm)}</div>`+
+   leyenda(rampa(C_FOCO,"poca masa","mucha"),`<span class="leg">${on==="pi"?"distribución cuasi-estacionaria":"paso "+on+" de la iteración"} · misma escala en los tres pasos</span>`);
+ },
+ viva_era(d){
+  const vm=Math.max(...d.era.flat(),...d.base.flat());
+  return `<div class="grid par">${[["era",d.etq[0]],["base",d.etq[1]]].map(([k,t])=>
+   `<div class="panel"><div class="mapcap">${esc(t)}</div>${mapaSVG(d[k],C_FOCO,"de las posesiones vivas",vm)}</div>`).join("")}</div>`+
+   leyenda(rampa(C_FOCO,"poca masa","mucha"),"Escala común; los porcentajes de cada cancha suman 100.");
+ },
+ superv(d){
+  const W=840,H=300,x0=58,x1=W-24,y0=20,y1=H-46,K=d.obs.length;
+  const X=k=>x0+(k-1)/(K-1)*(x1-x0),Y=v=>y1-v*(y1-y0);
+  let g=`<svg viewBox="0 0 ${W} ${H}" data-superv="1">`;
+  [0,.5,1].forEach(t=>{g+=`<line x1="${x0}" x2="${x1}" y1="${Y(t)}" y2="${Y(t)}" stroke="#fff" stroke-opacity=".06"/>
+   <text x="${x0-8}" y="${Y(t)+4}" text-anchor="end" fill="var(--tx3)" font-size="10" font-family="var(--mono)">${Math.round(t*100)}%</text>`;});
+  [1,5,10,15,20,25,30].filter(k=>k<=K).forEach(k=>{g+=`<text x="${X(k)}" y="${H-24}" text-anchor="middle" fill="var(--tx2)" font-size="11" font-family="var(--mono)">${k}</text>`;});
+  g+=`<text x="${(x0+x1)/2}" y="${H-6}" text-anchor="middle" fill="var(--tx3)" font-size="11">acciones</text>`;
+  g+=`<polyline points="${d.mod.map((v,i)=>`${X(i+1)},${Y(v)}`).join(" ")}" fill="none" stroke="var(--tx2)" stroke-width="2" stroke-dasharray="6 4"/>`;
+  g+=`<polyline points="${d.obs.map((v,i)=>`${X(i+1)},${Y(v)}`).join(" ")}" fill="none" stroke="var(--a1)" stroke-width="2.4"/>`;
+  d.obs.forEach((v,i)=>{g+=`<g data-tip="<b>más de ${i+1} acciones</b>observado ${(v*100).toFixed(1)}% · cadena ${(d.mod[i]*100).toFixed(1)}%"><circle cx="${X(i+1)}" cy="${Y(v)}" r="9" fill="transparent"/><circle cx="${X(i+1)}" cy="${Y(v)}" r="3" fill="var(--a1)"/></g>`;});
+  return g+`</svg>`+leyenda(SW(C_FOCO,"observado"),SW("var(--tx2)","lo que predice la cadena (punteado)",true),
+   `<span class="leg">torneo ${esc(d.t)} · distancia máxima ${(+d.ks).toFixed(3)}</span>`);
+ },
+ prog(d,fid){
+  const k=ESTADO[fid]??"L",fs=d.filter(x=>x[k]);
+  const sel=seg(fid,[["L","llegar"],["tau","tiempo hasta llegar"]]);
+  if(!fs.length)return sel+vacio("Ninguna era evaluable para este estimando.");
+  return sel+bosque(fs.map(x=>({etq:x.etq,sub:(x.mia?"esta historia · ":"")+`q = ${(+x[k].q).toFixed(3)}`,
+   marcas:[{v:x[k].v,ic:x[k].ic,lleno:x[k].r,q:x[k].q,nota:x[k].r?"sobrevive a la corrección":"no sobrevive a la corrección"}]})),
+   v=>pct(v),{refTxt:"LIGA DE LOS MISMOS TORNEOS"})+leyenda(SW(C_FOCO,"sobrevive"),SW("var(--tx2)","no sobrevive",true));
+ },
+ jugada(d){
+  const z=d.zonas;
+  return pitch((s)=>{
+   const cx=q=>(Math.floor(q/NY)+.5)*cw*s,cy=q=>(q%NY+.5)*ch*s;
+   const jit=i=>((i*37)%11-5)*s*.9;
+   let g=`<rect x="${4*cw*s}" y="0" width="${cw*s}" height="${A*s}" fill="var(--a1)" fill-opacity=".10"/>`;
+   const pts=z.map((q,i)=>[cx(q)+jit(i),cy(q)+jit(i+3)]);
+   g+=`<polyline points="${pts.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="var(--a1)" stroke-width="2.2" stroke-opacity=".8"/>`;
+   pts.forEach(([x,y],i)=>{const ult=i===pts.length-1;
+    const tip=ult?"<b>llega a la franja</b>":`<b>acción ${i+1}</b>${esc((d.jugadores||[])[i]||"")}${d.tipos&&d.tipos[i]?" · "+esc(d.tipos[i]):""}`;
+    g+=`<g data-tip="${tip}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${ult?9:8}" fill="${ult?"var(--a1)":"var(--bg)"}" stroke="var(--a1)" stroke-width="2"/>
+     <text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="var(--mono)" fill="${ult?"var(--bg)":"var(--tx)"}" pointer-events="none">${ult?"★":i+1}</text></g>`;});
+   return g;});
+ },
+ p4(d){
+  const W=560,H=320,m=52,ps=d.puntos,xs=ps.map(p=>p.rel_E_T),ys=ps.map(p=>Math.exp(p.D_L)-1);
+  const lo=a=>Math.min(0,...a),hi=a=>Math.max(0,...a),pad=a=>(hi(a)-lo(a))*.12||.01;
+  const X=v=>m+(v-lo(xs)+pad(xs))/(hi(xs)-lo(xs)+2*pad(xs))*(W-2*m),Y=v=>H-m-(v-lo(ys)+pad(ys))/(hi(ys)-lo(ys)+2*pad(ys))*(H-2*m);
+  let g=`<svg viewBox="0 0 ${W} ${H}" data-p4="1" style="max-width:${W}px">
+   <line x1="${X(0)}" x2="${X(0)}" y1="${m/2}" y2="${H-m}" stroke="#fff" stroke-opacity=".25" stroke-dasharray="4 4"/>
+   <line x1="${m}" x2="${W-m/2}" y1="${Y(0)}" y2="${Y(0)}" stroke="#fff" stroke-opacity=".25" stroke-dasharray="4 4"/>
+   <text x="${W-m/2}" y="${H-m+30}" text-anchor="end" fill="var(--tx2)" font-size="11">duración contra la liga →</text>
+   <text x="${m-34}" y="${m/2}" fill="var(--tx2)" font-size="11" transform="rotate(-90 ${m-34} ${m/2})" text-anchor="end">llegada contra la liga →</text>`;
+  ps.forEach(p=>{const x=X(p.rel_E_T),y=Y(Math.exp(p.D_L)-1);
+   g+=`<g data-tip="<b>${esc(p.nom||p.hid)}</b>duración ${pct(p.rel_E_T)} · llegada ${pct(Math.exp(p.D_L)-1)}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="var(--a1)"/>
+    <text x="${(x+10).toFixed(1)}" y="${(y+4).toFixed(1)}" fill="var(--tx)" font-size="11">${esc(p.nom||p.hid)}</text></g>`;});
+  const r=d.valor&&d.valor.rho;
+  return g+`</svg>`+leyenda(`<span class="leg">ρ de Spearman = ${r==null?"—":(+r).toFixed(2)} con ${ps.length} eras: descriptiva</span>`);
  },
  bugs(d){return vacio(`Pendiente: falta la fuente del catálogo en el paquete de insumos.`,d.falta);},
 };

@@ -90,7 +90,7 @@ def test_pendientes_declarados(sint):
     _, datos, _, _ = sint
     for h in datos["historias"]:
         pend = {s["id"]: s["pendiente"]["adr"] for s in h["acto2"] + h["acto3"] if "pendiente" in s}
-        assert pend == {"a2-2": "ADR-61"}, h["id"]
+        assert pend == {}, h["id"]
 
 
 def test_presion_fuera_de_adr54_se_declara(real):
