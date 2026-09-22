@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-21 (h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-22 (h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -40,7 +40,7 @@ reports/relevos_v1.json         T, composición contra uso, predicciones (ADR-60
 reports/estilos_v1.json         mapa de estilos y distancias (ADR-60 §5; scripts/43_mapa_estilos.py)
 reports/placebo_v1.json         placebo exploratorio de T, nivel C (ADR-60 adenda 1 §4; scripts/44_placebo_T.py)
 reports/progresion_v1.json      llegada a la franja del área, cuasi-estacionaria por era, jugada, predicciones (ADR-61; scripts/45_progresion.py)
-reports/simulador_v1.json       matrices del bloque de juego abierto para el simulador de 1.2 (adenda 3 §6; scripts/46_simulador.py)
+reports/simulador_v2.json       conteos 20 × 24 del juego abierto de la liga y de cada era de las cinco historias, y nombres de jugadores (adenda 4 §5-§6; scripts/46_simulador.py)
 reports/supervivencia_v1.json   diagnóstico de fase, cuasi-estacionaria de la liga, supervivencia por torneo (ADR-61; scripts/45_progresion.py)
 data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principal
 ```
@@ -79,6 +79,7 @@ se borra" se cumple por construcción. Cada sección del cuerpo con anexo lleva 
 | `a1-1` | 1.1 | La cancha, la posesión y cómo termina | `c1_inicios`: 20 zonas, 4 inicios, 4 finales, la frase de los bloques (`supervivencia_v1 › fase`) | `a1_posesion`, `a1_cadena` |
 | `a1-2` | 1.2 | Dónde vive el balón | `c1_sim` (`simulador_v1`) | `a1_viva` (animación, λ₁ por bloque) |
 | `a1-3` | 1.3 | Por qué comparamos contra la liga del mismo torneo | `a1_deriva` | — |
+| `a2-0` | 2.0 | Su carrera, club por club | `c_carrera`: línea de tiempo por club + las tres preguntas por plantilla, nivel C (adenda 4 §2) | — |
 | `a2-1` | 2.1 | Con el balón | frase de portada, mapa de zonas, ejemplo + línea de consistencia y minifigura (`serie_por_torneo`) | `s21` |
 | `a2-2` | 2.2 | ¿Llega al área rival sin perder el balón? | llegada y τ, figura de las cinco eras, jugada | `s22` (con P4) |
 | `a2-3` | 2.3 | Ocasiones y territorio | 2 frases, tarjetas | `s23` |
@@ -114,9 +115,16 @@ selector cambia la historia y repinta la página entera, anexo incluido.
   aria-label): `ADR-\d`, `q =`, `p = 0.`, `IC [`, `N80`, `τ`, `λ`, `π`, `bootstrap`,
   `Benjamini`, `BH al`, `f = 0.`, `F\d\d`, `D\d\d-\d`, `h2_\d\d`, "era principal",
   "la base", "cuasi-estacionaria". Permitidos en el anexo.
-- **Topes por historia** (humo): ≤ 2 500 palabras, ≤ 14 secciones y ≤ 16 figuras en el cuerpo.
+- **Topes por historia** (humo): ≤ 2 500 palabras, ≤ 15 secciones y ≤ 17 figuras en el cuerpo (adenda 4 §8); ninguna lista se apila en una columna de más de doce.
 
-### Simulador (1.2)
+### Sub-selector de club (adenda 4 §3)
+
+`por_club[club]` trae las secciones 2.1 a 2.7 de cada club que no es el principal, construidas con las
+mismas funciones sobre `H` con `principal = club`, `sub = True` y otro `id` (así no corren las guardas
+de las lecturas preinscritas de Jardine). Sin anexo, sin enlace y sin anclas de portada. Si el JSON no
+trae la unidad, la sección lo dice; llegar al área (2.2) solo existe para el club principal.
+
+### Simulador (1.2), antes de la adenda 4
 
 Lee `simulador_v1.json`: la matriz del bloque de juego abierto (20 × 20) de la liga del
 torneo de 1.6 y de la era principal de cada historia. Tocar una casilla empieza ahí; "una
@@ -210,3 +218,12 @@ forma no coincide con la de los JSON reales, la prueba valida menos de lo que
 aparenta.** Al añadir un campo que el generador lee, añadirlo también al
 sintético, **con los casos límite**: el vacío, el bloqueado, el que tiene cero,
 el que sobrevive en una historia sin lectura preinscrita, el homónimo.
+
+
+## 10. Simulador desde h2_37 (adenda 4 §5)
+
+Lee `simulador_v2.json` (conteos). Tocar una zona: tres flechas de salida (las filas de los conteos),
+tres de llegada (las columnas) y cómo termina la acción. «Simula una jugada» sortea con `Math.random` una
+posesión desde la zona tocada hasta un final, con la leyenda "jugada inventada por el modelo, no real".
+«A la larga» itera el reparto. Fuente: la liga, cada club del técnico o todos sus clubes (conteos
+sumados). Una fila sin conteos toma la de la liga.
