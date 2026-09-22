@@ -446,11 +446,35 @@ def sup():
                               "encima_12": 9, "debajo_5": 10, "de": 10}}
 
 
+def _Q(sesgo):
+    Q = [[0.0] * 20 for _ in range(20)]
+    for z in range(20):
+        ix, iy = divmod(z, 4)
+        vec = [(z, 1.0)]
+        for dx, dy, w in ((1, 0, 1 + sesgo), (-1, 0, 1 - sesgo / 2), (0, 1, 1), (0, -1, 1)):
+            jx, jy = ix + dx, iy + dy
+            if 0 <= jx < 5 and 0 <= jy < 4:
+                vec.append((jx * 4 + jy, w))
+        t = sum(w for _, w in vec)
+        for j, w in vec:
+            Q[z][j] = .82 * w / t
+    return Q
+
+
+def sim():
+    a = [1 / 20] * 20
+    return {"adr": "ADR-59 adenda 3 §6", "nivel": "C",
+            "liga": {"torneo": "A2024", "Q": _Q(.3), "alfa": a, "dif_pi": 0.0},
+            "eras": [{"hid": h, "club": _principal(c)[0], "coach": c, "Q": _Q(.2 + i / 10), "alfa": a, "dif_pi": 0.0}
+                     for i, (h, c) in enumerate(HIST)]}
+
+
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
               "balon_parado_v2.json": bp, "contexto_v1.json": ctx,
               "jugadores_v1.json": jug, "metricas_v1.json": met,
               "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est,
-              "placebo_v1.json": pla, "progresion_v1.json": prog, "supervivencia_v1.json": sup}
+              "placebo_v1.json": pla, "progresion_v1.json": prog, "supervivencia_v1.json": sup,
+              "simulador_v1.json": sim}
 
 
 def escribe_sinteticos(d: Path):

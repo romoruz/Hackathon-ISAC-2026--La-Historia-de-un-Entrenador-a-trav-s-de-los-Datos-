@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-21 (h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-21 (h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -40,6 +40,7 @@ reports/relevos_v1.json         T, composición contra uso, predicciones (ADR-60
 reports/estilos_v1.json         mapa de estilos y distancias (ADR-60 §5; scripts/43_mapa_estilos.py)
 reports/placebo_v1.json         placebo exploratorio de T, nivel C (ADR-60 adenda 1 §4; scripts/44_placebo_T.py)
 reports/progresion_v1.json      llegada a la franja del área, cuasi-estacionaria por era, jugada, predicciones (ADR-61; scripts/45_progresion.py)
+reports/simulador_v1.json       matrices del bloque de juego abierto para el simulador de 1.2 (adenda 3 §6; scripts/46_simulador.py)
 reports/supervivencia_v1.json   diagnóstico de fase, cuasi-estacionaria de la liga, supervivencia por torneo (ADR-61; scripts/45_progresion.py)
 data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principal
 ```
@@ -55,75 +56,73 @@ data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principa
 - Los archivos por pareja de la etapa vieja (`ic_*`, `plantel_*`, `huella_*`,
   `campo_presion_*`, `presion_indice_*`, `calibracion_*`) **no se usan**.
 
-## 3. Estructura (ADR-59 adenda 2)
+## 3. Estructura (ADR-59 adenda 3; sustituye a la de la adenda 2)
 
 ```
-portada        cinco frases de la historia activa, en ranuras fijas, con enlace
-acto 1         común: el marco
-acto 2         por historia: cómo juega la era principal
-acto 3         por historia: de dónde viene eso
-cierre         común: credibilidad, límites, anexo
+portada        tesis fija + cinco frases de la historia activa, con enlace
+leyenda        los tres niveles en palabras (probado, medido, descriptivo) + glosario plegado
+primero        común: cancha e inicios (1.1), simulador (1.2), contra la liga del mismo torneo (1.3)
+luego          por historia: 2.1 a 2.7 (siete secciones)
+después        por historia: 3.1 y 3.2
+al final       común: ¿nos creen? y límites
+anexo          plegado: todas las secciones viejas COMPLETAS, sin cambiar una cifra
 ```
 
-| id | sección | fuente | en h2_31 |
-|---|---|---|---|
-| `a1-1` | la posesión y sus tres preguntas | esquema | se pinta |
-| `a1-2` | la cadena: transitorios y absorbentes | esquema; clases desde `supervivencia_v1 › fase` (corregida en h2_35) | se pinta |
-| `a1-3` | cómo se estiman las probabilidades | esquema | se pinta |
-| `a1-4` | en qué confiar (semáforo) | esquema | se pinta |
-| `a1-5` | por qué contra la liga del mismo torneo | `deriva_proveedor`, `did_h4 › firma_temporal` | se pinta |
-| `a1-6` | dónde vive una posesión viva | `supervivencia_v1 › liga_16` (nivel C, bloque de juego abierto) | se pinta |
-| `a1-7` | por qué no simulamos | texto y `supervivencia_v1 › supervivencia` (por torneo) | se pinta |
-| `a2-1` | cuánto dura y dónde vive | `did_h4 › unidades`, parquet, `progresion_v1 › eras[].cuasi` (nivel C) | se pinta |
-| `a2-2` | progresión: llegar a la franja del área | `progresion_v1 › eras` (L y τ, nivel A, F61), jugada por regla, P4 | se pinta |
+**Regla de construcción.** El anexo de cada sección es la función vieja (h2_35) sin tocar;
+el cuerpo es un extracto (`cuerpo_de`: frases de portada primero, las figuras nombradas, el
+ejemplo, los huecos) o una función escrita aparte (1.1, 1.2, 3.1, 3.2, cierre). Así "nada
+se borra" se cumple por construcción. Cada sección del cuerpo con anexo lleva el enlace
+"cómo lo medimos, con todos sus números →".
 
-> **Desvío declarado de ADR-61 §7 (P4).** La ADR pedía la dispersión de P4 *dentro* del plegable de 2.2.
-> Va como figura justo **después** del plegable: el plegable es texto y `test_cifras_trazables` no admite
-> números sueltos en él (los ejes y rótulos los tendrían). El contenido es el mismo: los cinco pares
-> (D_L, ΔE[T]) de `progresion_v1 › predicciones[n=4].puntos` y su ρ.
-| `a2-3` | ocasiones y territorio | `metricas_v1 › global` | se pinta |
-| `a2-4` | sin el balón | `metricas_v1`, `did_presion_v1` | se pinta; presión como hueco fuera de ADR-54 |
-| `a2-5` | torneo tras torneo | `did_h4 › serie_por_torneo`, `metricas_v1 › por_torneo` | se pinta |
-| `a2-6` | contexto | `contexto_v1` | se pinta |
-| `a2-7` | balón parado | `balon_parado_v2` | se pinta |
-| `a2-8` | jugadores y minutos | `jugadores_v1` | se pinta |
-| `a3-1` | el club antes y después de él | `did_h4 › pares`, `relevos_v1` (T, nivel A; control, nivel C), `placebo_v1` (nivel C) | se pinta |
-| `a3-2` | plantel contra uso | `relevos_v1` (U, C, φ_U; nivel B, o C si depende del umbral) | se pinta |
-| `a3-3` | mapa de estilos | `estilos_v1` (nivel C, sin elipses) | se pinta |
-| `a3-4` | qué viaja y qué se queda | `did_h4`, `metricas_v1`, `jugadores_v1`, `contexto_v1`, `estilos_v1` | se pinta |
-| `c-1` | ¿el método distingue? | todos | se pinta |
-| `c-2` | límites | texto | se pinta |
-| `c-3` | anexo de errores | catálogo | pendiente |
+| id | num | sección | cuerpo | anexo |
+|---|---|---|---|---|
+| `a1-1` | 1.1 | La cancha, la posesión y cómo termina | `c1_inicios`: 20 zonas, 4 inicios, 4 finales, la frase de los bloques (`supervivencia_v1 › fase`) | `a1_posesion`, `a1_cadena` |
+| `a1-2` | 1.2 | Dónde vive el balón | `c1_sim` (`simulador_v1`) | `a1_viva` (animación, λ₁ por bloque) |
+| `a1-3` | 1.3 | Por qué comparamos contra la liga del mismo torneo | `a1_deriva` | — |
+| `a2-1` | 2.1 | Con el balón | frase de portada, mapa de zonas, ejemplo + línea de consistencia y minifigura (`serie_por_torneo`) | `s21` |
+| `a2-2` | 2.2 | ¿Llega al área rival sin perder el balón? | llegada y τ, figura de las cinco eras, jugada | `s22` (con P4) |
+| `a2-3` | 2.3 | Ocasiones y territorio | 2 frases, tarjetas | `s23` |
+| `a2-4` | 2.4 | Sin el balón | 2 frases, npxG concedido | `s24` (con presión) |
+| `a2-6` | 2.5 | ¿Cambia según el partido? | 1 frase, tabla | `s26` |
+| `a2-7` | 2.6 | Balón parado | 1 frase, remate y gol | `s27` |
+| `a2-8` | 2.7 | Jugadores y minutos | 2 frases, anillos | `s28` |
+| `a3-1` | 3.1 | El club antes y después de él | `c31`: relevos contados, parte del uso (φ_U solo si estimable y estable), control, placebo, figura | `s31` |
+| `a3-2` | 3.2 | ¿Se lleva su estilo a otro club? | `c32` = extracto de `s33` + `s34` | `s33`, `s34` |
+| `c-1` | C.1 | ¿Nos creen? | `c_nos_creen` | `c_credibilidad` |
+| `c-2` | C.2 | Límites | cinco líneas | `c_limites` |
+
+Anexo suelto: estimación, semáforo, por qué no simulamos, torneo tras torneo (`s25`), plantel
+contra uso (`s32`, id `x-plantel`) y el catálogo de errores (pendiente).
 
 ### Las historias
 
 `HISTORIAS` en el generador: Jardine, Larcamón, Ambriz, Herrera y Ortiz, en
 ese orden. Las eras de cada una son las unidades con `coach` **igual** al del
-técnico (nunca por subcadena: "Herrera" también es un jugador). La **era
-principal** es la de más partidos. El selector cambia la historia y repinta la
-página entera; `render()` no guarda estado parcial.
+técnico (nunca por subcadena). La **era principal** es la de más partidos. El
+selector cambia la historia y repinta la página entera, anexo incluido.
 
-### Las cuatro capas
+### Capas, niveles y lenguaje
 
-Toda sección de los actos 2 y 3 lleva los cuatro `data-capa`. Si falta una, se
-declara con un bloque `hueco` que dice por qué:
+- Cuerpo: **frase y figura** en cada sección, o un hueco que lo declare. "En un partido"
+  donde existe. Los plegables van al anexo, abiertos.
+- Las frases del cuerpo **no imprimen** intervalos ni q (se quitan los `.tec` y el tooltip
+  de fuente); la lectura de q en palabras se queda. Los intervalos se ven en las figuras y
+  en el anexo.
+- Nivel en palabras: probado (A), medido (B), descriptivo (C); "sin diferencia" en un nulo.
+- **Sin interruptor.** `body.tecnica` va siempre puesto para que el anexo muestre todo.
+- **Jerga** (`tests/test_jerga.py` sobre el modelo y el humo sobre el DOM, con tooltips y
+  aria-label): `ADR-\d`, `q =`, `p = 0.`, `IC [`, `N80`, `τ`, `λ`, `π`, `bootstrap`,
+  `Benjamini`, `BH al`, `f = 0.`, `F\d\d`, `D\d\d-\d`, `h2_\d\d`, "era principal",
+  "la base", "cuasi-estacionaria". Permitidos en el anexo.
+- **Topes por historia** (humo): ≤ 2 500 palabras, ≤ 14 secciones y ≤ 16 figuras en el cuerpo.
 
-1. frase con semáforo (`frase`, `nulo`);
-2. figura (`fig`);
-3. "en un partido" (`ejemplo`): cifras de la capa 1 en unidades de un partido.
-   **No es una jugada real**;
-4. "cómo lo medimos" (`plegable`): estimando, comparación, familia, y archivo
-   y campo, citando las reglas del propio JSON.
+### Simulador (1.2)
 
-### Semáforo e interruptor
-
-- Verde = A, ámbar = B, gris = C. Un nulo A va en verde con la marca "nulo". Los
-  tokens `--sem-a/b/c` **solo** se usan en las etiquetas de nivel; ninguna
-  figura los toca.
-- Modo **sencilla** (por defecto): se ocultan `.tec` (intervalos, `q = …`,
-  huella de insumos) y se cierran los plegables de la capa 4. Modo
-  **técnica**: todo visible, plegables abiertos. El margen de un nulo y la
-  lectura de q **nunca** van en `.tec`; hay un test que lo comprueba.
+Lee `simulador_v1.json`: la matriz del bloque de juego abierto (20 × 20) de la liga del
+torneo de 1.6 y de la era principal de cada historia. Tocar una casilla empieza ahí; "una
+acción más" aplica μ → μQ/‖μQ‖; "hasta el final" da 200 pasos; se ve cuántas de cada 100
+siguen vivas (‖μ₀Qⁿ‖). 46 aborta si la distribución límite de su matriz no coincide a 1e-9
+con la publicada por 45.
 
 ## 4. Redacción
 

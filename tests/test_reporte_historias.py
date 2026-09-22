@@ -1,4 +1,4 @@
-"""ADR-59 adenda 2: tres actos, cinco historias, cuatro capas, portada, modo."""
+"""ADR-59 adendas 2 y 3: tres actos, cinco historias, cuerpo corto con frase y figura, anexo completo."""
 import json
 import pathlib
 import re
@@ -55,12 +55,13 @@ def test_eras_y_principal_reales(real):
 
 
 def _capas_completas(datos):
+    """Adenda 3 §3: cada sección del cuerpo lleva frase y figura, o las declara."""
     for h in datos["historias"]:
         for s in h["acto2"] + h["acto3"]:
             if "pendiente" in s or "falta" in s:
                 continue
             capas = {b.get("capa") for b in s["bloques"]}
-            assert {1, 2, 3, 4} <= capas, (h["id"], s["id"], capas)
+            assert {1, 2} <= capas, (h["id"], s["id"], capas)
 
 
 def test_cuatro_capas_sintetico(sint):
@@ -98,14 +99,14 @@ def test_presion_fuera_de_adr54_se_declara(real):
     for hid in ("ambriz", "herrera"):
         s24 = next(s for s in _h(datos, hid)["acto2"] if s["id"] == "a2-4")
         huecos = [b["html"] for b in s24["bloques"] if b["tipo"] == "hueco"]
-        assert huecos and "ADR-54" in huecos[0], hid
+        assert huecos and "seis clubes" in huecos[0], hid
     s24 = next(s for s in _h(datos, "larcamon")["acto2"] if s["id"] == "a2-4")
     assert any("Presión (E2" in b.get("html", "") for b in s24["bloques"])
 
 
 def test_antes_y_despues(sint):
     _, datos, _, _ = sint
-    s31 = next(s for s in _h(datos, "larcamon")["acto3"] if s["id"] == "a3-1")
+    s31 = next(s for s in _h(datos, "larcamon")["anexo"] if s["id"] == "x-a3-1")
     txt = " ".join(b.get("html", "") for b in s31["bloques"])
     assert "Holan llegó antes" in txt and "Berizzo llegó después" in txt
 
@@ -139,9 +140,21 @@ def test_no_lee_el_barrido(tmp_path):
     assert "read_csv" not in src
 
 
-def test_intervalos_y_q_son_tecnicos_y_el_margen_no(sint):
+def test_el_cuerpo_no_trae_intervalos_ni_q(sint):
+    """Adenda 3 §3: en el cuerpo, ni intervalos ni el número de q; la lectura en palabras sí."""
+    _, datos, _, _ = sint
+    for _, s in gen.todas_las_secciones(datos, anexo=False):
+        for b in s.get("bloques", []):
+            h = b.get("html") or ""
+            assert '<span class="tec">' not in h, h[:120]
+            assert not re.search(r"\bq = ", re.sub(r"<[^>]+>", " ", h)), h[:120]
+
+
+def test_en_el_anexo_intervalos_y_q_son_tecnicos_y_el_margen_no(sint):
     _, datos, _, _ = sint
     for _, s in gen.todas_las_secciones(datos):
+        if not s["id"].startswith("x-"):
+            continue
         for b in s.get("bloques", []):
             if b["tipo"] != "frase":
                 continue
@@ -184,30 +197,32 @@ def test_T_y_descomposicion_en_cada_historia(sint):
     """ADR-60: 3.1 lleva T (A o nulo), 3.2 la descomposición, 3.3 el mapa."""
     _, datos, _, _ = sint
     for h in datos["historias"]:
-        s31 = next(s for s in h["acto3"] if s["id"] == "a3-1")
+        s31 = next(s for s in h["anexo"] if s["id"] == "x-a3-1")
         assert any("Uso del campo tras el relevo" in b.get("html", "") for b in s31["bloques"]), h["id"]
-        s32 = next(s for s in h["acto3"] if s["id"] == "a3-2")
+        c31 = next(s for s in h["acto3"] if s["id"] == "a3-1")
+        assert any("reparto de las acciones" in b.get("html", "") for b in c31["bloques"]), h["id"]
+        s32 = next(s for s in h["anexo"] if s["id"] == "x-plantel")
         niveles = {b["nivel"] for b in s32["bloques"] if b["tipo"] == "frase"}
         assert niveles <= {"B", "C"}, (h["id"], niveles)
-        s33 = next(s for s in h["acto3"] if s["id"] == "a3-3")
+        s33 = next(s for s in h["anexo"] if s["id"] == "x-a3-2")
         assert all(b["nivel"] == "C" for b in s33["bloques"] if b["tipo"] == "frase")
 
 
 def test_inestable_baja_a_C_y_lo_dice(sint):
     _, datos, _, _ = sint
-    s32 = next(s for s in _h(datos, "herrera")["acto3"] if s["id"] == "a3-2")
+    s32 = next(s for s in _h(datos, "herrera")["anexo"] if s["id"] == "x-plantel")
     inest = [b for b in s32["bloques"] if b["tipo"] == "frase" and "depende del umbral" in b["html"]]
     assert inest and all(b["nivel"] == "C" for b in inest)
 
 
 def test_sin_uso_estimable_no_da_cifra(sint):
     _, datos, _, _ = sint
-    s32 = next(s for s in _h(datos, "ambriz")["acto3"] if s["id"] == "a3-2")
+    s32 = next(s for s in _h(datos, "ambriz")["anexo"] if s["id"] == "x-plantel")
     assert any("no se estima" in b["html"] for b in s32["bloques"] if b["tipo"] == "frase")
 
 
 def test_marcador_separa_adr60_y_no_evaluables(sint):
     _, datos, _, _ = sint
-    c1 = next(s for s in datos["cierre"] if s["id"] == "c-1")
+    c1 = next(s for s in datos["anexo"] if s["id"] == "x-c-1")
     txt = " ".join(b.get("html", "") for b in c1["bloques"])
     assert "Relevos (ADR-60)" in txt and "no se pudo evaluar" in txt
