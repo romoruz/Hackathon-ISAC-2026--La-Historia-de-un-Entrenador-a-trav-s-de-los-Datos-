@@ -220,6 +220,7 @@ def ctx():
                 # un contraste que sobrevive en una historia sin lectura preinscrita
                 r = (club, coach, c, m) == ("Tigres UANL", "Veljko Paunovic", "rival", "M2")
                 con[f"{c}|{m}"] = {"theta": t, "ic95": ic(t, w), "p": .3,
+                                    "ajuste_unidad": .05 + t, "ajuste_liga": .05,
                                    "q_casos": .01 if r else .5, "rechaza_casos": r}
         tasas["marcador|M1|perdiendo"], tasas["marcador|M1|ganando"] = rng.uniform(5, 7), rng.uniform(4, 6)
         uni.append(U(club, coach, contrastes=con, tasas=tasas))
@@ -461,12 +462,33 @@ def _Q(sesgo):
     return Q
 
 
+def _C(sesgo, n=4000, seed=0):
+    import random as _r
+    g = _r.Random(seed)
+    Q = _Q(sesgo)
+    C = [[0] * 24 for _ in range(20)]
+    for z in range(20):
+        for j in range(20):
+            C[z][j] = int(n * Q[z][j] / 20)
+        for k, w in enumerate((.02, .06, .08, .02)):
+            C[z][20 + k] = int(n * w / 20 * (1 + g.random()))
+    return C
+
+
 def sim():
+    """simulador_v2 (adenda 4 §5-§6): conteos de la liga y de cada era, y nombres."""
     a = [1 / 20] * 20
-    return {"adr": "ADR-59 adenda 3 §6", "nivel": "C",
-            "liga": {"torneo": "A2024", "Q": _Q(.3), "alfa": a, "dif_pi": 0.0},
-            "eras": [{"hid": h, "club": _principal(c)[0], "coach": c, "Q": _Q(.2 + i / 10), "alfa": a, "dif_pi": 0.0}
-                     for i, (h, c) in enumerate(HIST)]}
+    eras = []
+    for i, (h, c) in enumerate(HIST):
+        pr = _principal(c)[0]
+        for (club, co), ts in ERAS.items():
+            if co == c:
+                eras.append({"hid": h, "club": club, "coach": c, "principal": club == pr,
+                             "C": _C(.2 + i / 10, seed=i), "alfa": a, "dif_pi": 0.0 if club == pr else None})
+    return {"adr": "ADR-59 adenda 3 §6 y adenda 4 §5-§6", "nivel": "C", "version": 2,
+            "finales": ["gol", "remate sin gol", "pérdida", "fuera"],
+            "liga": {"torneo": "A2024", "C": _C(.3, seed=9), "alfa": a, "dif_pi": 0.0},
+            "eras": eras, "nombres": {str(k): f"Jugador Nombre {k}" for k in range(1000, 1100)}}
 
 
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
@@ -474,7 +496,7 @@ SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
               "jugadores_v1.json": jug, "metricas_v1.json": met,
               "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est,
               "placebo_v1.json": pla, "progresion_v1.json": prog, "supervivencia_v1.json": sup,
-              "simulador_v1.json": sim}
+              "simulador_v2.json": sim}
 
 
 def escribe_sinteticos(d: Path):

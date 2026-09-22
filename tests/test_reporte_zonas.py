@@ -30,7 +30,7 @@ def test_sin_parquet_es_hueco(tmp_path):
     rep, raiz = _datos(tmp_path)
     datos, _ = _construye(rep, raiz)
     h = datos["historias"][0]
-    fig = next(b for b in h["acto2"][0]["bloques"] if b.get("id") == "fig2")
+    fig = next(b for b in next(x for x in h["acto2"] if x["id"] == "a2-1")["bloques"] if b.get("id") == "fig2")
     assert "falta" in fig["datos"]
 
 
@@ -76,5 +76,5 @@ def test_parquet_bueno_pinta(tmp_path):
     pl.DataFrame({"team": ["América"] * 3, "coach": ["Andre Jardine"] * 3,
                   "from_state": [0, 4, 79]}).write_parquet(raiz / RUTA)
     datos, _ = _construye(rep, raiz)
-    fig = next(b for b in datos["historias"][0]["acto2"][0]["bloques"] if b.get("id") == "fig2")
+    fig = next(b for b in next(x for x in datos["historias"][0]["acto2"] if x["id"] == "a2-1")["bloques"] if b.get("id") == "fig2")
     assert fig["datos"]["n"] == 3 and fig["datos"]["fuera"] == 0

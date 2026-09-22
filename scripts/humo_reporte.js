@@ -19,7 +19,7 @@ const $ = id => document.getElementById(id);
 const PROG = modo !== "sin_progresion";
 
 /* topes y jerga de la adenda 3 (§5 y §7) */
-const TOPE = { palabras: 2500, secciones: 14, figuras: 16 };
+const TOPE = { palabras: 2500, secciones: 15, figuras: 17 };  /* adenda 4 §8 */
 const JERGA = [/ADR-\d/, /\bq =/, /\bp = 0\.\d/, /IC \[/, /N80/, /τ/, /λ/, /π/, /bootstrap/i, /Benjamini/, /BH al/,
   /\bf = 0\.\d/, /\bF\d\d\b/, /D\d\d-\d/, /h2_\d\d/, /\bera principal\b/i, /\bla base\b/i, /cuasi-estacionaria/i];
 function jergaCuerpo() {
@@ -57,28 +57,26 @@ const ini = document.querySelector('#a1-1 [data-fig="inicios"]').textContent;
 ok(["juego abierto", "contragolpe", "saque de banda", "córner", "gol", "pérdida", "balón fuera"].every(x => ini.includes(x)),
   "1.1 nombra las cuatro formas de empezar y los cuatro finales");
 if (PROG) ok(/nunca cambia su forma de empezar/.test($("a1-1").textContent), "1.1 dice que cada forma de empezar es su propio tablero");
-const sim = document.querySelector('#a1-2 [data-fig="sim"]');
-ok(sim && sim.querySelectorAll("[data-z]").length === 20, "1.2 simulador con sus veinte casillas");
-if (sim) {
-  const vivas = () => +sim.querySelector("[data-vivas]").dataset.vivas;
-  click(sim.querySelector('[data-simmapa] [data-z="5"]'));
-  ok(/zona que tocaste/.test(sim.textContent) && vivas() === 100, "tocar una zona empieza ahí, con todas vivas");
-  click(sim.querySelector('[data-sim="uno"]'));
-  const v1 = vivas();
-  ok(v1 < 100 && /1 acciones/.test(sim.textContent), `una acción más: siguen vivas ${v1}`);
-  click(sim.querySelector('[data-sim="diez"]'));
-  ok(vivas() < v1, "diez acciones más: quedan menos vivas");
-  click(sim.querySelector('[data-sim="fin"]'));
-  const fin = [...sim.querySelectorAll("text.pctz")].map(t => t.textContent).join();
-  click(sim.querySelector('[data-sim="reset"]'));
-  click(sim.querySelector('[data-simmapa] [data-z="18"]'));
-  click(sim.querySelector('[data-sim="fin"]'));
-  const fin2 = [...sim.querySelectorAll("text.pctz")].map(t => t.textContent).join();
-  ok(fin === fin2, "hasta el final: empiece donde empiece, el reparto es el mismo");
-  const era = sim.querySelector('[data-sim="era"]');
-  ok(!!era, "se puede cambiar al técnico de la historia");
-  if (era) { click(era); ok(sim.querySelector('[data-sim="era"]').classList.contains("on"), "el botón del técnico queda activo"); }
-  click(sim.querySelector('[data-sim="reset"]'));
+const sim = () => document.querySelector('#a1-2 [data-fig="sim"]');
+ok(sim() && /de dónde viene/.test(sim().textContent), "1.2 simulador de flujos (adenda 4 §5)");
+if (sim()) {
+  click(sim().querySelector('[data-simmapa] [data-z="9"]'));
+  ok(sim().querySelectorAll('[data-flecha="va"]').length === 3 && sim().querySelectorAll('[data-flecha="viene"]').length === 3,
+    "tocar una zona dibuja tres flechas de salida y tres de llegada");
+  ok(/termina la posesión el \d+%/.test(sim().textContent), "dice cómo termina la jugada desde esa zona");
+  const caminos = new Set();
+  for (let k = 0; k < 6; k++) { click(sim().querySelector('[data-sim="jugada"]')); caminos.add(sim().querySelector("[data-simnota]").textContent + sim().querySelectorAll("[data-simmapa] circle").length); }
+  ok(/inventada por el modelo, no real/.test(sim().textContent), "la jugada simulada dice que es inventada por el modelo");
+  ok(caminos.size >= 2, `«otra jugada» sortea jugadas distintas (${caminos.size} de 6)`);
+  click(sim().querySelector('[data-sim="larga"]'));
+  ok(sim().querySelectorAll("text.pctz").length === 20, "«a la larga» pinta el reparto de las veinte zonas");
+  click(document.querySelector('#segHist button[data-k="larcamon"]'));
+  const bs = [...sim().querySelectorAll('[data-sim^="src:"]')].map(b => b.dataset.sim);
+  ok(bs.includes("src:liga") && bs.includes("src:todos") && bs.length === 2 + D.historias.find(h => h.id === "larcamon").eras.length,
+    `el simulador deja elegir la liga, cada club y todos sus clubes (${bs.length})`);
+  click(sim().querySelector('[data-sim="src:todos"]'));
+  ok(sim().querySelector('[data-sim="src:todos"]').classList.contains("on"), "«todos sus clubes» queda activo");
+  click(document.querySelector('#segHist button[data-k="jardine"]'));
 }
 
 /* 3. cada historia */
@@ -87,7 +85,18 @@ D.historias.forEach(h => {
   const hj = D.historias.find(x => x.id === h.id);
   const secs = [...$("informe").querySelectorAll("section")];
   const cuerpo = secs.filter(s => /^a[23]-/.test(s.id));
-  ok(cuerpo.length === 9, `${h.id}: nueve secciones en «cómo juega» y «de dónde viene» (${cuerpo.length})`);
+  ok(cuerpo.length === 10, `${h.id}: diez secciones en «cómo juega» y «de dónde viene» (${cuerpo.length})`);
+  /* adenda 4 §2: la carrera y las tres preguntas */
+  const car = $("a2-0");
+  ok(car && car.querySelectorAll(".c-era").length === h.eras.length, `${h.id}: la carrera trae sus ${h.eras.length} clubes`);
+  ok(["¿Cómo juega donde más dirigió?", "¿Juega igual en sus otros clubes?", "¿Él cambió al club o el club lo cambió a él?"]
+    .every(t => car.textContent.includes(t)), `${h.id}: las tres preguntas, iguales para todos`);
+  if (modo !== "sin_relevos") ok(/no se puede decir que él cambió al club/.test(car.textContent), `${h.id}: la tercera pregunta usa la plantilla fija`);
+  ok([...car.querySelectorAll(".fr")].every(f => f.dataset.nivel === "C"), `${h.id}: las tres respuestas son descriptivas (nivel C)`);
+  /* adenda 4 §8: nada se apila en una columna larga */
+  const apiladas = [...$("informe").querySelectorAll("*")].filter(e => e.children.length > 12 && e.tagName !== "svg" && e.tagName !== "g" && e.tagName !== "TBODY" && e.tagName !== "defs" &&
+    dom.window.getComputedStyle(e).display === "flex" && dom.window.getComputedStyle(e).flexDirection === "column");
+  ok(apiladas.length === 0, `${h.id}: ninguna lista del cuerpo se apila en una columna de más de doce (${apiladas.map(e => e.className).join()})`);
   const incompletas = cuerpo.filter(s => {
     if (s.querySelector("[data-pendiente]") || s.querySelector(".vacio code")) return false;
     const capas = new Set([...s.querySelectorAll("[data-capa]")].map(x => +x.dataset.capa));
@@ -123,12 +132,14 @@ D.historias.forEach(h => {
   }
   /* 3.1 y 3.2 */
   if (modo !== "sin_relevos") {
-    ok(document.querySelector('#a3-1 [data-fig="fig_T"] circle'), `${h.id}: 3.1 con la figura de relevos`);
+    ok(document.querySelectorAll('#a3-1 [data-fig="relevos"] rect').length >= 1, `${h.id}: 3.1 con las barras de relevos`);
     ok(/reparto de las acciones/.test($("a3-1").textContent), `${h.id}: 3.1 cuenta los relevos en palabras`);
     ok(/mismo técnico en el mismo club/.test($("a3-1").textContent), `${h.id}: 3.1 dice qué pasó con el control`);
     ok(/sin cambiar de técnico/.test($("a3-1").textContent), `${h.id}: 3.1 trae el placebo`);
-    if (modo !== "sin_contexto")
+    if (modo !== "sin_contexto") {
       ok(document.querySelectorAll('#a3-2 [data-fig="estilos"] circle').length >= 20, `${h.id}: 3.2 pinta el mapa de estilos`);
+      ok(document.querySelectorAll('#a3-2 [data-esquina]').length === 4 && /Cómo leer el mapa/.test($("a3-2").textContent), `${h.id}: el mapa nombra sus cuatro esquinas y dice cómo leerse`);
+    }
     ok(document.querySelector('#anexo [data-fig="cu"]') && document.querySelector('#anexo [data-fig="mapas_dif"]'),
       `${h.id}: plantel contra uso completo en el anexo`);
   } else {
@@ -141,12 +152,32 @@ D.historias.forEach(h => {
   ok(document.querySelectorAll("[data-portada]").length === port.length * 2, `${h.id}: ninguna frase de portada se duplica en el anexo`);
   const eras = document.querySelectorAll("#eras .chip").length;
   ok(eras === h.eras.length && eras >= 2, `${h.id}: ${eras} clubes en la cabecera`);
+  /* adenda 4 §3: sub-selector de club */
+  const botones = [...document.querySelectorAll("#segClub button")];
+  ok(botones.length === 1 + h.eras.length, `${h.id}: sub-selector con «todos sus clubes» y ${h.eras.length} clubes`);
+  const otro = h.eras.find(e => e.club !== h.principal);
+  if (otro) {
+    click(document.querySelector(`#segClub button[data-k="${otro.club}"]`));
+    ok($("a2-1").textContent.includes(otro.club), `${h.id}: al elegir ${otro.club}, 2.1 habla de ese club`);
+    if (PROG) ok(/solo se hizo en el club donde más dirigió/.test($("a2-2").textContent), `${h.id}: llegar al área dice que solo se midió en el club principal`);
+    ok(!!$("a2-0") && !!$("a3-1"), `${h.id}: la carrera y el bloque de relevos siguen a la vista`);
+    ok(document.querySelectorAll("#portada a").length === port.length, `${h.id}: la portada no cambia con el club`);
+    click(document.querySelector('#segClub button[data-k=""]'));
+  }
   const b24 = (hj.acto2.find(x => x.id === "a2-4").bloques || []);
   if (b24.some(b => b.tipo === "hueco" && /seis clubes/.test(b.html)))
     ok(/seis clubes/.test($("a2-4").textContent), `${h.id}: presión declarada fuera de los seis clubes medidos`);
 });
 click(document.querySelector('#segHist button[data-k="herrera"]'));
 ok(!/Hector/.test($("eras").textContent), "un homónimo no entra a la historia (igualdad exacta)");
+click(document.querySelector('#segHist button[data-k="jardine"]'));
+
+click(document.querySelector('#segHist button[data-k="larcamon"]'));
+if (modo !== "sin_contexto") {
+  ok(document.querySelectorAll('#a2-6 [data-fig="ctx4"] .lienzo .card').length === 4, "contexto en cuatro paneles (adenda 4 §4)");
+  ok(/Los que más jugaron/.test($("a2-8").textContent), "2.7 nombra a los que más jugaron");
+}
+if (modo !== "sin_contexto") ok(document.querySelectorAll('#c-1 [data-fig="marcador"] .tema').length >= 5, "el marcador va agrupado por tema");
 click(document.querySelector('#segHist button[data-k="jardine"]'));
 
 /* 4. niveles y fuentes */
