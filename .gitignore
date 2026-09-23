@@ -11,6 +11,7 @@ data/processed_cruzazul/*
 # regenerable
 reports/*
 !reports/.gitkeep
+!reports/**/*.json
 _cuarentena/
 node_modules/
 _inventario.md
