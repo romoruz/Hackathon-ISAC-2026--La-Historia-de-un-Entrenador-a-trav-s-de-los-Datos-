@@ -1,0 +1,2086 @@
+{
+ "adr": "ADR-62",
+ "corrida": 1,
+ "preinscripcion": "docs/preinscritos/ADR-62_BORRADOR.md",
+ "parametros": {
+  "B": 2000,
+  "seed": 20260923,
+  "alpha": 0.05,
+  "umbral_pases_era": 3000,
+  "umbral_jugadores_era": 20,
+  "umbral_pases_jugador": 100,
+  "min_jugadores_comunes": 8,
+  "solo_completados": true
+ },
+ "aviso_phi_U": "φ_U descompone el cambio en la distribución marginal de recepción (unidad: el pasador), no la matriz de pares que mide T_red. Descriptivo y fuera de F62, como preinscribe ADR-62 §2.",
+ "relevos": [
+  {
+   "club": "América",
+   "a": "Andre Jardine",
+   "b": "Fernando Ortiz",
+   "n_pases_a": 46188,
+   "n_pases_b": 17832,
+   "n_jugadores_a": 57,
+   "n_jugadores_b": 37,
+   "n_jugadores_comunes": 18,
+   "T_red": {
+    "v": 0.4539009261190615,
+    "p": 0.0,
+    "nulo_p50": 0.24631074430874492,
+    "nulo_p90": 0.26466330675454086,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6429057021613531,
+    "b": 0.7391126706402615,
+    "delta": 0.09620696847890842,
+    "p": 0.0,
+    "ic95": [
+     -0.028189666435425965,
+     0.0451313810966047
+    ],
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "phi_U": {
+    "T_marginal": 0.5678193784871962,
+    "U": 0.32933603230898284,
+    "C": 0.24276371348879192,
+    "phi_U": 0.5756619098820509
+   },
+   "portero": {
+    "parte_a": 0.06792889928119858,
+    "parte_b": 0.09031516375056078
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "América",
+   "a": "Andre Jardine",
+   "b": "Santiago Solari",
+   "n_pases_a": 46188,
+   "n_pases_b": 8438,
+   "n_jugadores_a": 57,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 13,
+   "T_red": {
+    "v": 0.5683352138269023,
+    "p": 0.0,
+    "nulo_p50": 0.31749310776657824,
+    "nulo_p90": 0.3517481770042696,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6623576031214378,
+    "b": 0.7415552551840772,
+    "delta": 0.0791976520626394,
+    "p": 0.066,
+    "ic95": [
+     -0.044531995605570515,
+     0.09825292607791163
+    ],
+    "replicas": 2000,
+    "q": 0.08800000000000001,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.7432774823662961,
+    "U": 0.26187566637510196,
+    "C": 0.4910326340188021,
+    "phi_U": 0.347818806404571
+   },
+   "portero": {
+    "parte_a": 0.06996405992898588,
+    "parte_b": 0.0760251244370704
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "América",
+   "a": "Fernando Ortiz",
+   "b": "Santiago Solari",
+   "n_pases_a": 17832,
+   "n_pases_b": 8438,
+   "n_jugadores_a": 37,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 20,
+   "T_red": {
+    "v": 0.4692571306263238,
+    "p": 0.0,
+    "nulo_p50": 0.2984963938087107,
+    "nulo_p90": 0.3177800991154629,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.5864826766997022,
+    "b": 0.5703257988752182,
+    "delta": -0.01615687782448405,
+    "p": 0.5075,
+    "ic95": [
+     -0.03624228715786554,
+     0.05113916170914816
+    ],
+    "replicas": 2000,
+    "q": 0.5373529411764706,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.42159833194937,
+    "U": 0.318964208658643,
+    "C": 0.12089197126329716,
+    "phi_U": 0.7251556831945581
+   },
+   "portero": {
+    "parte_a": 0.094128532974428,
+    "parte_b": 0.08070632851386585
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Atlas",
+   "a": "Benat San Jose",
+   "b": "Benjamin Mora",
+   "n_pases_a": 11832,
+   "n_pases_b": 12074,
+   "n_jugadores_a": 32,
+   "n_jugadores_b": 31,
+   "n_jugadores_comunes": 19,
+   "T_red": {
+    "v": 0.41700886688336053,
+    "p": 0.0,
+    "nulo_p50": 0.2975354370600325,
+    "nulo_p90": 0.31850798214223786,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.5937780083966224,
+    "b": 0.5721596665523843,
+    "delta": -0.021618341844238165,
+    "p": 0.2995,
+    "ic95": [
+     -0.038779415317364084,
+     0.0428489867642722
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.4447134965436827,
+    "U": 0.28249105441477795,
+    "C": 0.1799937872541424,
+    "phi_U": 0.6108114882109049
+   },
+   "portero": {
+    "parte_a": 0.08992562542258282,
+    "parte_b": 0.09147755507702501
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlas",
+   "a": "Benat San Jose",
+   "b": "Diego Cocca I",
+   "n_pases_a": 11832,
+   "n_pases_b": 16285,
+   "n_jugadores_a": 32,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 9,
+   "T_red": {
+    "v": 0.26783625730994154,
+    "p": 0.0,
+    "nulo_p50": 0.18835507525315015,
+    "nulo_p90": 0.20980166437255435,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6509854631507774,
+    "b": 0.663435062941357,
+    "delta": 0.01244959979057958,
+    "p": 0.652,
+    "ic95": [
+     -0.06039830656315541,
+     0.04762207555442274
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5866707853247066,
+    "U": 0.30716407509662746,
+    "C": 0.2816524656283998,
+    "phi_U": 0.5216634619645828
+   },
+   "portero": {
+    "parte_a": 0.0900946585530764,
+    "parte_b": 0.079060485108996
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlas",
+   "a": "Benat San Jose",
+   "b": "Diego Cocca II",
+   "n_pases_a": 11832,
+   "n_pases_b": 9564,
+   "n_jugadores_a": 32,
+   "n_jugadores_b": 28,
+   "n_jugadores_comunes": 12,
+   "T_red": {
+    "v": 0.4622455512575416,
+    "p": 0.0,
+    "nulo_p50": 0.29180031617383095,
+    "nulo_p90": 0.3208358423472383,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.637779608970025,
+    "b": 0.651906454760909,
+    "delta": 0.01412684579088408,
+    "p": 0.4645,
+    "ic95": [
+     -0.03523157796491898,
+     0.03817315856709375
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.6135288645809208,
+    "U": 0.32049257302620576,
+    "C": 0.2992105381206229,
+    "phi_U": 0.5171711538338076
+   },
+   "portero": {
+    "parte_a": 0.0922075726842461,
+    "parte_b": 0.0790987034713509
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlas",
+   "a": "Benjamin Mora",
+   "b": "Diego Cocca I",
+   "n_pases_a": 12074,
+   "n_pases_b": 16285,
+   "n_jugadores_a": 31,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 16,
+   "T_red": {
+    "v": 0.28208790938954953,
+    "p": 0.0,
+    "nulo_p50": 0.21843188391551605,
+    "nulo_p90": 0.23562656237614762,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.553582178193821,
+    "b": 0.5901270808839498,
+    "delta": 0.03654490269012878,
+    "p": 0.276,
+    "ic95": [
+     -0.06571930912176892,
+     0.057124880155513307
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.34989578390021336,
+    "U": 0.25326074278829586,
+    "C": 0.11055020950058997,
+    "phi_U": 0.696132816219323
+   },
+   "portero": {
+    "parte_a": 0.08725360278283915,
+    "parte_b": 0.07605158120970218
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlas",
+   "a": "Benjamin Mora",
+   "b": "Diego Cocca II",
+   "n_pases_a": 12074,
+   "n_pases_b": 9564,
+   "n_jugadores_a": 31,
+   "n_jugadores_b": 28,
+   "n_jugadores_comunes": 7,
+   "hueco": "solo 7 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlas",
+   "a": "Diego Cocca I",
+   "b": "Diego Cocca II",
+   "n_pases_a": 16285,
+   "n_pases_b": 9564,
+   "n_jugadores_a": 30,
+   "n_jugadores_b": 28,
+   "n_jugadores_comunes": 4,
+   "hueco": "solo 4 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Andre Jardine",
+   "b": "Domenec Torrent",
+   "n_pases_a": 14189,
+   "n_pases_b": 14983,
+   "n_jugadores_a": 41,
+   "n_jugadores_b": 33,
+   "n_jugadores_comunes": 10,
+   "T_red": {
+    "v": 0.5126116411220388,
+    "p": 0.0,
+    "nulo_p50": 0.2463252318211761,
+    "nulo_p90": 0.27509815329628845,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6734872867087964,
+    "b": 0.7338020126513753,
+    "delta": 0.06031472594257892,
+    "p": 0.016,
+    "ic95": [
+     -0.04556668832205123,
+     0.05015377946837915
+    ],
+    "replicas": 2000,
+    "q": 0.024000000000000004,
+    "rechaza": true
+   },
+   "phi_U": {
+    "T_marginal": 0.6757983148397464,
+    "U": 0.3052648489688838,
+    "C": 0.38116495307563336,
+    "phi_U": 0.44471386303400384
+   },
+   "portero": {
+    "parte_a": 0.09165550778772288,
+    "parte_b": 0.09026897150103451
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Andre Jardine",
+   "b": "Guillermo Abascal",
+   "n_pases_a": 14189,
+   "n_pases_b": 9946,
+   "n_jugadores_a": 41,
+   "n_jugadores_b": 33,
+   "n_jugadores_comunes": 5,
+   "hueco": "solo 5 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": true
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Andre Jardine",
+   "b": "Gustavo Leal",
+   "n_pases_a": 14189,
+   "n_pases_b": 15062,
+   "n_jugadores_a": 41,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 15,
+   "T_red": {
+    "v": 0.2869757595147818,
+    "p": 0.0045,
+    "nulo_p50": 0.23821546161704976,
+    "nulo_p90": 0.257964120312003,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.007363636363636363,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6295357067345932,
+    "b": 0.7013107726160441,
+    "delta": 0.07177506588145088,
+    "p": 0.0025,
+    "ic95": [
+     -0.042071874124250605,
+     0.04971687265760878
+    ],
+    "replicas": 2000,
+    "q": 0.004285714285714286,
+    "rechaza": true
+   },
+   "phi_U": {
+    "T_marginal": 0.44788977519086914,
+    "U": 0.24394407978506943,
+    "C": 0.21349107309199483,
+    "phi_U": 0.5332866926618327
+   },
+   "portero": {
+    "parte_a": 0.08774402706321799,
+    "parte_b": 0.08856725534457575
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Domenec Torrent",
+   "b": "Guillermo Abascal",
+   "n_pases_a": 14983,
+   "n_pases_b": 9946,
+   "n_jugadores_a": 33,
+   "n_jugadores_b": 33,
+   "n_jugadores_comunes": 13,
+   "T_red": {
+    "v": 0.40887086798069183,
+    "p": 0.0,
+    "nulo_p50": 0.24694252413440565,
+    "nulo_p90": 0.26865227122757773,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6531987953694458,
+    "b": 0.6428345719948949,
+    "delta": -0.010364223374550896,
+    "p": 0.748,
+    "ic95": [
+     -0.05451611430004024,
+     0.05981340217863009
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5064890420283144,
+    "U": 0.3183734867295281,
+    "C": 0.19337123894191932,
+    "phi_U": 0.6221334012027154
+   },
+   "portero": {
+    "parte_a": 0.08379496762998065,
+    "parte_b": 0.09958777397948924
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Domenec Torrent",
+   "b": "Gustavo Leal",
+   "n_pases_a": 14983,
+   "n_pases_b": 15062,
+   "n_jugadores_a": 33,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 19,
+   "T_red": {
+    "v": 0.4791435089968657,
+    "p": 0.0,
+    "nulo_p50": 0.26594467352637907,
+    "nulo_p90": 0.2861058187098149,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.5988072196107972,
+    "b": 0.6052317089363963,
+    "delta": 0.0064244893255991364,
+    "p": 0.7205,
+    "ic95": [
+     -0.034831913713255766,
+     0.034230109941514555
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.4247894260687053,
+    "U": 0.32074883459375697,
+    "C": 0.1270749846282617,
+    "phi_U": 0.7162388886571006
+   },
+   "portero": {
+    "parte_a": 0.08830007341653874,
+    "parte_b": 0.09434338069313504
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Guillermo Abascal",
+   "b": "Gustavo Leal",
+   "n_pases_a": 9946,
+   "n_pases_b": 15062,
+   "n_jugadores_a": 33,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 11,
+   "T_red": {
+    "v": 0.5475115675654345,
+    "p": 0.0,
+    "nulo_p50": 0.28124356561676656,
+    "nulo_p90": 0.3130105378830196,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6579529459079028,
+    "b": 0.6780039937489148,
+    "delta": 0.020051047841012082,
+    "p": 0.527,
+    "ic95": [
+     -0.0654762811624896,
+     0.0552527661515607
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.7260990519967031,
+    "U": 0.3139673083358011,
+    "C": 0.4147968364401629,
+    "phi_U": 0.4308215635832641
+   },
+   "portero": {
+    "parte_a": 0.09913533078624573,
+    "parte_b": 0.09261718231310583
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Cruz Azul",
+   "a": "Juan Reynoso",
+   "b": "Martin Anselmi",
+   "n_pases_a": 11266,
+   "n_pases_b": 18535,
+   "n_jugadores_a": 36,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 6,
+   "hueco": "solo 6 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Cruz Azul",
+   "a": "Juan Reynoso",
+   "b": "Nicolas Larcamon",
+   "n_pases_a": 11266,
+   "n_pases_b": 12961,
+   "n_jugadores_a": 36,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 4,
+   "hueco": "solo 4 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": true
+  },
+  {
+   "club": "Cruz Azul",
+   "a": "Martin Anselmi",
+   "b": "Nicolas Larcamon",
+   "n_pases_a": 18535,
+   "n_pases_b": 12961,
+   "n_jugadores_a": 32,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 14,
+   "T_red": {
+    "v": 0.30043880244462945,
+    "p": 0.0,
+    "nulo_p50": 0.22764131245508024,
+    "nulo_p90": 0.24504639956699242,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6473146626774897,
+    "b": 0.6104712739617455,
+    "delta": -0.03684338871574422,
+    "p": 0.0715,
+    "ic95": [
+     -0.04021276873764555,
+     0.04195071148050954
+    ],
+    "replicas": 2000,
+    "q": 0.09192857142857143,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.43617475655369753,
+    "U": 0.28159066860851495,
+    "C": 0.1636652140009825,
+    "phi_U": 0.6324243645209249
+   },
+   "portero": {
+    "parte_a": 0.092176962503372,
+    "parte_b": 0.08645166268034873
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Guadalajara",
+   "a": "Fernando Gago",
+   "b": "Gabriel Milito",
+   "n_pases_a": 11117,
+   "n_pases_b": 15563,
+   "n_jugadores_a": 28,
+   "n_jugadores_b": 33,
+   "n_jugadores_comunes": 13,
+   "T_red": {
+    "v": 0.5609574963403002,
+    "p": 0.0,
+    "nulo_p50": 0.29378607711378996,
+    "nulo_p90": 0.32411119556328555,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6664051031676617,
+    "b": 0.6481890353689397,
+    "delta": -0.01821606779872198,
+    "p": 0.4325,
+    "ic95": [
+     -0.049357422367277866,
+     0.039810817518288744
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.6849516649448298,
+    "U": 0.3133484822579953,
+    "C": 0.38657195772629616,
+    "phi_U": 0.4476915722950281
+   },
+   "portero": {
+    "parte_a": 0.09530448862103086,
+    "parte_b": 0.07704170147143867
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Guadalajara",
+   "a": "Fernando Gago",
+   "b": "Veljko Paunovic",
+   "n_pases_a": 11117,
+   "n_pases_b": 11603,
+   "n_jugadores_a": 28,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 16,
+   "T_red": {
+    "v": 0.3603173487703394,
+    "p": 0.0,
+    "nulo_p50": 0.2591682141427038,
+    "nulo_p90": 0.28052866538730514,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6148308896284971,
+    "b": 0.5697470481771956,
+    "delta": -0.04508384145130151,
+    "p": 0.0315,
+    "ic95": [
+     -0.042908774259243956,
+     0.039122572652945366
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.3823226322988573,
+    "U": 0.2802869279802951,
+    "C": 0.12040438731427883,
+    "phi_U": 0.699508367867265
+   },
+   "portero": {
+    "parte_a": 0.09629396419897454,
+    "parte_b": 0.08648625355511505
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Guadalajara",
+   "a": "Gabriel Milito",
+   "b": "Veljko Paunovic",
+   "n_pases_a": 15563,
+   "n_pases_b": 11603,
+   "n_jugadores_a": 33,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 7,
+   "hueco": "solo 7 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Juárez",
+   "a": "Hernan Cristante",
+   "b": "Martin Varini",
+   "n_pases_a": 10819,
+   "n_pases_b": 12318,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 34,
+   "n_jugadores_comunes": 2,
+   "hueco": "solo 2 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Juárez",
+   "a": "Hernan Cristante",
+   "b": "Mauricio Barbieri",
+   "n_pases_a": 10819,
+   "n_pases_b": 9085,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 34,
+   "n_jugadores_comunes": 3,
+   "hueco": "solo 3 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Juárez",
+   "a": "Hernan Cristante",
+   "b": "Ricardo Ferretti",
+   "n_pases_a": 10819,
+   "n_pases_b": 11220,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 41,
+   "n_jugadores_comunes": 14,
+   "T_red": {
+    "v": 0.4713341428161648,
+    "p": 0.0,
+    "nulo_p50": 0.37415696908148666,
+    "nulo_p90": 0.4046934888800213,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6791955510367564,
+    "b": 0.6298484848484849,
+    "delta": -0.04934706618827156,
+    "p": 0.098,
+    "ic95": [
+     -0.061225703522147866,
+     0.05483178880019867
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.6870594150154075,
+    "U": 0.25994177512828787,
+    "C": 0.4353052434025388,
+    "phi_U": 0.37388405588216456
+   },
+   "portero": {
+    "parte_a": 0.08170810610962197,
+    "parte_b": 0.07709447415329768
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Juárez",
+   "a": "Martin Varini",
+   "b": "Mauricio Barbieri",
+   "n_pases_a": 12318,
+   "n_pases_b": 9085,
+   "n_jugadores_a": 34,
+   "n_jugadores_b": 34,
+   "n_jugadores_comunes": 17,
+   "T_red": {
+    "v": 0.5334491727381909,
+    "p": 0.0,
+    "nulo_p50": 0.31369937706191847,
+    "nulo_p90": 0.3364685150004108,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6099929872561518,
+    "b": 0.5782784341737024,
+    "delta": -0.031714553082449415,
+    "p": 0.311,
+    "ic95": [
+     -0.05502660935856382,
+     0.06744430190168405
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5765036923293858,
+    "U": 0.3145715266006812,
+    "C": 0.2680038760471022,
+    "phi_U": 0.5399670586347542
+   },
+   "portero": {
+    "parte_a": 0.09068030524435786,
+    "parte_b": 0.09279031370390754
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Juárez",
+   "a": "Martin Varini",
+   "b": "Ricardo Ferretti",
+   "n_pases_a": 12318,
+   "n_pases_b": 11220,
+   "n_jugadores_a": 34,
+   "n_jugadores_b": 41,
+   "n_jugadores_comunes": 1,
+   "hueco": "solo 1 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Juárez",
+   "a": "Mauricio Barbieri",
+   "b": "Ricardo Ferretti",
+   "n_pases_a": 9085,
+   "n_pases_b": 11220,
+   "n_jugadores_a": 34,
+   "n_jugadores_b": 41,
+   "n_jugadores_comunes": 1,
+   "hueco": "solo 1 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "León",
+   "a": "Ariel Holan",
+   "b": "Eduardo Berizzo",
+   "n_pases_a": 12547,
+   "n_pases_b": 14717,
+   "n_jugadores_a": 31,
+   "n_jugadores_b": 38,
+   "n_jugadores_comunes": 2,
+   "hueco": "solo 2 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "León",
+   "a": "Ariel Holan",
+   "b": "Nicolas Larcamon",
+   "n_pases_a": 12547,
+   "n_pases_b": 13696,
+   "n_jugadores_a": 31,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 12,
+   "T_red": {
+    "v": 0.30413468317216646,
+    "p": 0.001,
+    "nulo_p50": 0.2373936659027953,
+    "nulo_p90": 0.2607345225208366,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0018000000000000002,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6645927977471375,
+    "b": 0.593246507496106,
+    "delta": -0.07134629025103156,
+    "p": 0.001,
+    "ic95": [
+     -0.04790048573094756,
+     0.04677044882365537
+    ],
+    "replicas": 2000,
+    "q": 0.0018000000000000002,
+    "rechaza": true
+   },
+   "phi_U": {
+    "T_marginal": 0.5294106717154714,
+    "U": 0.31195516208088214,
+    "C": 0.22231934582658114,
+    "phi_U": 0.5838855447224762
+   },
+   "portero": {
+    "parte_a": 0.07364310193671794,
+    "parte_b": 0.06870619158878505
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "León",
+   "a": "Eduardo Berizzo",
+   "b": "Nicolas Larcamon",
+   "n_pases_a": 14717,
+   "n_pases_b": 13696,
+   "n_jugadores_a": 38,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 7,
+   "hueco": "solo 7 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": true
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Benat San Jose",
+   "b": "Gabriel Caballero",
+   "n_pases_a": 6868,
+   "n_pases_b": 8485,
+   "n_jugadores_a": 33,
+   "n_jugadores_b": 35,
+   "n_jugadores_comunes": 17,
+   "T_red": {
+    "v": 0.4688327351291647,
+    "p": 0.0,
+    "nulo_p50": 0.30377810470764977,
+    "nulo_p90": 0.3258926591868809,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.5895583803904687,
+    "b": 0.6073582536957802,
+    "delta": 0.01779987330531152,
+    "p": 0.585,
+    "ic95": [
+     -0.06316009655789327,
+     0.06388385468530601
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.4585373345473478,
+    "U": 0.27188852802471225,
+    "C": 0.19248017311495086,
+    "phi_U": 0.5855014073029424
+   },
+   "portero": {
+    "parte_a": 0.08182877111240536,
+    "parte_b": 0.09086623453152622
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Benat San Jose",
+   "b": "Ismael Rescalvo",
+   "n_pases_a": 6868,
+   "n_pases_b": 11434,
+   "n_jugadores_a": 33,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 6,
+   "hueco": "solo 6 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Benat San Jose",
+   "b": "Victor Manuel Vucetich",
+   "n_pases_a": 6868,
+   "n_pases_b": 12057,
+   "n_jugadores_a": 33,
+   "n_jugadores_b": 35,
+   "n_jugadores_comunes": 6,
+   "hueco": "solo 6 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Gabriel Caballero",
+   "b": "Ismael Rescalvo",
+   "n_pases_a": 8485,
+   "n_pases_b": 11434,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 11,
+   "T_red": {
+    "v": 0.4906249969151433,
+    "p": 0.0,
+    "nulo_p50": 0.29261284556281364,
+    "nulo_p90": 0.3243515760509756,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.672928697701827,
+    "b": 0.6573202728703866,
+    "delta": -0.015608424831440315,
+    "p": 0.523,
+    "ic95": [
+     -0.04694906742815222,
+     0.04250816704778172
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.6578249447599603,
+    "U": 0.2774536382160905,
+    "C": 0.3866154622066022,
+    "phi_U": 0.4178083847591854
+   },
+   "portero": {
+    "parte_a": 0.09487330583382439,
+    "parte_b": 0.08500962043029561
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Gabriel Caballero",
+   "b": "Victor Manuel Vucetich",
+   "n_pases_a": 8485,
+   "n_pases_b": 12057,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 35,
+   "n_jugadores_comunes": 7,
+   "hueco": "solo 7 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Ismael Rescalvo",
+   "b": "Victor Manuel Vucetich",
+   "n_pases_a": 11434,
+   "n_pases_b": 12057,
+   "n_jugadores_a": 36,
+   "n_jugadores_b": 35,
+   "n_jugadores_comunes": 19,
+   "T_red": {
+    "v": 0.4872442122829728,
+    "p": 0.0,
+    "nulo_p50": 0.318322060887828,
+    "nulo_p90": 0.3436115223317048,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6074226721473968,
+    "b": 0.5671428768903266,
+    "delta": -0.04027979525707015,
+    "p": 0.0505,
+    "ic95": [
+     -0.04285459966613529,
+     0.03883054114241223
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5161748965459372,
+    "U": 0.3329558530851427,
+    "C": 0.195432962084733,
+    "phi_U": 0.6301341805997506
+   },
+   "portero": {
+    "parte_a": 0.08772083260451286,
+    "parte_b": 0.06398772497304471
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Monterrey",
+   "a": "Domenec Torrent",
+   "b": "Fernando Ortiz",
+   "n_pases_a": 12015,
+   "n_pases_b": 16970,
+   "n_jugadores_a": 31,
+   "n_jugadores_b": 43,
+   "n_jugadores_comunes": 12,
+   "T_red": {
+    "v": 0.37328359923689464,
+    "p": 0.0005,
+    "nulo_p50": 0.2922268726637368,
+    "nulo_p90": 0.32102603350850767,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.001,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6894422907038715,
+    "b": 0.6370240569012395,
+    "delta": -0.052418233802632,
+    "p": 0.079,
+    "ic95": [
+     -0.06442928125707545,
+     0.05188314493651761
+    ],
+    "replicas": 2000,
+    "q": 0.09806896551724137,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.6534253612958268,
+    "U": 0.28542726282868763,
+    "C": 0.37248375740780054,
+    "phi_U": 0.433838701662255
+   },
+   "portero": {
+    "parte_a": 0.08368705784436122,
+    "parte_b": 0.06311137301119622
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Monterrey",
+   "a": "Domenec Torrent",
+   "b": "Martin Demichelis",
+   "n_pases_a": 12015,
+   "n_pases_b": 12806,
+   "n_jugadores_a": 31,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 18,
+   "T_red": {
+    "v": 0.3252537305604364,
+    "p": 0.0025,
+    "nulo_p50": 0.2827766333187513,
+    "nulo_p90": 0.30259465461862645,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.5488481278743451,
+    "b": 0.526253719210146,
+    "delta": -0.02259440866419915,
+    "p": 0.3615,
+    "ic95": [
+     -0.04974398751710499,
+     0.0443062438807192
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.26821393477841393,
+    "U": 0.23073659251017178,
+    "C": 0.056603480071755606,
+    "phi_U": 0.8030087500043468
+   },
+   "portero": {
+    "parte_a": 0.08256346233874323,
+    "parte_b": 0.08515539590816805
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Monterrey",
+   "a": "Domenec Torrent",
+   "b": "Victor Manuel Vucetich",
+   "n_pases_a": 12015,
+   "n_pases_b": 15354,
+   "n_jugadores_a": 31,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 6,
+   "hueco": "solo 6 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Monterrey",
+   "a": "Fernando Ortiz",
+   "b": "Martin Demichelis",
+   "n_pases_a": 16970,
+   "n_pases_b": 12806,
+   "n_jugadores_a": 43,
+   "n_jugadores_b": 30,
+   "n_jugadores_comunes": 18,
+   "T_red": {
+    "v": 0.4318958323220853,
+    "p": 0.0,
+    "nulo_p50": 0.30075488548015866,
+    "nulo_p90": 0.32047056328008455,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.5969063052445494,
+    "b": 0.6470870024868152,
+    "delta": 0.050180697242265815,
+    "p": 0.0915,
+    "ic95": [
+     -0.05324486119483203,
+     0.05997650408071018
+    ],
+    "replicas": 2000,
+    "q": 0.1098,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.5354492144270544,
+    "U": 0.2967300234042196,
+    "C": 0.24023808652470907,
+    "phi_U": 0.5526026926319587
+   },
+   "portero": {
+    "parte_a": 0.06328815556865056,
+    "parte_b": 0.08332031860065595
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Monterrey",
+   "a": "Fernando Ortiz",
+   "b": "Victor Manuel Vucetich",
+   "n_pases_a": 16970,
+   "n_pases_b": 15354,
+   "n_jugadores_a": 43,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 19,
+   "T_red": {
+    "v": 0.41229891105721683,
+    "p": 0.0,
+    "nulo_p50": 0.24633627296495836,
+    "nulo_p90": 0.2630424728158963,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6499945067566892,
+    "b": 0.7033114542006389,
+    "delta": 0.05331694744394966,
+    "p": 0.0085,
+    "ic95": [
+     -0.04213443962680147,
+     0.038683042745700766
+    ],
+    "replicas": 2000,
+    "q": 0.013304347826086959,
+    "rechaza": true
+   },
+   "phi_U": {
+    "T_marginal": 0.40618082665706884,
+    "U": 0.29269584506836266,
+    "C": 0.12888224820997368,
+    "phi_U": 0.6942861826435501
+   },
+   "portero": {
+    "parte_a": 0.06119622863877431,
+    "parte_b": 0.08382180539273154
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Monterrey",
+   "a": "Martin Demichelis",
+   "b": "Victor Manuel Vucetich",
+   "n_pases_a": 12806,
+   "n_pases_b": 15354,
+   "n_jugadores_a": 30,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 11,
+   "T_red": {
+    "v": 0.40647439491748255,
+    "p": 0.0005,
+    "nulo_p50": 0.3114765112936809,
+    "nulo_p90": 0.3445638719498247,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6631834509391905,
+    "b": 0.6873885395573556,
+    "delta": 0.02420508861816506,
+    "p": 0.3535,
+    "ic95": [
+     -0.06036303410896933,
+     0.036771905901338164
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.7234035978356261,
+    "U": 0.2795713035900721,
+    "C": 0.44447642220054284,
+    "phi_U": 0.3861227563207904
+   },
+   "portero": {
+    "parte_a": 0.08449164454162111,
+    "parte_b": 0.08460336068776866
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Necaxa",
+   "a": "Eduardo Fentanes",
+   "b": "Jaime Lozano",
+   "n_pases_a": 9898,
+   "n_pases_b": 9019,
+   "n_jugadores_a": 38,
+   "n_jugadores_b": 35,
+   "n_jugadores_comunes": 8,
+   "T_red": {
+    "v": 0.4618676861576941,
+    "p": 0.0,
+    "nulo_p50": 0.27384006863280264,
+    "nulo_p90": 0.31214554944480466,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6909835157314284,
+    "b": 0.7167395712993001,
+    "delta": 0.02575605556787175,
+    "p": 0.3075,
+    "ic95": [
+     -0.04124702230213854,
+     0.0569844020798234
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.7575245662986096,
+    "U": 0.22402195750331497,
+    "C": 0.5335506222523226,
+    "phi_U": 0.29571022432672445
+   },
+   "portero": {
+    "parte_a": 0.07466154778743181,
+    "parte_b": 0.09912407140481207
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Pumas UNAM",
+   "a": "Andres Lillini",
+   "b": "Efrain Valdez",
+   "n_pases_a": 16799,
+   "n_pases_b": 16262,
+   "n_jugadores_a": 43,
+   "n_jugadores_b": 41,
+   "n_jugadores_comunes": 4,
+   "hueco": "solo 4 jugadores con 100+ pases en las dos etapas; el mínimo preinscrito es 8",
+   "de_una_historia": false
+  },
+  {
+   "club": "Pumas UNAM",
+   "a": "Andres Lillini",
+   "b": "Gustavo Lema",
+   "n_pases_a": 16799,
+   "n_pases_b": 16139,
+   "n_jugadores_a": 43,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 10,
+   "T_red": {
+    "v": 0.4753652779968569,
+    "p": 0.0,
+    "nulo_p50": 0.33501899538888685,
+    "nulo_p90": 0.3687300239312678,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6718365270660049,
+    "b": 0.7145461680439065,
+    "delta": 0.04270964097790153,
+    "p": 0.0455,
+    "ic95": [
+     -0.036332404797383526,
+     0.0451850440450923
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.8527870675975823,
+    "U": 0.18735367133522027,
+    "C": 0.6784742428092773,
+    "phi_U": 0.21638673028963226
+   },
+   "portero": {
+    "parte_a": 0.07280195249717245,
+    "parte_b": 0.08491852035442096
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Pumas UNAM",
+   "a": "Efrain Valdez",
+   "b": "Gustavo Lema",
+   "n_pases_a": 16262,
+   "n_pases_b": 16139,
+   "n_jugadores_a": 41,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 19,
+   "T_red": {
+    "v": 0.5189854013749231,
+    "p": 0.0,
+    "nulo_p50": 0.2810440324367818,
+    "nulo_p90": 0.3010138118667522,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6132087074160619,
+    "b": 0.6465002741513293,
+    "delta": 0.03329156673526734,
+    "p": 0.174,
+    "ic95": [
+     -0.04801879313945208,
+     0.047623515786983685
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5381273301890478,
+    "U": 0.2974488056037592,
+    "C": 0.257488628698973,
+    "phi_U": 0.5360042181646976
+   },
+   "portero": {
+    "parte_a": 0.08467593161972697,
+    "parte_b": 0.08773777805316314
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Querétaro",
+   "a": "Benjamin Mora",
+   "b": "Mauro Gerk",
+   "n_pases_a": 9231,
+   "n_pases_b": 23368,
+   "n_jugadores_a": 44,
+   "n_jugadores_b": 75,
+   "n_jugadores_comunes": 17,
+   "T_red": {
+    "v": 0.4256228396483991,
+    "p": 0.0,
+    "nulo_p50": 0.3184806165995048,
+    "nulo_p90": 0.345970592065511,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.7500010833062507,
+    "b": 0.635150633344745,
+    "delta": -0.11485044996150573,
+    "p": 0.0005,
+    "ic95": [
+     -0.07545284982379404,
+     0.018711543942007716
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.6522944127840374,
+    "U": 0.2807027627989305,
+    "C": 0.3908910955704253,
+    "phi_U": 0.41796505328455924
+   },
+   "portero": {
+    "parte_a": 0.06559419347849638,
+    "parte_b": 0.08214224580623074
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Santos Laguna",
+   "a": "Eduardo Fentanes",
+   "b": "Ignacio Ambriz",
+   "n_pases_a": 12461,
+   "n_pases_b": 11427,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 39,
+   "n_jugadores_comunes": 11,
+   "T_red": {
+    "v": 0.5897946567251592,
+    "p": 0.0,
+    "nulo_p50": 0.320853923073567,
+    "nulo_p90": 0.35670481520633535,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6833119332316828,
+    "b": 0.6448017852454713,
+    "delta": -0.03851014798621155,
+    "p": 0.2255,
+    "ic95": [
+     -0.04723315699122371,
+     0.07024264198604818
+    ],
+    "replicas": 2000,
+    "q": 0.246,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.7572358619661699,
+    "U": 0.31035145589693913,
+    "C": 0.45339285645035315,
+    "phi_U": 0.40635517787766534
+   },
+   "portero": {
+    "parte_a": 0.07375010031297649,
+    "parte_b": 0.07434147195239345
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Guido Pizarro",
+   "b": "Miguel Herrera",
+   "n_pases_a": 18081,
+   "n_pases_b": 19922,
+   "n_jugadores_a": 32,
+   "n_jugadores_b": 35,
+   "n_jugadores_comunes": 10,
+   "T_red": {
+    "v": 0.5701972805466041,
+    "p": 0.0,
+    "nulo_p50": 0.2563803139585561,
+    "nulo_p90": 0.285827488686549,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6741666469142826,
+    "b": 0.6734747658726175,
+    "delta": -0.0006918810416651766,
+    "p": 0.971,
+    "ic95": [
+     -0.039426859233714764,
+     0.03184567062892767
+    ],
+    "replicas": 2000,
+    "q": 0.9709999999999999,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.7666443069123278,
+    "U": 0.28893521892291385,
+    "C": 0.48244015598901835,
+    "phi_U": 0.3745714840273473
+   },
+   "portero": {
+    "parte_a": 0.0912836679387202,
+    "parte_b": 0.07853127196064652
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Guido Pizarro",
+   "b": "Robert Siboldi",
+   "n_pases_a": 18081,
+   "n_pases_b": 16343,
+   "n_jugadores_a": 32,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 16,
+   "T_red": {
+    "v": 0.4713347101468881,
+    "p": 0.0,
+    "nulo_p50": 0.27211017469996324,
+    "nulo_p90": 0.2919021365980449,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6371384326088159,
+    "b": 0.6343572171571927,
+    "delta": -0.0027812154516231313,
+    "p": 0.885,
+    "ic95": [
+     -0.036137789964558784,
+     0.03946079718023142
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5299633364761995,
+    "U": 0.34032864681988406,
+    "C": 0.19163478954695043,
+    "phi_U": 0.6397594713355416
+   },
+   "portero": {
+    "parte_a": 0.08710801393728224,
+    "parte_b": 0.08248179648779294
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Guido Pizarro",
+   "b": "Veljko Paunovic",
+   "n_pases_a": 18081,
+   "n_pases_b": 10794,
+   "n_jugadores_a": 32,
+   "n_jugadores_b": 29,
+   "n_jugadores_comunes": 20,
+   "T_red": {
+    "v": 0.43481671166532143,
+    "p": 0.0,
+    "nulo_p50": 0.29763497530877736,
+    "nulo_p90": 0.3170898405161616,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.5250744867469608,
+    "b": 0.5813177311231787,
+    "delta": 0.05624324437621797,
+    "p": 0.0025,
+    "ic95": [
+     -0.0358806296672186,
+     0.041357447189217564
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.38691796987055865,
+    "U": 0.29875666598171946,
+    "C": 0.10050798326133228,
+    "phi_U": 0.7482672621984418
+   },
+   "portero": {
+    "parte_a": 0.08486809357889498,
+    "parte_b": 0.08152677413377803
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Miguel Herrera",
+   "b": "Robert Siboldi",
+   "n_pases_a": 19922,
+   "n_pases_b": 16343,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 36,
+   "n_jugadores_comunes": 17,
+   "T_red": {
+    "v": 0.3546046315722254,
+    "p": 0.0,
+    "nulo_p50": 0.2355802562108675,
+    "nulo_p90": 0.2524182868707239,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6450947155444697,
+    "b": 0.6522623188474013,
+    "delta": 0.007167603302931536,
+    "p": 0.731,
+    "ic95": [
+     -0.039621814759754445,
+     0.04318867047799139
+    ],
+    "replicas": 2000,
+    "q": 0.7518857142857143,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.42039283008542716,
+    "U": 0.26999956600531,
+    "C": 0.15080462273326414,
+    "phi_U": 0.6416275627262067
+   },
+   "portero": {
+    "parte_a": 0.07845597831543018,
+    "parte_b": 0.0849599216790063
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Miguel Herrera",
+   "b": "Veljko Paunovic",
+   "n_pases_a": 19922,
+   "n_pases_b": 10794,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 29,
+   "n_jugadores_comunes": 12,
+   "T_red": {
+    "v": 0.38131840195176303,
+    "p": 0.0,
+    "nulo_p50": 0.22421352463708447,
+    "nulo_p90": 0.24550858114703017,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6360676638891678,
+    "b": 0.6745784695201038,
+    "delta": 0.03851080563093601,
+    "p": 0.059,
+    "ic95": [
+     -0.026923966102976465,
+     0.045268839091990545
+    ],
+    "replicas": 2000,
+    "q": 0.08169230769230768,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.5448304808988518,
+    "U": 0.3203924568240665,
+    "C": 0.22457516011179846,
+    "phi_U": 0.5879110003370571
+   },
+   "portero": {
+    "parte_a": 0.07951008934845899,
+    "parte_b": 0.08578840096349824
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Robert Siboldi",
+   "b": "Veljko Paunovic",
+   "n_pases_a": 16343,
+   "n_pases_b": 10794,
+   "n_jugadores_a": 36,
+   "n_jugadores_b": 29,
+   "n_jugadores_comunes": 19,
+   "T_red": {
+    "v": 0.32709521749549475,
+    "p": 0.0,
+    "nulo_p50": 0.2719356216892088,
+    "nulo_p90": 0.287625448375583,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.5617549963141348,
+    "b": 0.6140073409389697,
+    "delta": 0.05225234462483486,
+    "p": 0.0125,
+    "ic95": [
+     -0.03975620615971549,
+     0.04486605395724993
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.24216628220769978,
+    "U": 0.1953215069396113,
+    "C": 0.058569858875141656,
+    "phi_U": 0.769311340355402
+   },
+   "portero": {
+    "parte_a": 0.07731138713822432,
+    "parte_b": 0.0832870113025755
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Tijuana",
+   "a": "Juan Carlos Osorio",
+   "b": "Miguel Herrera",
+   "n_pases_a": 14125,
+   "n_pases_b": 15010,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 44,
+   "n_jugadores_comunes": 19,
+   "T_red": {
+    "v": 0.5314372232804843,
+    "p": 0.0,
+    "nulo_p50": 0.30028522927507934,
+    "nulo_p90": 0.32217206128631576,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6734951252437378,
+    "b": 0.6220824535055727,
+    "delta": -0.051412671738165105,
+    "p": 0.2205,
+    "ic95": [
+     -0.08110236631942476,
+     0.07352712024158209
+    ],
+    "replicas": 2000,
+    "q": 0.246,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.5672086691468223,
+    "U": 0.33170486873451505,
+    "C": 0.24947185046927003,
+    "phi_U": 0.5707469996199303
+   },
+   "portero": {
+    "parte_a": 0.06994690265486726,
+    "parte_b": 0.07508327781479014
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Tijuana",
+   "a": "Juan Carlos Osorio",
+   "b": "Sebastian Abreu",
+   "n_pases_a": 14125,
+   "n_pases_b": 11517,
+   "n_jugadores_a": 35,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 14,
+   "T_red": {
+    "v": 0.4471752033153825,
+    "p": 0.0,
+    "nulo_p50": 0.2572016014567101,
+    "nulo_p90": 0.2790903420617103,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6287773995915589,
+    "b": 0.7124752038792155,
+    "delta": 0.08369780428765661,
+    "p": 0.0,
+    "ic95": [
+     -0.03668728957804408,
+     0.030766744425281205
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5527041533831096,
+    "U": 0.3476692310093312,
+    "C": 0.20863946296478209,
+    "phi_U": 0.6249573928562571
+   },
+   "portero": {
+    "parte_a": 0.07394690265486725,
+    "parte_b": 0.09828948510896934
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Tijuana",
+   "a": "Miguel Herrera",
+   "b": "Sebastian Abreu",
+   "n_pases_a": 15010,
+   "n_pases_b": 11517,
+   "n_jugadores_a": 44,
+   "n_jugadores_b": 32,
+   "n_jugadores_comunes": 8,
+   "T_red": {
+    "v": 0.44019595501846254,
+    "p": 0.0,
+    "nulo_p50": 0.24155395077539232,
+    "nulo_p90": 0.2724064207185315,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6671373313313511,
+    "b": 0.7752446416005412,
+    "delta": 0.10810731026919007,
+    "p": 0.0005,
+    "ic95": [
+     -0.06101484914232859,
+     0.06924615222257008
+    ],
+    "replicas": 2000,
+    "q": 0.001,
+    "rechaza": true
+   },
+   "phi_U": {
+    "T_marginal": 0.8078253003395554,
+    "U": 0.2862219355342956,
+    "C": 0.5226953259362859,
+    "phi_U": 0.35383338836651196
+   },
+   "portero": {
+    "parte_a": 0.07365089940039973,
+    "parte_b": 0.09798558652426848
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Toluca",
+   "a": "Antonio Mohamed",
+   "b": "Ignacio Ambriz",
+   "n_pases_a": 23007,
+   "n_pases_b": 28822,
+   "n_jugadores_a": 39,
+   "n_jugadores_b": 53,
+   "n_jugadores_comunes": 10,
+   "T_red": {
+    "v": 0.5904759205996118,
+    "p": 0.0,
+    "nulo_p50": 0.31822315132910933,
+    "nulo_p90": 0.3589003700425283,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.748369122226354,
+    "b": 0.7012038985994067,
+    "delta": -0.047165223626947306,
+    "p": 0.123,
+    "ic95": [
+     -0.06343679688916007,
+     0.05177140527824109
+    ],
+    "replicas": 2000,
+    "q": 0.14283870967741935,
+    "rechaza": false
+   },
+   "phi_U": {
+    "T_marginal": 0.8615324094068729,
+    "U": 0.18811689579390445,
+    "C": 0.6793868109719051,
+    "phi_U": 0.216848521022733
+   },
+   "portero": {
+    "parte_a": 0.07295605685226235,
+    "parte_b": 0.07813475817084171
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  },
+  {
+   "club": "Toluca",
+   "a": "Antonio Mohamed",
+   "b": "Renato Paiva",
+   "n_pases_a": 23007,
+   "n_pases_b": 14723,
+   "n_jugadores_a": 39,
+   "n_jugadores_b": 34,
+   "n_jugadores_comunes": 17,
+   "T_red": {
+    "v": 0.4552468635131268,
+    "p": 0.0,
+    "nulo_p50": 0.27404520211450584,
+    "nulo_p90": 0.2951996692107301,
+    "supera_p90": true,
+    "replicas": 2000
+   },
+   "gini": {
+    "a": 0.6236564073092086,
+    "b": 0.6602531690149702,
+    "delta": 0.03659676170576165,
+    "p": 0.2295,
+    "ic95": [
+     -0.05169628961391467,
+     0.06112161562362874
+    ],
+    "replicas": 2000
+   },
+   "phi_U": {
+    "T_marginal": 0.5425504201091849,
+    "U": 0.2981465497890304,
+    "C": 0.250582059502097,
+    "phi_U": 0.5433406327659672
+   },
+   "portero": {
+    "parte_a": 0.07047855000651976,
+    "parte_b": 0.08361067717177206
+   },
+   "en_f62": false,
+   "de_una_historia": false
+  },
+  {
+   "club": "Toluca",
+   "a": "Ignacio Ambriz",
+   "b": "Renato Paiva",
+   "n_pases_a": 28822,
+   "n_pases_b": 14723,
+   "n_jugadores_a": 53,
+   "n_jugadores_b": 34,
+   "n_jugadores_comunes": 17,
+   "T_red": {
+    "v": 0.4102074634210342,
+    "p": 0.0,
+    "nulo_p50": 0.2719551167963843,
+    "nulo_p90": 0.29401535174502114,
+    "supera_p90": true,
+    "replicas": 2000,
+    "q": 0.0,
+    "rechaza": true
+   },
+   "gini": {
+    "a": 0.6398175315912284,
+    "b": 0.7292346932051688,
+    "delta": 0.08941716161394031,
+    "p": 0.019,
+    "ic95": [
+     -0.06119615468756319,
+     0.08199368278965231
+    ],
+    "replicas": 2000,
+    "q": 0.02736,
+    "rechaza": true
+   },
+   "phi_U": {
+    "T_marginal": 0.586235639341232,
+    "U": 0.2642150961872028,
+    "C": 0.3308627754331329,
+    "phi_U": 0.4440008758312123
+   },
+   "portero": {
+    "parte_a": 0.0784470196377767,
+    "parte_b": 0.08452760986212049
+   },
+   "en_f62": true,
+   "de_una_historia": true
+  }
+ ],
+ "familia": {
+  "m": 36,
+  "n_rechazados": 25
+ },
+ "predicciones": [
+  {
+   "n": 1,
+   "hip": "H62-1",
+   "texto": "la red no se mueve más que sin cambiar de técnico en la mayoría de los relevos",
+   "valor": "0 de 18",
+   "cumple": false
+  },
+  {
+   "n": 2,
+   "hip": "H62-2",
+   "texto": "la concentración del juego no se separa del cero en la mayoría",
+   "valor": "11 de 18",
+   "cumple": true
+  },
+  {
+   "n": 3,
+   "hip": "H62-3",
+   "texto": "más de la mitad del cambio viene de que cambian los jugadores (φ_U < 0.5) en la mayoría",
+   "valor": "8 de 18",
+   "cumple": false,
+   "nivel": "C"
+  }
+ ],
+ "segundos": 24.3
+}
