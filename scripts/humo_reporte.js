@@ -48,8 +48,28 @@ ok(opcHist().length === 5, "menú de técnico con cinco historias");
 ok(document.querySelectorAll("#dropIr .drop-menu button").length === 4, "menú «ir a» con las cuatro partes");
 ok(!$("segClub"), "no hay selector global de club (adenda 5 §4)");
 ok(document.querySelectorAll("nav .navin > *").length === 3, "la barra lleva solo el nombre y los dos menús");
-ok(/\.navin\{[^}]*overflow:hidden/.test(html) && /\.drop-menu\{position:absolute/.test(html),
-  "los menús no pueden desbordar la barra (absolutos, barra recortada)");
+/* adenda 6 §1: NO se comprueba la hoja de estilo (eso fue lo que dio falsa seguridad en h2_38,
+   porque la regla verificada era la que causaba el fallo). Se ABRE el menú y se mira si algo lo recorta. */
+function recortadoPor(el) {
+  for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+    const o = dom.window.getComputedStyle(p);
+    if (["hidden", "clip"].includes(o.overflow) || ["hidden", "clip"].includes(o.overflowY)) return p.className || p.tagName;
+  }
+  return null;
+}
+function abre(id) {
+  const d = $(id); click(d.querySelector("button"));
+  const m = d.querySelector(".drop-menu"), op = m && m.querySelector("button");
+  return { abierto: d.classList.contains("abierto"),
+           display: m ? dom.window.getComputedStyle(m).display : "(sin menú)",
+           recorte: m ? recortadoPor(m) : "(sin menú)", ops: m ? m.querySelectorAll("button").length : 0 };
+}
+["dropHist", "dropIr"].forEach(id => {
+  const r = abre(id);
+  ok(r.abierto && r.display !== "none" && r.recorte === null && r.ops > 0,
+    `${id}: el menú se abre y se ve (abierto ${r.abierto}, display ${r.display}, recortado por ${r.recorte}, ${r.ops} opciones)`);
+  click(document.body);
+});
 /* adenda 5 §3: todo control se ve que es un control */
 ok(/\.seg button,\.sim-bar button,summary,\.chip\[data-tip\],\.enlace,\[data-jug\],\.drop>button,\.drop-menu button\{cursor:pointer\}/.test(html),
   "todo control lleva cursor:pointer");
@@ -69,7 +89,7 @@ ok(!/<script[^>]+src=|<link[^>]+href=["']?http|@import/i.test(html), "sin depend
 const ini = document.querySelector('#a1-1 [data-fig="inicios"]').textContent;
 ok(["juego abierto", "contragolpe", "saque de banda", "córner", "gol", "pérdida", "balón fuera"].every(x => ini.includes(x)),
   "1.1 nombra las cuatro formas de empezar y los cuatro finales");
-if (PROG) ok(/nunca cambia su forma de empezar/.test($("a1-1").textContent), "1.1 dice que cada forma de empezar es su propio tablero");
+if (PROG) ok(/cuatro tableros separados/.test($("a1-1").textContent), "1.1 dice que cada forma de empezar es su propio tablero");
 const sim = () => document.querySelector('#a1-2 [data-fig="sim"]');
 ok(sim() && /de dónde viene/.test(sim().textContent), "1.2 simulador de flujos (adenda 4 §5)");
 if (sim()) {
@@ -117,8 +137,8 @@ if (sim()) {
 /* adenda 5 §5: el espacio de estados, explicado */
 ok(/80/.test($("a1-1").textContent) && /situaciones vivas/.test($("a1-1").textContent),
   "1.1 dice cuántas situaciones vivas tiene la cadena");
-ok(/malla es de cinco por cuatro/.test($("a1-1").textContent) && /parámetros por observación/.test($("a1-1").textContent), "1.1 dice por qué la malla es de cinco por cuatro");
-ok(/de cada/.test($("a1-1").textContent) && /terminan ahí la posesión/.test($("a1-1").textContent),
+ok(/La malla no es más fina/.test($("a1-1").textContent) && /parámetros por observación/.test($("a1-1").textContent), "1.1 dice por qué la malla es de cinco por cuatro");
+ok(/probabilidad de paso es contar/.test($("a1-1").textContent) && /terminan la posesión/.test($("a1-1").textContent),
   "1.1 trae un ejemplo de probabilidad de paso");
 /* adenda 5 §1 y §2: primero la historia, después el método */
 const ordenActos = [...$("informe").querySelectorAll(".acto")].map(a => a.id);
@@ -215,7 +235,14 @@ D.historias.forEach(h => {
     ok(!conSel.includes("a2-0") && !conSel.includes("a2-2"),
       `${h.id}: la carrera y llegar a la última franja no llevan selector`);
     const sid = conSel[0];
-    ok(selDe(sid)[0] === "" && selDe(sid).includes(otro.club), `${h.id}: el selector de ${sid} trae «todos sus clubes» y sus clubes`);
+    /* adenda 6 §2: un botón por club, ninguno promete un agregado */
+    ok(selDe(sid).includes("") && selDe(sid).includes(otro.club) && selDe(sid).length === h.eras.length,
+      `${h.id}: el selector de ${sid} trae un botón por club (${selDe(sid).length} de ${h.eras.length})`);
+    const pr = document.querySelector(`[data-selclub="${sid}"] button[data-k=""]`);
+    ok(/donde más dirigió/.test(pr.textContent) && pr.textContent.includes(h.principal),
+      `${h.id}: el botón por defecto nombra el club donde más dirigió`);
+    ok(!document.querySelector(`[data-selclub="${sid}"]`).textContent.includes("todos"),
+      `${h.id}: el selector no ofrece «todos»`);
     verClub(sid, otro.club);
     ok($(sid).textContent.includes(otro.club), `${h.id}: al elegir ${otro.club} en ${sid}, la sección habla de ese club`);
     ok(document.querySelectorAll("#portada a").length === port.length, `${h.id}: la portada no cambia con el club`);
@@ -307,6 +334,12 @@ if (modo === "sin_contexto") {
   ok($("a2-1").querySelectorAll(".fr").length >= 1, "el resto se pinta igual");
   ok(/falta/.test($("traza").textContent), "la huella del anexo marca el JSON ausente");
 }
+
+/* adenda 6 §2 y §3: etiquetas que no mienten */
+ok(!document.body.textContent.includes("todos sus clubes"),
+  "en ninguna parte se promete un agregado de «todos sus clubes»");
+ok(!$("informe").textContent.includes("percentil"), "«percentil» ya no está en el cuerpo");
+ok($("anexo").textContent.includes("percentil"), "«percentil» sigue en el anexo");
 
 /* 10. legibilidad */
 const chicos = [...document.querySelectorAll("svg text")].filter(t => parseFloat(t.getAttribute("font-size") || "12") < 10);

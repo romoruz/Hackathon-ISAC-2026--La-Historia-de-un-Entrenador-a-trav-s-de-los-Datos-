@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-22 (h2_38: ADR-59 adenda 5, primero la historia y al final el método, barra fija con dos menús, selector de club dentro de la sección, espacio de estados explicado, simulador paso a paso, una sola línea de carrera, barras con intervalo en 2.2; h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-22 (h2_39: ADR-59 adenda 6, los menús de la barra dejan de estar recortados, un botón por club sin «todos sus clubes», cuatro pies y el recorte al tope; h2_38: ADR-59 adenda 5, primero la historia y al final el método, barra fija con dos menús, selector de club dentro de la sección, espacio de estados explicado, simulador paso a paso, una sola línea de carrera, barras con intervalo en 2.2; h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -129,14 +129,33 @@ selector cambia la historia y repinta la página entera, anexo incluido.
 ### Navegación (adenda 5 §3)
 
 Una sola barra fija con tres cosas: el nombre del técnico, el menú **técnico** y el menú
-**ir a**. No hay selector global de club. Los menús son `position:absolute` y `.navin` va
-`overflow:hidden`, así que no pueden desbordar la barra; el humo comprueba esa forma, y el
-ancho real a 1280 y 1024 se verificó con un navegador de verdad (jsdom no calcula
-disposición: esa parte de la adenda 5 §3 se cumple fuera del humo y queda anotada aquí).
+**ir a**. No hay selector global de club.
+
+**`.navin` NO lleva `overflow:hidden`** (adenda 6 §1). En h2_38 lo llevaba, para garantizar
+que la barra no se desbordara, y recortaba los `.drop-menu`, que son absolutos y cuelgan por
+debajo: los menús se abrían invisibles y la página parecía tener un solo técnico. La barra no
+se desborda igualmente porque no envuelve (`flex-wrap:nowrap`) y porque el nombre del técnico
+se encoge (`min-width:0` + `text-overflow:ellipsis`).
+
+**El humo abre los menús.** Comprobar la hoja de estilo fue exactamente lo que dio falsa
+seguridad: la regla verificada era la que causaba el fallo. Ahora el humo hace clic en cada
+menú y comprueba que su primera opción existe, que el menú no está en `display:none` y que
+**ningún ancestro lo recorta** (ningún `overflow`/`overflow-y` `hidden` o `clip` en la cadena
+hasta `body`). El ancho real a 1920, 1440, 1280, 1024 y 900 se verifica aparte con un
+navegador de verdad, porque jsdom no calcula disposición.
+
 Todo control lleva `cursor:pointer` y realce al pasar el mouse y al enfocar con el teclado;
-el humo lo comprueba sobre la hoja de estilo.
+el humo lo comprueba sobre la hoja de estilo (ahí sí basta: no hay nada que la regla pueda
+romper).
 
 ### Selector de club, dentro de la sección (adenda 5 §4; sustituye al sub-selector global)
+
+Las pestañas son **un botón por club**, en orden cronológico, y el del club donde más
+dirigió lo dice («Puebla · donde más dirigió»). **No hay opción «todos sus clubes»**
+(adenda 6 §2): no existe un agregado de varias eras y no puede existir, porque cada era se
+compara contra la liga de sus mismos torneos (ADR-53). Un test comprueba que la cadena
+«todos sus clubes» no aparece en ninguna parte de la página. En el simulador, donde sí se
+suman conteos crudos sin comparar contra nada, la opción se llama «sus clubes juntos».
 
 `por_club[club]` trae las secciones 2.1 a 2.7 **menos 2.0 y 2.2** de cada club que no es el
 principal, construidas con las mismas funciones sobre `H` con `principal = club`,
