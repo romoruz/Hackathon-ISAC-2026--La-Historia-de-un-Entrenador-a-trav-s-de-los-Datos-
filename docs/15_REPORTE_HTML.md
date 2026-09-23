@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-22 (h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-22 (h2_38: ADR-59 adenda 5, primero la historia y al final el método, barra fija con dos menús, selector de club dentro de la sección, espacio de estados explicado, simulador paso a paso, una sola línea de carrera, barras con intervalo en 2.2; h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -59,14 +59,23 @@ data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principa
 ## 3. Estructura (ADR-59 adenda 3; sustituye a la de la adenda 2)
 
 ```
-portada        tesis fija + cinco frases de la historia activa, con enlace
+portada        nombre y clubes + «qué hicimos» en cinco líneas + las TRES CONCLUSIONES
+               (las tres preguntas de 2.0, con enlace a su evidencia) + las cinco frases
 leyenda        los tres niveles en palabras (probado, medido, descriptivo) + glosario plegado
-primero        común: cancha e inicios (1.1), simulador (1.2), contra la liga del mismo torneo (1.3)
-luego          por historia: 2.1 a 2.7 (siete secciones)
-después        por historia: 3.1 y 3.2
+primero        por historia: 2.0 a 2.7 («Cómo juega»)
+luego          por historia: 3.1 y 3.2 («De dónde viene eso»)
+después        común: 1.1, 1.2 y 1.3 («Cómo lo hicimos, si te interesa»)
 al final       común: ¿nos creen? y límites
 anexo          plegado: todas las secciones viejas COMPLETAS, sin cambiar una cifra
 ```
+
+**El orden lo fija `ACTOS` en el JS** (`acto2, acto3, acto1, cierre`) y lo comprueba el humo
+leyendo los `.acto` del DOM. Ninguna sección cambia de contenido por moverse.
+
+**Portada (adenda 5 §2).** `que_hicimos(M)` es un bloque del modelo dentro de 1.1 marcado
+`portada_solo`: los tests de cifras y de jerga lo recorren como cuerpo, `bloque()` no lo
+pinta en la sección y `portada()` lo pinta en la cabecera. Las tres preguntas de 2.0 llevan
+`| conc(1..3)` y suben a la portada con su enlace, además de quedarse en su sección.
 
 **Regla de construcción.** El anexo de cada sección es la función vieja (h2_35) sin tocar;
 el cuerpo es un extracto (`cuerpo_de`: frases de portada primero, las figuras nombradas, el
@@ -76,12 +85,12 @@ se borra" se cumple por construcción. Cada sección del cuerpo con anexo lleva 
 
 | id | num | sección | cuerpo | anexo |
 |---|---|---|---|---|
-| `a1-1` | 1.1 | La cancha, la posesión y cómo termina | `c1_inicios`: 20 zonas, 4 inicios, 4 finales, la frase de los bloques (`supervivencia_v1 › fase`) | `a1_posesion`, `a1_cadena` |
-| `a1-2` | 1.2 | Dónde vive el balón | `c1_sim` (`simulador_v1`) | `a1_viva` (animación, λ₁ por bloque) |
+| `a1-1` | 1.1 | La cancha, la posesión y cómo termina | `c1_inicios`: «qué hicimos» (portada), 20 zonas × 4 inicios = **80 situaciones vivas** y 4 finales, por qué la malla es 5 × 4 (P-02), un ejemplo de probabilidad de paso desde `simulador_v2 › liga.C`, la frase de los bloques | `a1_posesion`, `a1_cadena` |
+| `a1-2` | 1.2 | De dónde viene y a dónde va el balón | `c1_sim` (`simulador_v2`): tres vistas, una de ellas **paso a paso** | `a1_viva` (animación, λ₁ por bloque) |
 | `a1-3` | 1.3 | Por qué comparamos contra la liga del mismo torneo | `a1_deriva` | — |
 | `a2-0` | 2.0 | Su carrera, club por club | `c_carrera`: línea de tiempo por club + las tres preguntas por plantilla, nivel C (adenda 4 §2) | — |
-| `a2-1` | 2.1 | Con el balón | frase de portada, mapa de zonas, ejemplo + línea de consistencia y minifigura (`serie_por_torneo`) | `s21` |
-| `a2-2` | 2.2 | ¿Llega al área rival sin perder el balón? | llegada y τ, figura de las cinco eras, jugada | `s22` (con P4) |
+| `a2-1` | 2.1 | Con el balón | frase de portada, mapa de zonas, ejemplo + **una sola línea de carrera** con todos sus clubes y una raya en cada cambio (`serie_por_torneo`) | `s21` |
+| `a2-2` | 2.2 | ¿Llega a la **última franja del campo** sin perder el balón? | llegada y τ, barras con intervalo, jugada, nota de «solo el club donde más dirigió» | `s22` (con P4) |
 | `a2-3` | 2.3 | Ocasiones y territorio | 2 frases, tarjetas | `s23` |
 | `a2-4` | 2.4 | Sin el balón | 2 frases, npxG concedido | `s24` (con presión) |
 | `a2-6` | 2.5 | ¿Cambia según el partido? | 1 frase, tabla | `s26` |
@@ -115,14 +124,27 @@ selector cambia la historia y repinta la página entera, anexo incluido.
   aria-label): `ADR-\d`, `q =`, `p = 0.`, `IC [`, `N80`, `τ`, `λ`, `π`, `bootstrap`,
   `Benjamini`, `BH al`, `f = 0.`, `F\d\d`, `D\d\d-\d`, `h2_\d\d`, "era principal",
   "la base", "cuasi-estacionaria". Permitidos en el anexo.
-- **Topes por historia** (humo): ≤ 2 500 palabras, ≤ 15 secciones y ≤ 17 figuras en el cuerpo (adenda 4 §8); ninguna lista se apila en una columna de más de doce.
+- **Topes por historia** (humo): ≤ 2 700 palabras, ≤ 16 secciones y ≤ 18 figuras en el cuerpo (adenda 5 §9); ninguna lista se apila en una columna de más de doce.
 
-### Sub-selector de club (adenda 4 §3)
+### Navegación (adenda 5 §3)
 
-`por_club[club]` trae las secciones 2.1 a 2.7 de cada club que no es el principal, construidas con las
-mismas funciones sobre `H` con `principal = club`, `sub = True` y otro `id` (así no corren las guardas
-de las lecturas preinscritas de Jardine). Sin anexo, sin enlace y sin anclas de portada. Si el JSON no
-trae la unidad, la sección lo dice; llegar al área (2.2) solo existe para el club principal.
+Una sola barra fija con tres cosas: el nombre del técnico, el menú **técnico** y el menú
+**ir a**. No hay selector global de club. Los menús son `position:absolute` y `.navin` va
+`overflow:hidden`, así que no pueden desbordar la barra; el humo comprueba esa forma, y el
+ancho real a 1280 y 1024 se verificó con un navegador de verdad (jsdom no calcula
+disposición: esa parte de la adenda 5 §3 se cumple fuera del humo y queda anotada aquí).
+Todo control lleva `cursor:pointer` y realce al pasar el mouse y al enfocar con el teclado;
+el humo lo comprueba sobre la hoja de estilo.
+
+### Selector de club, dentro de la sección (adenda 5 §4; sustituye al sub-selector global)
+
+`por_club[club]` trae las secciones 2.1 a 2.7 **menos 2.0 y 2.2** de cada club que no es el
+principal, construidas con las mismas funciones sobre `H` con `principal = club`,
+`sub = True` y otro `id` (así no corren las guardas de las lecturas preinscritas de
+Jardine). Sin anexo, sin enlace y sin anclas de portada. El JS pinta, dentro de cada
+sección que tenga versiones por club, unas pestañas («todos sus clubes» + un botón por
+club) y al cambiar mantiene la sección en el mismo sitio de la pantalla. 2.2 no lleva
+pestañas y dice en una nota que se midió solo en el club donde más dirigió.
 
 ### Simulador (1.2), antes de la adenda 4
 
@@ -220,10 +242,20 @@ sintético, **con los casos límite**: el vacío, el bloqueado, el que tiene cer
 el que sobrevive en una historia sin lectura preinscrita, el homónimo.
 
 
-## 10. Simulador desde h2_37 (adenda 4 §5)
+## 10. Simulador desde h2_38 (adenda 4 §5 y adenda 5 §5)
 
-Lee `simulador_v2.json` (conteos). Tocar una zona: tres flechas de salida (las filas de los conteos),
-tres de llegada (las columnas) y cómo termina la acción. «Simula una jugada» sortea con `Math.random` una
-posesión desde la zona tocada hasta un final, con la leyenda "jugada inventada por el modelo, no real".
-«A la larga» itera el reparto. Fuente: la liga, cada club del técnico o todos sus clubes (conteos
-sumados). Una fila sin conteos toma la de la liga.
+Lee `simulador_v2.json` (conteos). Tres vistas, cada una con una línea que dice qué son sus
+porcentajes:
+
+1. **De dónde viene y a dónde va.** Tocar una zona: tres flechas de salida (las filas de los
+   conteos), tres de llegada (las columnas) y cómo termina la acción. Los porcentajes son
+   «de cada 100 balones que pasan por esa zona».
+2. **Paso a paso.** Se toca una zona para poner ahí el balón; cada clic en «una acción más»
+   sortea **un** paso con `Math.random` (`FIG._simPaso`), dibuja esa flecha con su
+   probabilidad y deja el rastro de las anteriores. Al llegar a un final lo dice y ofrece
+   «otra jugada». Lleva la leyenda "jugada inventada por el modelo, no real".
+3. **A la larga.** Itera el reparto; los porcentajes son «de las posesiones que ya duraron
+   mucho».
+
+Fuente: la liga, cada club del técnico o todos sus clubes (conteos sumados). Una fila sin
+conteos toma la de la liga.

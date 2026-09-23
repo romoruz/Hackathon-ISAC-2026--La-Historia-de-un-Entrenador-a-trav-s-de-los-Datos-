@@ -661,7 +661,7 @@ FASE_ES = {"open": "juego abierto", "transition": "transición",
            "restart": "reinicio (saque de banda o de meta)", "set_piece": "balón parado"}
 FRANJA_Y = ["banda izquierda", "centro-izquierda", "centro-derecha", "banda derecha"]
 COLUMNA_X = ["cerca de su portería", "en su mitad", "en el medio", "en campo rival",
-             "en la franja del área rival"]
+             "en la última franja del campo rival"]
 
 
 def zona_txt(z: int) -> str:
@@ -898,7 +898,7 @@ def s22(M: Modelo, H):
     L, T = e["L"], e["tau"]
     if L["evaluable"]:
         B.append(frase_contraste(
-            M, f"Con {ape(c)}, {el_(club)} llevó a la franja del área el " + M.c(m_pct(L["era"]), Fe + " › L.era") +
+            M, f"Con {ape(c)}, {el_(club)} llevó a la última franja del campo el " + M.c(m_pct(L["era"]), Fe + " › L.era") +
             " de las posesiones que empezaron lejos de ella; la liga, desde los mismos puntos, el " +
             M.c(m_pct(L["base"]), Fe + " › L.base") + ". Diferencia:",
             L["rel"], L["ic95_rel"], L["q"], L["rechaza"], f_pct, m_pct, Fe + " › L.rel"))
@@ -923,15 +923,14 @@ def s22(M: Modelo, H):
             fila[k] = ({"v": y["rel"], "ic": y["ic95_rel"], "q": y["q"], "r": y["rechaza"]}
                        if y["evaluable"] else None)
         filas.append(fila)
-    B.append(M.fig("prog", "Llegar a la franja del área: las cinco eras principales",
-                   "Diferencia relativa contra la liga de los mismos torneos, con su intervalo. Punto "
-                   "lleno: sobrevive a la corrección.", filas))
+    B.append(M.fig("prog", "Llegar a la última franja del campo: los cinco clubes donde más dirigieron",
+                   "Cada barra es un técnico. La marca gruesa es el valor.", filas))
     j = e.get("jugada")
     if j:
         B.append(M.ejemplo("Una posesión real, elegida por regla (la que tardó lo más parecido a la media, " +
                            M.c(str(j["objetivo"]), Fe + " › jugada.objetivo") + " acciones): el " +
                            M.c(j["fecha"], Fe + " › jugada.fecha") + ", " + el_(club) + " llegó a la "
-                           "franja del área en " + M.c(str(j["acciones"]), Fe + " › jugada.acciones") +
+                           "última franja del campo en " + M.c(str(j["acciones"]), Fe + " › jugada.acciones") +
                            " acciones, en " + M.c(FASE_ES.get(j["fase"], j["fase"]), Fe + " › jugada.fase") + "."))
         B.append(M.fig("jugada", "La posesión, zona por zona",
                        "Cada punto es una acción; el número es su orden. Toca un punto para ver quién "
@@ -1968,7 +1967,7 @@ ACTO1 = [
 ]
 ACTO2 = [
     ("a2-1", "2.1", "5.1 ofensiva", "Con el balón: cuánto dura y dónde vive", s21, None),
-    ("a2-2", "2.2", "5.1 ofensiva", "Progresión: ¿llega a la franja del área sin perderla?", s22, None),
+    ("a2-2", "2.2", "5.1 ofensiva", "Progresión: ¿llega a la última franja del campo sin perderla?", s22, None),
     ("a2-3", "2.3", "5.1 ofensiva", "Ocasiones y territorio", s23, None),
     ("a2-4", "2.4", "5.1 defensiva", "Sin el balón", s24, None),
     ("a2-5", "2.5", "5.2 consistencia", "¿La misma idea torneo tras torneo?", s25, None),
@@ -2058,6 +2057,38 @@ def _dir_txt(ic, mas, menos, igual):
     return mas if s_ > 0 else menos if s_ < 0 else igual
 
 
+def conc(n: int) -> dict:
+    """Marca una frase como conclusión de portada (adenda 5 §2)."""
+    return {"conc": n}
+
+
+def que_hicimos(M: Modelo):
+    """Adenda 5 §2: cinco líneas con cifras de los propios JSON."""
+    M.need("h4", "met", "der")
+    J = M.J
+    h4, met, der = J["h4"], J["met"], J["der"]
+    tor = h4["parametros"]["torneos_orden"]
+    poss = sum(u["n_poss"] for u in h4["unidades"])
+    todo = marcador(J) if all(J.get(k) for k in ("pres", "bp", "ctx", "jug")) else []
+    ev = [p for p in todo if p["cumple"] is not None]
+    mil = lambda x: f"{x:,}".replace(",", " ")
+    txt = ("Miramos " + M.c(mil(met["universo"]["partidos"]), "metricas_v1 › universo.partidos") +
+           " partidos de la Liga MX: " + M.c(str(der["por_torneo"][0]["clubes"]), "deriva_proveedor › por_torneo.clubes") +
+           " clubes, " + M.c(str(len(tor)), "did_h4_v1 › parametros.torneos_orden") + " torneos y " +
+           M.c(str(h4["n_unidades"]), "did_h4_v1 › n_unidades") + " etapas de técnico, con " +
+           M.c(mil(poss), "did_h4_v1 › unidades[].n_poss (suma)") + " posesiones. "
+           "Cada posesión la seguimos de zona en zona hasta que termina en gol, remate, pérdida o balón fuera. "
+           "A cada técnico lo comparamos contra la liga de sus mismos torneos, porque el proveedor de datos "
+           "cambió su forma de registrar las jugadas con el tiempo. "
+           "Escribimos qué esperábamos encontrar antes de mirar los números")
+    if ev:
+        txt += (", y publicamos también las que fallaron: se cumplieron " +
+                M.c(f"{sum(p['cumple'] for p in ev)} de {len(ev)}", "marcador") + ".")
+    else:
+        txt += "."
+    return M.frase("C", txt)
+
+
 def c_carrera(M: Modelo, H):
     """Adenda 4 §2: su carrera club por club y las tres preguntas, nivel C, por plantilla."""
     M.need("h4", "met")
@@ -2095,13 +2126,13 @@ def c_carrera(M: Modelo, H):
         ep = next((x for x in J["prog"]["eras"] if x.get("hid") == H["id"]), None)
         if ep and ep["L"]["evaluable"]:
             L = ep["L"]
-            partes.append(("llegó más al área rival" if L["rechaza"] and L["D"] > 0 else
-                           "llegó menos al área rival" if L["rechaza"] else
-                           "llegó al área rival igual que la liga") + " (probado)")
+            partes.append(("llegó más veces a la última franja del campo" if L["rechaza"] and L["D"] > 0 else
+                           "llegó menos veces a la última franja del campo" if L["rechaza"] else
+                           "llegó a la última franja del campo igual que la liga") + " (probado)")
     partes.append(_dir_txt(pr["ft_ic"], "pisó más el campo rival", "pisó menos el campo rival",
                            "pisó el campo rival igual que la liga") + " (medido)")
     B.append(M.frase("C", f"<b>¿Cómo juega donde más dirigió?</b> Con {ape(c)}, {el_(club)} " +
-                     ", ".join(partes[:-1]) + " y " + partes[-1] + "."))
+                     ", ".join(partes[:-1]) + " y " + partes[-1] + ".") | conc(1))
     # 2. ¿juega igual en sus otros clubes?
     n = len(filas)
     if n >= 2:
@@ -2122,11 +2153,11 @@ def c_carrera(M: Modelo, H):
                 t2 += (" En promedio, sus clubes se parecen entre sí más que el " +
                        M.c(f"{round(100 * (1 - pm))}%", "estilos_v1 › traslados.percentil (media, 1 − p)") +
                        " de los pares de épocas de la liga.")
-        B.append(M.frase("C", "<b>¿Juega igual en sus otros clubes?</b> " + t2))
+        B.append(M.frase("C", "<b>¿Juega igual en sus otros clubes?</b> " + t2) | conc(2))
         resp2 = (f"la posesión quedó del mismo lado de la liga en " +
                  M.c(f"{max(arriba_p, abajo_p)} de {n}", Fh + " › rel_E_T_vs_liga_ic95") + " de sus clubes")
     else:
-        B.append(M.frase("C", "<b>¿Juega igual en sus otros clubes?</b> En estos datos dirigió un solo club."))
+        B.append(M.frase("C", "<b>¿Juega igual en sus otros clubes?</b> En estos datos dirigió un solo club.") | conc(2))
         resp2 = "no hay otro club para comparar"
     # 3. ¿él cambió al club o el club lo cambió a él?
     if J.get("rel") and J.get("pla"):
@@ -2136,7 +2167,7 @@ def c_carrera(M: Modelo, H):
                          "puede decir que él cambió al club. Cuando llegó o se fue, el reparto del juego "
                          "cambió en " + M.c(f"{k} de {len(rs)}", "relevos_v1 › pares.rechaza") + " relevos, "
                          "pero el mismo técnico en el mismo club también cambia, y partir la etapa de un "
-                         "técnico en dos mitades da cambios parecidos. Lo que sí se ve: " + resp2 + "."))
+                         "técnico en dos mitades da cambios parecidos. Lo que sí se ve: " + resp2 + ".") | conc(3))
     else:
         B.append(M.hueco(1, "<b>¿Él cambió al club o el club lo cambió a él?</b> Para contestarla hacen "
                             "falta relevos_v1.json y placebo_v1.json (" + esc(FUENTES["rel"][1]) + ")."))
@@ -2145,14 +2176,33 @@ def c_carrera(M: Modelo, H):
 
 def c1_inicios(M: Modelo):
     sup = M.J.get("sup")
+    sim = M.J.get("sim")
     F = "supervivencia_v1 › fase"
     B = [
-        M.frase("C", "Partimos la cancha en 20 zonas y seguimos cada posesión acción por acción: en "
-                "qué zona está y cómo empezó. Hay cuatro formas de empezar y cuatro finales."),
+        que_hicimos(M) | {"portada_solo": 1},
+        M.frase("C", "Partimos la cancha en " + M.c("20", "config › pitch.nx × pitch.ny (5 × 4)") +
+                " zonas: cinco franjas a lo largo y cuatro a lo ancho. Seguimos cada posesión acción por "
+                "acción: en qué zona está y cómo empezó. Como cada posesión arrastra su forma de empezar, "
+                "el juego tiene " + M.c("80", "20 zonas × 4 formas de empezar") + " situaciones vivas "
+                "distintas y cuatro finales. La malla es de cinco por cuatro porque con una más fina los "
+                "parámetros por observación se pasan de " +
+                M.c("0.5", "decisión P-02 del proyecto") + " en la etapa más chica."),
         M.fig("inicios", "Cómo empieza y cómo termina una posesión",
               "Cada posesión empieza de una de estas cuatro formas y termina en uno de estos cuatro "
               "finales. Entre medio, pasa de zona en zona.", None),
     ]
+    if sim:
+        C = sim["liga"]["C"]
+        z0 = max(range(20), key=lambda i: sum(C[i]))
+        tot = sum(C[z0]) or 1
+        ida = sorted(((C[z0][j], j) for j in range(20) if j != z0), reverse=True)[0]
+        fin = sum(C[z0][20:])
+        Fs = "simulador_v2 › liga.C"
+        B.append(M.frase("C", "Una probabilidad de paso es eso: contar. En " + M.c(zona_txt(z0), Fs) +
+                         ", la zona con más balón de la liga, de cada " + M.c("100", "conteo") +
+                         " acciones " + M.c(str(round(100 * ida[0] / tot)), Fs) + " siguen hacia " +
+                         M.c(zona_txt(ida[1]), Fs) + " y " + M.c(str(round(100 * fin / tot)), Fs) +
+                         " terminan ahí la posesión. El simulador de abajo usa esos mismos conteos."))
     if sup:
         f = sup["fase"]
         B.append(M.frase("C", "Una posesión nunca cambia su forma de empezar: de " +
@@ -2176,10 +2226,12 @@ def c1_liga(M: Modelo):
                 " parejas; comparando cada época con la liga del mismo torneo, en " +
                 M.c(f'{ft["did"]["posterior_mas_largo"]} de {ft["did"]["de"]}', F + ".did") +
                 ". Por eso siempre comparamos contra la liga del mismo torneo."),
-        M.fig("fig1b", "Acciones por posesión en la liga, torneo a torneo",
-              "Media de todos los clubes por torneo; la banda es ± una desviación estándar entre clubes.",
-              [{"t": r["torneo"], "v": r["acc_por_posesion_cruda_media"],
-                "sd": r["acc_por_posesion_cruda_sd_clubes"]} for r in serie]),
+        M.fig("fig1b", "Todos los clubes de la liga, torneo a torneo",
+              "No es un técnico: es la media de todos los clubes en cada torneo. La banda clara es la "
+              "diferencia normal entre clubes.",
+              {"filas": [{"t": r["torneo"], "v": r["acc_por_posesion_cruda_media"],
+                          "sd": r["acc_por_posesion_cruda_sd_clubes"]} for r in serie],
+               "linea": "media de la liga", "banda": "diferencia normal entre clubes"}),
     ]
 
 
@@ -2189,9 +2241,10 @@ def c1_sim(M: Modelo):
     sim = M.J["sim"]
     F = "simulador_v2 › liga"
     return [
-        M.frase("C", "Toca una zona: ves a dónde suele ir el balón, de dónde le llega y cómo termina. "
-                "«Simula una jugada» inventa una posesión paso a paso, distinta en cada clic. Elige la liga "
-                "del torneo " + M.c(sim["liga"]["torneo"], F + " › torneo") + " o al técnico en cada club."),
+        M.frase("C", "Tres vistas. «De dónde viene y a dónde va»: tocas una zona y ves a dónde sigue el "
+                "balón. «Paso a paso»: cada clic lo mueve una sola acción hasta que la posesión termina. "
+                "«A la larga»: dónde acaba el balón en las posesiones largas. Elige la liga del torneo " +
+                M.c(sim["liga"]["torneo"], F + " › torneo") + " o al técnico en cada club."),
         M.fig("sim", "De dónde viene y a dónde va el balón",
               "Sale de contar, en los partidos, a qué zona fue cada acción desde cada zona.",
               {"liga": sim["liga"], "finales": sim.get("finales"),
@@ -2200,21 +2253,36 @@ def c1_sim(M: Modelo):
 
 
 def consistencia(M: Modelo, H):
-    """2.1: la afirmación de consistencia de 2.5 en una línea (adenda 3 §2)."""
-    J, c, club = M.J, H["coach"], H["principal"]
-    u = unidad(J, "h4", club, c)
-    ts = [t for t in torneos_orden(J) if t in u["serie_por_torneo"]]
-    if len(ts) < 2:
+    """2.1 (adenda 5 §6): una sola línea de tiempo con todos los clubes del técnico,
+    separados donde cambia de club."""
+    J, c = M.J, H["coach"]
+    orden = torneos_orden(J)
+    filas = []
+    for e in sorted(H["eras"], key=lambda e: e["t0"]):
+        u = unidad_o_none(J, "h4", e["club"], c)
+        if not u:
+            continue
+        for t in [t for t in orden if t in u["serie_por_torneo"]]:
+            filas.append({"t": t, "v": u["serie_por_torneo"][t]["rel_E_T"], "club": e["club"]})
+    if len(filas) < 2:
         return []
-    F = f"did_h4_v1 › unidades[{club}, {ape(c)}] › serie_por_torneo"
-    v = [u["serie_por_torneo"][t]["rel_E_T"] for t in ts]
-    arriba = sum(x > 0 for x in v)
+    F = f"did_h4_v1 › unidades[*, {ape(c)}] › serie_por_torneo"
+    arriba = sum(f["v"] > 0 for f in filas)
     return [
-        M.frase("C", "Torneo a torneo, sus posesiones duraron más que las de la liga en " +
-                M.c(f"{arriba} de {len(ts)}", F) + " torneos."),
-        M.fig("serie", "Torneo a torneo", "Duración de la posesión contra la liga, en cada torneo.",
-              [{"t": t, "v": x} for t, x in zip(ts, v)]),
+        M.frase("C", "Torneo a torneo, y contando todos sus clubes, sus posesiones duraron más que las "
+                "de la liga en " + M.c(f"{arriba} de {len(filas)}", F) + " torneos."),
+        M.fig("serie", f"Toda la carrera de {ape(c)}, torneo a torneo",
+              "Duración de la posesión contra la liga en cada torneo. La línea vertical marca el cambio "
+              "de club.", filas),
     ]
+
+
+def solo_principal(M: Modelo, H):
+    """Adenda 5 §4: 2.2 se midió solo en el club donde más dirigió, y lo dice."""
+    if len(H["eras"]) < 2:
+        return []
+    return [M.nota("Esto se midió solo en " + esc(el_(H["principal"])) + ", el club donde más dirigió: "
+                   "era lo que estaba escrito antes de mirar.")]
 
 
 def c31(M: Modelo, H):
@@ -2318,7 +2386,7 @@ ANEXO_A1 = [("x-estimacion", "Cómo se estiman las probabilidades", a1_estimacio
 CUERPO_A2 = [
     ("a2-0", "2.0", "la historia", "Su carrera, club por club", c_carrera, []),
     ("a2-1", "2.1", "5.1 ofensiva", "Con el balón: cuánto dura y dónde vive", (s21, dict(frases=1, figs=("fig2",)), consistencia), [s21]),
-    ("a2-2", "2.2", "5.1 ofensiva", "¿Llega al área rival sin perder el balón?", (s22, dict(frases=2, figs=("prog", "jugada"))), [s22]),
+    ("a2-2", "2.2", "5.1 ofensiva", "¿Llega a la última franja del campo sin perder el balón?", (s22, dict(frases=2, figs=("prog", "jugada")), solo_principal), [s22]),
     ("a2-3", "2.3", "5.1 ofensiva", "Ocasiones y territorio", (s23, dict(frases=1, figs=("tarjetas",))), [s23]),
     ("a2-4", "2.4", "5.1 defensiva", "Sin el balón", (s24, dict(frases=1, figs=("concedido",))), [s24]),
     ("a2-6", "2.5", "5.2 variabilidad", "¿Cambia según el partido?", (s26, dict(frases=1, figs=("ctx4",), salta=1)), [s26]),
@@ -2508,7 +2576,7 @@ def construye(J: dict, traza: dict) -> tuple[dict, Modelo]:
             M2 = Modelo(J, registro, exporta=False, hid=hid)
             secs = []
             for x in CUERPO_A2:
-                if x[0] == "a2-0":
+                if x[0] in ("a2-0", "a2-2"):   # adenda 5 §4: sin dato por club
                     continue
                 try:
                     secs.append(_seccion_club(M2, H2, *x))
@@ -3081,12 +3149,30 @@ nav{background:var(--chrome)}
 .dot{background:var(--tx2)}
 h1 em{background:linear-gradient(120deg,#fff,#9a9aa2);-webkit-background-clip:text}
 
-/* barra de secciones: el segmentado de iOS, ahora como índice */
-.navin{flex-wrap:nowrap}
-#segHist,#segActo{overflow-x:auto;scrollbar-width:none;max-width:100%}
-#segHist::-webkit-scrollbar,#segActo::-webkit-scrollbar{display:none}
-#segActo button{font-family:var(--mono);padding:.42rem .7rem}
-@media(max-width:700px){.navin{flex-wrap:wrap}}
+/* barra compacta con dos menús (adenda 5 §3) */
+.navin{flex-wrap:nowrap;align-items:center;overflow:hidden}
+.navmarca{font-size:.84rem;font-weight:700;color:var(--tx);white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto;margin-right:.4rem}
+.drop{position:relative;flex:0 0 auto}
+.drop>button{cursor:pointer;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+ color:var(--tx);font:inherit;font-size:.84rem;font-weight:600;border-radius:10px;
+ padding:.38rem .7rem;display:flex;align-items:center;gap:.35rem;white-space:nowrap;
+ transition:background .15s,border-color .15s}
+.drop>button:hover,.drop>button:focus-visible{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28)}
+.drop>button i{font-style:normal;font-size:.62rem;color:var(--tx3)}
+.drop-menu{position:absolute;right:0;top:calc(100% + .4rem);min-width:190px;max-height:60vh;overflow:auto;
+ background:var(--chrome,rgba(16,16,22,.98));border:1px solid rgba(255,255,255,.14);border-radius:12px;
+ padding:.3rem;display:none;z-index:60;box-shadow:0 12px 34px rgba(0,0,0,.5)}
+.drop.abierto .drop-menu{display:block}
+.drop-menu button{cursor:pointer;display:block;width:100%;text-align:left;background:none;border:none;
+ color:var(--tx2);font:inherit;font-size:.85rem;padding:.42rem .6rem;border-radius:8px}
+.drop-menu button:hover,.drop-menu button:focus-visible{background:rgba(255,255,255,.12);color:var(--tx)}
+.drop-menu button.on{color:var(--tx);font-weight:700}
+@media(max-width:700px){.navmarca{display:none}}
+/* todo control se ve que es un control (adenda 5 §3) */
+.seg button,.sim-bar button,summary,.chip[data-tip],.enlace,[data-jug],.drop>button,.drop-menu button{cursor:pointer}
+.seg button:hover,.sim-bar button:hover{color:var(--tx)}
+.seg button:focus-visible,.sim-bar button:focus-visible,.drop>button:focus-visible{outline:2px solid var(--a1);outline-offset:2px}
 .navtit{font-size:.83rem;font-weight:600;color:var(--tx2);white-space:nowrap;
  overflow:hidden;text-overflow:ellipsis;min-width:0}
 @media(max-width:700px){.navtit{display:none}}
@@ -3216,8 +3302,27 @@ body:not(.tecnica) .tec{display:none}
 .portada .ir{font-family:var(--mono);font-size:.72rem;color:var(--tx2);margin-left:.4rem;white-space:nowrap}
 .eras{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1rem}
 .eras .chip.pr{border-color:var(--a1)}
-#segHist button{font-size:.84rem}
 #segModo button{font-size:.8rem}
+/* qué hicimos, en la portada (adenda 5 §2) */
+.quehicimos{margin-top:1.3rem;max-width:74ch;font-size:1rem;line-height:1.62;color:var(--tx2)}
+.quehicimos b{color:var(--tx)}
+.conclus{margin-top:1.2rem}
+.conclus-t{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+ color:var(--tx3);margin-bottom:.3rem}
+/* selector de club dentro de la sección (adenda 5 §4) */
+.selclub{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:.2rem 0 1rem}
+.selclub .selclub-t{font-size:.8rem;color:var(--tx3)}
+/* barras con intervalo (adenda 5 §6) */
+.bint{display:flex;flex-direction:column;gap:.55rem}
+.bint .br{display:grid;grid-template-columns:minmax(120px,210px) 1fr auto;gap:.7rem;align-items:center}
+.bint .br-n{font-size:.86rem;font-weight:600;color:var(--tx)}
+.bint .br-s{font-size:.74rem;color:var(--tx3)}
+.bint .br-t{position:relative;height:20px;border-radius:6px;background:rgba(255,255,255,.05)}
+.bint .br-t i.z{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.45)}
+.bint .br-t i.ic{position:absolute;top:7px;height:6px;border-radius:3px;background:var(--a1);opacity:.35}
+.bint .br-t i.vv{position:absolute;top:2px;height:16px;width:4px;margin-left:-2px;border-radius:2px;background:var(--a1);box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+.bint .br-t i.vv.abierta{background:var(--tx2)}
+.bint .br-v{font-family:var(--mono);font-size:.82rem;color:var(--tx)}
 .sem{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
 @media(max-width:760px){.sem{grid-template-columns:1fr 1fr}}
 .sem .card{padding:1rem}
@@ -3238,9 +3343,9 @@ body:not(.tecnica) .tec{display:none}
 </header>
 
 <nav><div class="navin">
-  <div class="seg" id="segHist"><div class="pill"></div></div>
-  <div class="seg" id="segClub"><div class="pill"></div></div>
-  <div class="seg" id="segActo"><div class="pill"></div></div>
+  <div class="navmarca" id="navMarca"></div>
+  <div class="drop" id="dropHist"></div>
+  <div class="drop" id="dropIr"></div>
 </div></nav>
 
 <div class="wrap">
@@ -3492,7 +3597,9 @@ const FIG={
    <div class="card flat" data-tip="<b>Cómo termina</b>Probabilidad de que la posesión acabe en remate o en gol.">${fin}<h4>¿Cómo termina?</h4><p>Probabilidad de remate y de gol al final de la cadena.</p></div></div>`;
  },
  fig1b(d){
-  return linea(d.map(p=>({t:p.t,v:p.v,sd:p.sd,tip:`${p.v.toFixed(2)} acciones por posesión (± ${p.sd.toFixed(2)} entre clubes)`})),v=>v.toFixed(1));
+  const fs=Array.isArray(d)?d:d.filas;
+  return linea(fs.map(p=>({t:p.t,v:p.v,sd:p.sd,tip:`${p.v.toFixed(2)} acciones por posesión (± ${p.sd.toFixed(2)} entre clubes)`})),v=>v.toFixed(1))+
+   (Array.isArray(d)?"":leyenda(SW(C_FOCO,d.linea),`<span class="leg"><i style="background:var(--a1);opacity:.25"></i>${esc(d.banda)}</span>`));
  },
  fig2(d){
   if(d.falta)return vacio("Falta el parquet de transiciones de esta era; el mapa se pinta al generar el informe en la máquina del proyecto.",d.falta);
@@ -3730,12 +3837,19 @@ const FIG={
    `<span class="leg">torneo ${esc(d.t)} · distancia máxima ${(+d.ks).toFixed(3)}</span>`);
  },
  prog(d,fid){
+  /* adenda 5 §6: barras horizontales con su intervalo, nada que parezca arrastrable */
   const k=ESTADO[fid]??"L",fs=d.filter(x=>x[k]);
   const sel=seg(fid,[["L","llegar"],["tau","tiempo hasta llegar"]]);
   if(!fs.length)return sel+vacio("Ninguna era evaluable para este estimando.");
-  return sel+bosque(fs.map(x=>({etq:x.etq,sub:(x.mia?"esta historia · ":"")+fz(x[k].q),
-   marcas:[{v:x[k].v,ic:x[k].ic,lleno:x[k].r,q:x[k].q,nota:x[k].r?"sobrevive a la corrección":"no sobrevive a la corrección"}]})),
-   v=>pct(v),{refTxt:"LIGA DE LOS MISMOS TORNEOS"})+leyenda(SW(C_FOCO,"resiste la prueba"),SW("var(--tx2)","no la resiste",true));
+  const todos=fs.flatMap(x=>[x[k].v,x[k].ic[0],x[k].ic[1]]).concat([0]);
+  const mx=Math.max(...todos.map(Math.abs),1e-9)*1.12,X=v=>50+50*v/mx;
+  return sel+`<div class="bint">${fs.map(x=>{const r=x[k],lo=X(r.ic[0]),hi=X(r.ic[1]);
+   return `<div class="br" data-tip="<b>${esc(x.etq)}</b>${esc(pct(r.v))} contra la liga [${esc(pct(r.ic[0]))}, ${esc(pct(r.ic[1]))}]<br>${fz(r.q)}">
+    <div><div class="br-n">${esc(x.etq)}</div><div class="br-s">${x.mia?"esta historia · ":""}${esc(r.r?"resiste la prueba":"no la resiste")}</div></div>
+    <div class="br-t"><i class="z" style="left:50%"></i><i class="ic" style="left:${Math.min(lo,hi).toFixed(1)}%;width:${Math.abs(hi-lo).toFixed(1)}%"></i><i class="vv${r.r?"":" abierta"}" style="left:${X(r.v).toFixed(1)}%"></i></div>
+    <div class="br-v">${esc(pct(r.v))}</div></div>`;}).join("")}</div>`+
+   leyenda(SW(C_FOCO,"resiste la prueba"),SW("var(--tx2)","no la resiste",true),
+    `<span class="leg">la línea del centro es «igual que la liga de los mismos torneos» y la franja clara es el margen</span>`);
  },
  jugada(d){
   const z=d.zonas;
@@ -3779,7 +3893,8 @@ const FIG={
   return `<div class="esquema">${lista(ini,"Cuatro formas de empezar")}<div class="card flat">${mini}<h4>Veinte zonas</h4><p>Cinco franjas a lo largo, cuatro a lo ancho. El equipo ataca hacia la derecha.</p></div>${lista(fin,"Cuatro finales")}</div>`;
  },
  sim(d,fid){
-  const st=ESTADO[fid]||(ESTADO[fid]={src:"liga",z:null,modo:"flujo",camino:null});
+  /* adenda 5 §5: una acción por clic */
+  const st=ESTADO[fid]||(ESTADO[fid]={src:"liga",z:null,modo:"flujo",pasos:null,fin:null});
   const eras=d.eras.filter(e=>HIST&&e.hid===HIST.id);
   const fuentes=[["liga","la liga",[d.liga]]].concat(eras.map(e=>[e.club,e.club,[e]])).concat(eras.length>1?[["todos","todos sus clubes",eras]]:[]);
   const f=fuentes.find(x=>x[0]===st.src)||fuentes[0];
@@ -3788,24 +3903,38 @@ const FIG={
   const fila=i=>{const r=C[i],t=r.reduce((a,b)=>a+b,0);const rr=t>0?r:Cl[i],tt=t>0?t:rr.reduce((a,b)=>a+b,0);return rr.map(x=>x/(tt||1));};
   const P=C.map((_,i)=>fila(i));
   const zc=q=>[(Math.floor(q/NY)+.5)*cw,(q%NY+.5)*ch];
-  const b=(k,t,on)=>`<button data-sim="${k}" class="${on?"on":""}">${esc(t)}</button>`;
+  const fins=d.finales||["gol","remate sin gol","pérdida","fuera"];
+  const b=(k,t,on)=>`<button type="button" data-sim="${k}" class="${on?"on":""}">${esc(t)}</button>`;
+  const vistas=[["flujo","de dónde viene y a dónde va"],["jugada","paso a paso"],["larga","a la larga"]];
   let barra=`<div class="sim-bar">${fuentes.map(x=>b("src:"+x[0],x[1],x[0]===f[0])).join("")}</div>
-   <div class="sim-bar">${b("flujo","de dónde viene y a dónde va",st.modo==="flujo")}${b("jugada",st.camino?"otra jugada":"simula una jugada",st.modo==="jugada")}${b("larga","a la larga",st.modo==="larga")}</div>`;
+   <div class="sim-bar">${vistas.map(([k,t])=>b("modo:"+k,t,st.modo===k)).join("")}</div>`;
   const plano=Array(20).fill(0);
-  let capa="",nota="";
+  let capa=()=>"",nota="",acciones="";
   if(st.modo==="larga"){
    let mu=(f[2][0].alfa||d.liga.alfa).slice();
    for(let k=0;k<300;k++){const nu=mu.map((_,j)=>mu.reduce((a,m,i)=>a+m*P[i][j],0));const t=nu.reduce((a,x)=>a+x,0);mu=nu.map(x=>x/(t||1));}
    mu.forEach((v,i)=>plano[i]=v);
-   nota="Si la posesión dura mucho, el balón termina repartido así, empiece donde empiece.";
-  } else if(st.modo==="jugada"&&st.camino){
-   const cam=st.camino;
-   cam.zonas.forEach(q=>plano[q]+=1);
-   nota=`Jugada inventada por el modelo, no real: ${cam.zonas.length} acciones y termina en <b>${esc(cam.fin)}</b>. El modelo acierta la probabilidad de cada paso, pero no el largo total de las posesiones (por eso no simulamos partidos).`;
-   capa=(s)=>{const pts=cam.zonas.map((q,i)=>{const[x,y]=zc(q);const k=cam.zonas.slice(0,i).filter(z=>z===q).length;const a=k*2.1;return[(x+Math.cos(a)*k*3.2)*s,(y+Math.sin(a)*k*3.2)*s];});
-    let g=`<polyline points="${pts.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="var(--a1)" stroke-width="2" stroke-opacity=".85"/>`;
-    pts.forEach(([x,y],i)=>{g+=`<g data-tip="<b>acción ${i+1}</b>"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="var(--bg)" stroke="var(--a1)" stroke-width="2"/><text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="var(--mono)" fill="var(--tx)" pointer-events="none">${i+1}</text></g>`;});
-    return g;};
+   nota="<b>Qué son estos porcentajes:</b> de cada 100 posesiones que ya duraron mucho, cuántas tienen el balón en cada zona. El color más fuerte es donde más se queda el balón, empiece donde empiece.";
+  } else if(st.modo==="jugada"){
+   const cam=st.pasos;
+   if(!cam||!cam.length){
+    (f[2][0].alfa||d.liga.alfa).forEach((v,i)=>plano[i]=v);
+    nota="<b>Paso a paso:</b> toca una zona de la cancha para poner ahí el balón. Después, cada clic mueve el balón una sola acción.";
+   } else {
+    cam.forEach(q=>plano[q]+=1);
+    acciones=`<div class="sim-bar">${b("paso",st.fin?"—":"una acción más",false)}${b("otra","otra jugada",false)}</div>`;
+    nota=st.fin
+     ? `La posesión terminó en <b>${esc(st.fin)}</b> después de ${cam.length} ${cam.length===1?"acción":"acciones"}. Jugada inventada por el modelo, no real: el modelo acierta la probabilidad de cada paso, pero no el largo total de las posesiones (por eso no simulamos partidos).`
+     : `Van ${cam.length} ${cam.length===1?"acción":"acciones"}. Cada flecha lleva la probabilidad que tenía ese paso. Jugada inventada por el modelo, no real.`;
+    capa=(s)=>{const pts=cam.map((q,i)=>{const[x,y]=zc(q);const k=cam.slice(0,i).filter(z=>z===q).length;const a=k*2.1;return[(x+Math.cos(a)*k*5)*s,(y+Math.sin(a)*k*5)*s];});
+     let g=`<defs><marker id="flP" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--a1)"/></marker></defs>`;
+     for(let i=1;i<pts.length;i++){const p=P[cam[i-1]][cam[i]];
+      g+=`<line x1="${pts[i-1][0].toFixed(1)}" y1="${pts[i-1][1].toFixed(1)}" x2="${pts[i][0].toFixed(1)}" y2="${pts[i][1].toFixed(1)}" stroke="var(--a1)" stroke-width="2" stroke-opacity="${i===pts.length-1?.95:.45}" marker-end="url(#flP)"/>
+       <text x="${((pts[i-1][0]+pts[i][0])/2).toFixed(1)}" y="${((pts[i-1][1]+pts[i][1])/2-6).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="var(--mono)" fill="var(--tx2)">${(100*p).toFixed(0)}%</text>`;}
+     pts.forEach(([x,y],i)=>{const ult=i===pts.length-1;
+      g+=`<g data-paso="${i+1}" data-tip="<b>acción ${i+1}</b>"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="${ult?"var(--a1)":"var(--bg)"}" stroke="var(--a1)" stroke-width="2"/><text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="var(--mono)" fill="${ult?"var(--bg)":"var(--tx)"}" pointer-events="none">${i+1}</text></g>`;});
+     return g;};
+   }
   } else {
    const z=st.z;
    if(z===null){(f[2][0].alfa||d.liga.alfa).forEach((v,i)=>plano[i]=v);nota="Toca una zona: te decimos a dónde suele ir el balón desde ahí, de dónde le llega y cómo termina.";}
@@ -3814,8 +3943,8 @@ const FIG={
     const va=P[z].slice(0,20).map((p,j)=>[p,j]).filter(x=>x[1]!==z).sort((a,b)=>b[0]-a[0]).slice(0,3);
     const col=C.map(r=>r[z]),tc=col.reduce((a,b)=>a+b,0)||1;
     const viene=col.map((c,i)=>[c/tc,i]).filter(x=>x[1]!==z).sort((a,b)=>b[0]-a[0]).slice(0,3);
-    const fin=P[z].slice(20),fins=d.finales||["gol","remate sin gol","pérdida","fuera"];
-    nota=`Desde aquí, la acción termina la posesión el ${Math.round(100*fin.reduce((a,b)=>a+b,0))}% de las veces: ${fins.map((n,i)=>`${esc(n)} ${(100*fin[i]).toFixed(0)}%`).join(", ")}. Flecha llena: a dónde va. Punteada: de dónde le llega.`;
+    const fin=P[z].slice(20);
+    nota=`<b>Qué son estos porcentajes:</b> de cada 100 balones que pasan por esa zona. La acción termina la posesión el ${Math.round(100*fin.reduce((a,b)=>a+b,0))}% de las veces: ${fins.map((n,i)=>`${esc(n)} ${(100*fin[i]).toFixed(0)}%`).join(", ")}. Flecha llena: a dónde va. Punteada: de dónde le llega.`;
     capa=(s)=>{let g=`<defs><marker id="flS" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--a1)"/></marker></defs>`;
      const[x0,y0]=zc(z);
      va.forEach(([p,j])=>{const[x1,y1]=zc(j);g+=`<g data-flecha="va" data-tip="<b>va a esta zona</b>${(100*p).toFixed(0)}% de las veces"><line x1="${x0*s}" y1="${y0*s}" x2="${(x0+(x1-x0)*.8)*s}" y2="${(y0+(y1-y0)*.8)*s}" stroke="var(--a1)" stroke-width="${2+10*p}" marker-end="url(#flS)" opacity=".9"/><text x="${x1*s}" y="${y1*s-14}" text-anchor="middle" font-size="11" fill="var(--tx)" font-family="var(--mono)">${(100*p).toFixed(0)}%</text></g>`;});
@@ -3824,20 +3953,41 @@ const FIG={
    }
   }
   const m=[];for(let ix=0;ix<NX;ix++){m.push([]);for(let iy=0;iy<NY;iy++)m[ix].push(plano[ix*NY+iy]);}
-  const mapa=st.modo==="flujo"&&st.z!==null||st.modo==="jugada"&&st.camino?pitch((s)=>{let g="";for(let ix=0;ix<NX;ix++)for(let iy=0;iy<NY;iy++){const q=ix*NY+iy;
+  const tocable=st.modo==="flujo"&&st.z!==null||st.modo==="jugada";
+  const mapa=tocable?pitch((s)=>{let g="";for(let ix=0;ix<NX;ix++)for(let iy=0;iy<NY;iy++){const q=ix*NY+iy;
      g+=`<g class="celda" data-z="${q}" data-tip="<b>${esc(FRANJA[iy])}, tercio ${esc(TERCIO[ix])}</b>toca para empezar aquí"><rect x="${ix*cw*s+2.5}" y="${iy*ch*s+2.5}" width="${cw*s-5}" height="${ch*s-5}" rx="8" fill="var(--a1)" fill-opacity="${q===st.z?.35:.05}" stroke="#fff" stroke-opacity=".16"/></g>`;}
      return g+capa(s);}):mapaSVG(m,C_FOCO,st.modo==="larga"?"de las posesiones que duran":"de las posesiones que empiezan aquí");
-  return barra+`<div data-simmapa="1">${mapa}</div>`+`<p class="nota" data-simnota="1">${nota}</p>`;
+  return barra+acciones+`<div data-simmapa="1">${mapa}</div>`+`<p class="nota" data-simnota="1">${nota}</p>`;
  },
- _simJugada(d,st,C,Cl,z0){
-  const fila=i=>{const r=C[i],t=r.reduce((a,b)=>a+b,0);return t>0?r:Cl[i];};
-  const toma=r=>{const t=r.reduce((a,b)=>a+b,0);let u=Math.random()*t;for(let j=0;j<r.length;j++){u-=r[j];if(u<=0)return j;}return r.length-1;};
-  let z=z0===null?toma(d.liga.alfa.map(x=>x*1e6)):z0;const zonas=[z];
-  for(let k=0;k<60;k++){const j=toma(fila(z));if(j>=20)return{zonas,fin:(d.finales||[])[j-20]||"final"};z=j;zonas.push(z);}
-  return{zonas,fin:"sigue viva tras sesenta acciones"};
+ _simPaso(P,z){
+  const r=P[z];let u=Math.random();for(let j=0;j<r.length;j++){u-=r[j];if(u<=0)return j;}
+  return r.length-1;
  },
  serie(d){
-  return linea(d.map(p=>({t:p.t,v:p.v,tip:`${pct(p.v)} contra la liga`})),v=>pct(v,0),{ref:0,refTxt:"igual que la liga"});
+  /* adenda 5 §6: una sola línea con todos los clubes y una raya donde cambia */
+  const fs=Array.isArray(d)&&d.length&&d[0].club!==undefined?d:null;
+  if(!fs)return linea(d.map(p=>({t:p.t,v:p.v,tip:`${pct(p.v)} contra la liga`})),v=>pct(v,0),{ref:0,refTxt:"igual que la liga"});
+  const W=840,H=300,x0=58,x1=W-24,y0=40,y1=H-46;
+  const vs=fs.map(p=>p.v).concat([0]);let lo=Math.min(...vs),hi=Math.max(...vs);
+  const mg=(hi-lo)*.12||.01;lo-=mg;hi+=mg;
+  const X=i=>x0+(fs.length<2?.5:i/(fs.length-1))*(x1-x0),Y=v=>y1-(v-lo)/(hi-lo)*(y1-y0);
+  let g=`<svg viewBox="0 0 ${W} ${H}" data-linea="1" data-serie-clubes="1">`;
+  [lo,(lo+hi)/2,hi].forEach(t=>{g+=`<line x1="${x0}" x2="${x1}" y1="${Y(t)}" y2="${Y(t)}" stroke="#fff" stroke-opacity=".06"/>
+   <text x="${x0-8}" y="${Y(t)+4}" text-anchor="end" fill="var(--tx3)" font-size="10" font-family="var(--mono)">${pct(t,0)}</text>`;});
+  g+=`<line x1="${x0}" x2="${x1}" y1="${Y(0)}" y2="${Y(0)}" stroke="#fff" stroke-opacity=".4" stroke-dasharray="5 5"/>
+   <text x="${x1}" y="${Y(0)-6}" text-anchor="end" fill="var(--tx2)" font-size="10" font-family="var(--mono)">igual que la liga</text>`;
+  const tramos=[];fs.forEach((p,i)=>{const u=tramos[tramos.length-1];
+   if(u&&u.club===p.club)u.fin=i;else tramos.push({club:p.club,ini:i,fin:i});});
+  tramos.forEach((t,k)=>{
+   if(k)g+=`<line x1="${((X(t.ini)+X(t.ini-1))/2).toFixed(1)}" x2="${((X(t.ini)+X(t.ini-1))/2).toFixed(1)}" y1="${y0-16}" y2="${y1}" stroke="var(--tx3)" stroke-width="1" stroke-dasharray="3 4" data-sep="1"/>`;
+   g+=`<text x="${((X(t.ini)+X(t.fin))/2).toFixed(1)}" y="${y0-20}" text-anchor="middle" fill="var(--tx2)" font-size="11.5" font-weight="700">${esc(t.club)}</text>`;
+   g+=`<polyline points="${fs.slice(t.ini,t.fin+1).map((p,j)=>`${X(t.ini+j)},${Y(p.v)}`).join(" ")}" fill="none" stroke="var(--a1)" stroke-width="2.2"/>`;});
+  fs.forEach((p,i)=>{
+   g+=`<text x="${X(i)}" y="${H-22}" text-anchor="middle" fill="var(--tx2)" font-size="10.5" font-family="var(--mono)">${esc(p.t)}</text>`;
+   g+=`<g data-tip="<b>${esc(p.t)} · ${esc(p.club)}</b>${esc(pct(p.v))} contra la liga"><circle cx="${X(i)}" cy="${Y(p.v)}" r="12" fill="transparent"/>
+    <circle cx="${X(i)}" cy="${Y(p.v)}" r="5.5" fill="var(--a1)"/></g>`;});
+  return g+`</svg>`+leyenda(SW(C_FOCO,"duración de la posesión contra la liga"),
+   `<span class="leg">la raya punteada vertical marca el cambio de club</span>`);
  },
  marcador(d){
   const temas=[];d.forEach(p=>{let t=temas.find(x=>x.t===p.tema);if(!t)temas.push(t={t:p.tema,ps:[]});t.ps.push(p);});
@@ -3900,18 +4050,26 @@ function pintaFig(fid){
   sg.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
    ESTADO[sg.dataset.seg]=b.dataset.k;pintaFig(sg.dataset.seg);}));});
  if(id==="sim"){
-  const st=ESTADO[fid]||(ESTADO[fid]={src:"liga",z:null,modo:"flujo",camino:null});
+  const st=ESTADO[fid]||(ESTADO[fid]={src:"liga",z:null,modo:"flujo",pasos:null,fin:null});
   const d=FIGDATOS[fid].datos;
   const eras=d.eras.filter(e=>HIST&&e.hid===HIST.id);
-  const ms=st.src==="liga"?[d.liga]:st.src==="todos"?eras:eras.filter(e=>e.club===st.src);
-  const C=(ms.length?ms:[d.liga])[0].C.map((r,i)=>r.map((_,j)=>(ms.length?ms:[d.liga]).reduce((a,m)=>a+m.C[i][j],0)));
+  const ms0=st.src==="liga"?[d.liga]:st.src==="todos"?eras:eras.filter(e=>e.club===st.src);
+  const ms=ms0.length?ms0:[d.liga];
+  const C=ms[0].C.map((r,i)=>r.map((_,j)=>ms.reduce((a,m)=>a+m.C[i][j],0)));
+  const P=C.map((r,i)=>{const t=r.reduce((a,b)=>a+b,0);const rr=t>0?r:d.liga.C[i];
+   const tt=rr.reduce((a,b)=>a+b,0)||1;return rr.map(x=>x/tt);});
+  const fins=d.finales||["gol","remate sin gol","pérdida","fuera"];
+  const paso=()=>{if(st.fin||!st.pasos||!st.pasos.length)return;
+   const j=FIG._simPaso(P,st.pasos[st.pasos.length-1]);
+   if(j>=20)st.fin=fins[j-20]||"final";else st.pasos.push(j);};
   el.querySelectorAll("[data-sim]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.sim;
-   if(k.startsWith("src:")){st.src=k.slice(4);st.camino=null;}
-   else if(k==="jugada"){st.modo="jugada";st.camino=FIG._simJugada(d,st,C,d.liga.C,st.z);}
-   else st.modo=k;
+   if(k.startsWith("src:")){st.src=k.slice(4);st.pasos=null;st.fin=null;}
+   else if(k.startsWith("modo:")){st.modo=k.slice(5);if(st.modo==="jugada"){st.pasos=null;st.fin=null;}}
+   else if(k==="paso")paso();
+   else if(k==="otra"){st.pasos=null;st.fin=null;}
    pintaFig(fid);}));
-  el.querySelectorAll("[data-simmapa] [data-z]").forEach(c=>c.addEventListener("click",()=>{st.z=+c.dataset.z;
-   if(st.modo==="jugada")st.camino=FIG._simJugada(d,st,C,d.liga.C,st.z);else st.modo="flujo";pintaFig(fid);}));
+  el.querySelectorAll("[data-simmapa] [data-z]").forEach(c=>c.addEventListener("click",()=>{const z=+c.dataset.z;
+   st.z=z;if(st.modo==="jugada"){st.pasos=[z];st.fin=null;}else st.modo="flujo";pintaFig(fid);}));
  }
 
  el.querySelectorAll("[data-jug]").forEach(it=>it.addEventListener("click",()=>{
@@ -3920,10 +4078,11 @@ function pintaFig(fid){
 }
 function frase(b){
  const ad=b.adenda?`<span class="adenda" data-tip="${esc(ADENDA(b.adenda,b.n_adenda))}">adenda ${b.n_adenda||1}</span>`:"";
- return `<p class="fr${b.nulo?" nulo":""}" data-nivel="${b.nivel}" data-capa="1"${b.portada?` data-portada="${b.portada}"`:""}><span class="nv nv-${b.nivel}" data-tip="${esc(NIVEL[b.nivel])}">${NVP[b.nivel]}</span><span class="tx">${b.html}${ad}</span></p>`;
+ return `<p class="fr${b.nulo?" nulo":""}" data-nivel="${b.nivel}" data-capa="1"${b.portada?` data-portada="${b.portada}"`:""}${b.conc?` data-conc="${b.conc}"`:""}><span class="nv nv-${b.nivel}" data-tip="${esc(NIVEL[b.nivel])}">${NVP[b.nivel]}</span><span class="tx">${b.html}${ad}</span></p>`;
 }
 function bloque(b,sid,i){
  const cp=b.capa?` data-capa="${b.capa}"`:"";
+ if(b.portada_solo)return "";   /* vive en la portada (adenda 5 §2) */
  if(b.tipo==="frase")return frase(b);
  if(b.tipo==="nota")return `<div class="nota">${b.html}</div>`;
  if(b.tipo==="ejemplo")return `<div class="ejemplo"${cp}><u>en un partido</u>${b.html}</div>`;
@@ -3937,19 +4096,22 @@ function bloque(b,sid,i){
    <div class="lienzo"></div></div></div>`;}
  return "";
 }
-function seccion(s){
+function seccion(s,extra){
  let cuerpo;
  if(s.pendiente)cuerpo=`<div class="pendiente" data-pendiente="1"><b>Pendiente.</b> Esta sección mostrará ${esc(s.pendiente.que)}.</div>`;
  else if(s.falta)cuerpo=vacio(`Falta <b>${esc(s.falta.archivo)}</b>. Esta sección no se pinta sin él.`,s.falta.comando);
  else cuerpo=s.bloques.map((b,i)=>bloque(b,s.id,i)).join("");
+ const chip=s._club?`<span class="club-chip">${esc(s._club)}</span> `:"";
  return `<section id="${s.id}" class="rev" data-num="${esc(s.num)}"><div class="eyebrow">${s.num?esc(s.num)+" · ":""}${s.comp==="anexo"?"anexo":"componente "+esc(s.comp)}</div>
-  <h2>${esc(s.tit)}</h2>${cuerpo}</section>`;
+  <h2>${chip}${esc(s.tit)}</h2>${extra||""}${cuerpo}</section>`;
 }
+/* adenda 5 §1: primero la historia, después el método */
 const ACTOS=[
- ["acto1","Primero","Cómo leer esto","Qué es una posesión y contra qué la comparamos. Es igual para las cinco historias."],
- ["acto2","Luego","Cómo juega","El club donde más partidos dirigió, contra la liga del mismo torneo."],
- ["acto3","Después","De dónde viene eso","El club antes y después de él, y qué pasa cuando cambia de club."],
+ ["acto2","Primero","Cómo juega","Su carrera club por club y lo que hizo con el balón, contra la liga del mismo torneo."],
+ ["acto3","Luego","De dónde viene eso","El club antes y después de él, y qué pasa cuando cambia de club."],
+ ["acto1","Después","Cómo lo hicimos, si te interesa","Qué es una posesión, cómo se mueve el balón de zona en zona y contra qué comparamos."],
  ["cierre","Al final","¿Nos creen?","Qué predijimos antes de medir y qué no puede decir este trabajo."]];
+const ACTO=k=>ACTOS.find(a=>a[0]===k);
 function cabeza([id,n,t,p]){
  return `<div class="acto" id="${id}"><div class="eyebrow">${n}</div><h3>${t}</h3><p>${p}</p></div>`;
 }
@@ -3960,41 +4122,78 @@ function traza(){
    :`<span class="chip falta" data-tip="<b>falta</b>${esc(x.comando)}">${esc(x.archivo.replace(".json",""))} <span>falta</span></span>`).join("");
  $("pie").innerHTML=`Generado ${esc(t.generado)}. La huella de cada archivo de datos está en el anexo.`;
 }
-let HIST=null,CLUB=null;
+let HIST=null;
+const CLUBSEC={};   /* adenda 5 §4: un club elegido por sección, no uno global */
+function quehicimos(){
+ for(const s of D.acto1)for(const b of (s.bloques||[]))if(b.portada_solo)return `<div class="quehicimos">${b.html}</div>`;
+ return "";
+}
 function portada(h){
  const fr=[];
- h.acto2.concat(h.acto3).forEach(s=>(s.bloques||[]).forEach(b=>{if(b.tipo==="frase"&&b.portada)fr.push([b,s]);}));
- fr.sort((x,y)=>x[0].portada-y[0].portada);
- return fr.map(([b,s])=>`<a href="#${s.id}" data-ancla="${s.id}">${frase(b).replace('<p class="fr','<p data-en-portada="1" class="fr').replace("</span></p>",`<span class="ir">→ ${esc(s.num)}</span></span></p>`)}</a>`).join("");
+ h.acto2.concat(h.acto3).forEach(s=>(s.bloques||[]).forEach(b=>{if(b.tipo==="frase"&&(b.conc||b.portada))fr.push([b,s]);}));
+ fr.sort((x,y)=>(x[0].conc?0:1)-(y[0].conc?0:1)||(x[0].conc||x[0].portada)-(y[0].conc||y[0].portada));
+ const li=([b,s])=>`<a href="#${s.id}" data-ancla="${s.id}">${frase(b).replace('<p class="fr','<p data-en-portada="1" class="fr').replace("</span></p>",`<span class="ir">→ ${esc(s.num)}</span></span></p>`)}</a>`;
+ const cs=fr.filter(x=>x[0].conc),rs=fr.filter(x=>!x[0].conc);
+ return quehicimos()+
+  (cs.length?`<div class="conclus"><div class="conclus-t">lo que encontramos</div>${cs.map(li).join("")}</div>`:"")+
+  rs.map(li).join("");
+}
+/* adenda 5 §4: pestañas de club dentro de la sección */
+function selclub(h,s){
+ const pc=h.por_club||{};
+ const clubes=Object.keys(pc).filter(c=>(pc[c]||[]).some(x=>x.id===s.id));
+ if(!clubes.length)return "";
+ const on=CLUBSEC[s.id]||"";
+ const ops=[["","todos sus clubes"]].concat(clubes.map(c=>[c,c]));
+ return `<div class="selclub"><span class="selclub-t">ver</span><div class="seg" data-selclub="${esc(s.id)}"><div class="pill"></div>${
+  ops.map(([k,t])=>`<button data-k="${esc(k)}" class="${k===on?"on":""}">${esc(t)}</button>`).join("")}</div></div>`;
+}
+function secClub(h,s){
+ const c=CLUBSEC[s.id];
+ if(!c)return s;
+ const alt=(h.por_club&&h.por_club[c]||[]).find(x=>x.id===s.id);
+ return alt?{...alt,tit:s.tit,_club:c}:s;
 }
 function render(hid){
- const cambio=!HIST||HIST.id!==hid;
  HIST=D.historias.find(h=>h.id===hid)||D.historias[0];
- if(cambio){CLUB=null;const clubes=HIST.eras.map(e=>e.club);
-  segmento($("segClub"),[["","todos sus clubes"]].concat(clubes.map(c=>[c,c])),"",k=>{CLUB=k||null;render(HIST.id);});}
  FIGDATOS={};
  const h=HIST;
  $("titulo").innerHTML=`${esc(h.nombre.split(" ").slice(0,-1).join(" "))}<br><em>${esc(h.nombre.split(" ").slice(-1)[0])}</em>`;
  $("eras").innerHTML=h.eras.map(e=>`<span class="chip${e.club===h.principal?" pr":""}" data-tip="<b>${esc(e.club)}</b>${e.n} partidos${e.club===h.principal?" · el club donde más dirigió":""}">${esc(e.club)} <span>${e.n} partidos</span></span>`).join("");
  $("portada").innerHTML=portada(h);
- $("informe").innerHTML=cabeza(ACTOS[0])+D.acto1.map(seccion).join("")+
-  cabeza(ACTOS[1])+(CLUB&&h.por_club&&h.por_club[CLUB]?[h.acto2[0]].concat(h.por_club[CLUB]).map(s=>seccion(s)).join("").replace(/<h2>/g,`<h2><span class="club-chip">${esc(CLUB)}</span> `):h.acto2.map(seccion).join(""))+
-  cabeza(ACTOS[2])+h.acto3.map(seccion).join("")+
-  cabeza(ACTOS[3])+D.cierre.map(seccion).join("");
- $("anexoIn").innerHTML=D.anexo.concat(h.anexo||[]).map(seccion).join("");
+ $("navMarca").textContent=h.nombre;
+ $("informe").innerHTML=
+  cabeza(ACTO("acto2"))+h.acto2.map(s=>seccion(secClub(h,s),selclub(h,s))).join("")+
+  cabeza(ACTO("acto3"))+h.acto3.map(s=>seccion(s)).join("")+
+  cabeza(ACTO("acto1"))+D.acto1.map(s=>seccion(s)).join("")+
+  cabeza(ACTO("cierre"))+D.cierre.map(s=>seccion(s)).join("");
+ $("anexoIn").innerHTML=D.anexo.concat(h.anexo||[]).map(s=>seccion(s)).join("");
  Object.keys(FIGDATOS).forEach(pintaFig);
+ document.querySelectorAll("[data-selclub]").forEach(sg=>{colocaPill(sg);
+  sg.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+   const sid=sg.dataset.selclub,ant=document.getElementById(sid);
+   const y=ant?ant.getBoundingClientRect().top:0;
+   CLUBSEC[sid]=b.dataset.k;render(HIST.id);
+   const el=document.getElementById(sid);
+   if(el&&window.scrollBy)window.scrollBy(0,el.getBoundingClientRect().top-y);}));});
  document.querySelectorAll("#informe section").forEach(s=>s.classList.add("on"));
- if(typeof IntersectionObserver!=="function")return;
 }
-function segmento(el,ops,on,cb){
- el.innerHTML=`<div class="pill"></div>`+ops.map(([k,t])=>`<button data-k="${esc(k)}" class="${k===on?"on":""}">${esc(t)}</button>`).join("");
- el.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
-  el.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));colocaPill(el);cb(b.dataset.k);}));
- colocaPill(el);
+function menu(el,etq,ops,on,cb){
+ const sel=ops.find(o=>o[0]===on);
+ el.innerHTML=`<button type="button" aria-haspopup="true"><span>${esc(etq)}</span>${sel?` <b>${esc(sel[1])}</b>`:""} <i>▾</i></button>
+  <div class="drop-menu">${ops.map(([k,t])=>`<button type="button" data-k="${esc(k)}" class="${k===on?"on":""}">${esc(t)}</button>`).join("")}</div>`;
+ const bt=el.querySelector("button");
+ bt.addEventListener("click",e=>{e.stopPropagation();
+  document.querySelectorAll(".drop").forEach(d=>{if(d!==el)d.classList.remove("abierto");});
+  el.classList.toggle("abierto");});
+ el.querySelectorAll(".drop-menu button").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();
+  el.classList.remove("abierto");cb(b.dataset.k);}));
 }
 function nav(){
- segmento($("segHist"),D.historias.map(h=>[h.id,h.nombre.split(" ").slice(-1)[0]]),D.historias[0].id,k=>{render(k);});
- segmento($("segActo"),ACTOS.map(a=>[a[0],a[1]]),"acto1",k=>{const el=$(k);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"start"});});
+ menu($("dropHist"),"técnico",D.historias.map(h=>[h.id,h.nombre.split(" ").slice(-1)[0]]),HIST?HIST.id:D.historias[0].id,
+  k=>{render(k);nav();window.scrollTo&&window.scrollTo(0,0);});
+ menu($("dropIr"),"ir a",ACTOS.map(a=>[a[0],a[2]]),null,
+  k=>{const el=$(k);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"start"});});
 }
 function arranca(){
  document.body.classList.add("tecnica");   /* sin interruptor: lo técnico vive en el anexo */
@@ -4004,6 +4203,7 @@ function arranca(){
  traza();
  render(D.historias[0].id);
  nav();
+ document.addEventListener("click",()=>document.querySelectorAll(".drop").forEach(d=>d.classList.remove("abierto")));
 }
 arranca();
 </script></body></html>"""

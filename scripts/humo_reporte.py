@@ -99,6 +99,7 @@ def h4():
         c = {1: .2, -1: -.1, 0: .01}[s]
         w = .02 if s else .03   # s = 0: el intervalo cruza el cero
         uni.append({"club": club, "coach": coach, "indir": f"data/processed_api_{SLUG[club]}",
+                    "n_poss": 900 * len(ts),
                     "E_T": 5.6 * (1 + c), "E_T_base": 5.6, "replicas_validas": 4000,
                     "rel_E_T_vs_liga": c, "rel_E_T_vs_liga_ic95": ic(c, w), "torneos": ts,
                     "serie_por_torneo": {
@@ -135,7 +136,7 @@ def h4():
                                     "D53-7": "serie por torneo descriptiva"},
             "firma_temporal": {"did": {"posterior_mas_largo": 23, "de": 44},
                                "crudo": {"posterior_mas_largo": 37, "de": 47}},
-            "n_pares": 60, "n_rechazados_did": 44, "n_rechazados_crudo": 47,
+            "n_unidades": len(uni), "n_pares": 60, "n_rechazados_did": 44, "n_rechazados_crudo": 47,
             "n_cambian_signo_por_correccion": 15,
             "control_negativo": {"n_equivalentes": 0}, "unidades": uni, "pares": pares}
 
@@ -292,6 +293,7 @@ def met():
                 v["npxg_favor"]["percentil"] = None
         uni.append(U(club, coach, **{"global": g, "por_torneo": pt}))
     return {"liga": {"media": {"npxg_favor": 1.149}}, "parametros": {"torneos": T},
+            "universo": {"partidos": 1524},
             "reglas": {"D59P-1": "xG sin penales", "D59P-3": "pase progresivo", "D59P-5": "field tilt",
                        "D59P-comparacion": "liga sin partidos del club", "D59P-incertidumbre": "bootstrap"},
             "casos": {k: v for k, v in CASOS.items()}, "unidades": uni}

@@ -94,14 +94,45 @@ def test_pendientes_declarados(sint):
         assert pend == {}, h["id"]
 
 
+def _a2_4(datos, hid):
+    h = _h(datos, hid)
+    cuerpo = next(s for s in h["acto2"] if s["id"] == "a2-4")
+    anexo = next((s for s in h.get("anexo", []) if s["id"] == "x-a2-4"), None)
+    return cuerpo, anexo
+
+
 def test_presion_fuera_de_adr54_se_declara(real):
+    """ADR-54 midió presión en seis clubes. Ninguna historia puede quedarse
+    callada: o trae las frases de presión, o dice por qué no las tiene.
+
+    Desde la adenda 3 el cuerpo se queda con UNA frase (la de npxG concedido) y
+    las de presión viven completas en el anexo; por eso se exigen ahí. Lo que el
+    cuerpo sí debe traer es el hueco cuando NINGÚN club de la historia se midió.
+    (Antes este test pedía la frase en el cuerpo y llevaba dormido desde h2_31:
+    solo corre con los siete JSON reales, y `simulador_v2.json` no existió hasta
+    h2_37.)"""
     datos, _, _ = real
-    for hid in ("ambriz", "herrera"):
-        s24 = next(s for s in _h(datos, hid)["acto2"] if s["id"] == "a2-4")
-        huecos = [b["html"] for b in s24["bloques"] if b["tipo"] == "hueco"]
+    for hid in ("ambriz", "herrera"):        # ningún club suyo está entre los seis
+        cuerpo, _a = _a2_4(datos, hid)
+        huecos = [b["html"] for b in cuerpo["bloques"] if b["tipo"] == "hueco"]
         assert huecos and "seis clubes" in huecos[0], hid
-    s24 = next(s for s in _h(datos, "larcamon")["acto2"] if s["id"] == "a2-4")
-    assert any("Presión (E2" in b.get("html", "") for b in s24["bloques"])
+    # Larcamón sí tiene clubes medidos (León, Cruz Azul) aunque su principal, Puebla, no lo esté
+    cuerpo, anexo = _a2_4(datos, "larcamon")
+    assert anexo is not None
+    assert any("Presión (E2" in b.get("html", "") for b in anexo["bloques"])
+    assert not [b for b in cuerpo["bloques"] if b["tipo"] == "hueco"], "no hay hueco que declarar"
+    assert any(b["tipo"] == "enlace" for b in cuerpo["bloques"]), "sin enlace al anexo"
+
+
+def test_ninguna_historia_calla_la_presion(real):
+    """El contrato, para las cinco: frases de presión en el anexo o hueco en el cuerpo."""
+    datos, _, _ = real
+    for hid in ESPERADO:
+        cuerpo, anexo = _a2_4(datos, hid)
+        con = anexo is not None and any("Presión (E2" in b.get("html", "") for b in anexo["bloques"])
+        hueco = any(b["tipo"] == "hueco" and "seis clubes" in b.get("html", "")
+                    for b in cuerpo["bloques"])
+        assert con != hueco, f"{hid}: presión medida={con}, hueco={hueco}"
 
 
 def test_antes_y_despues(sint):

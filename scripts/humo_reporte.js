@@ -17,9 +17,14 @@ const D = dom.window.eval("D");
 const click = el => el.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
 const $ = id => document.getElementById(id);
 const PROG = modo !== "sin_progresion";
+/* adenda 5 §3: el técnico se elige en un menú desplegable */
+const verHist = id => click(document.querySelector(`#dropHist .drop-menu button[data-k="${id}"]`));
+const opcHist = () => [...document.querySelectorAll("#dropHist .drop-menu button")].map(b => b.dataset.k);
+const verClub = (sid, club) => click(document.querySelector(`[data-selclub="${sid}"] button[data-k="${club}"]`));
+const selDe = sid => [...document.querySelectorAll(`[data-selclub="${sid}"] button`)].map(b => b.dataset.k);
 
 /* topes y jerga de la adenda 3 (§5 y §7) */
-const TOPE = { palabras: 2500, secciones: 15, figuras: 17 };  /* adenda 4 §8 */
+const TOPE = { palabras: 2700, secciones: 16, figuras: 18 };  /* adenda 5 §9 */
 const JERGA = [/ADR-\d/, /\bq =/, /\bp = 0\.\d/, /IC \[/, /N80/, /τ/, /λ/, /π/, /bootstrap/i, /Benjamini/, /BH al/,
   /\bf = 0\.\d/, /\bF\d\d\b/, /D\d\d-\d/, /h2_\d\d/, /\bera principal\b/i, /\bla base\b/i, /cuasi-estacionaria/i];
 function jergaCuerpo() {
@@ -39,8 +44,16 @@ ok(errores.length === 0, `sin excepciones al cargar (${errores.slice(0, 2).join(
 
 /* 1. estructura */
 ok(D.historias.map(h => h.id).join() === "jardine,larcamon,ambriz,herrera,ortiz", "cinco historias, en orden");
-ok(document.querySelectorAll("#segHist button").length === 5, "selector con cinco historias");
-ok(document.querySelectorAll("#segActo button").length === 4, "índice por partes");
+ok(opcHist().length === 5, "menú de técnico con cinco historias");
+ok(document.querySelectorAll("#dropIr .drop-menu button").length === 4, "menú «ir a» con las cuatro partes");
+ok(!$("segClub"), "no hay selector global de club (adenda 5 §4)");
+ok(document.querySelectorAll("nav .navin > *").length === 3, "la barra lleva solo el nombre y los dos menús");
+ok(/\.navin\{[^}]*overflow:hidden/.test(html) && /\.drop-menu\{position:absolute/.test(html),
+  "los menús no pueden desbordar la barra (absolutos, barra recortada)");
+/* adenda 5 §3: todo control se ve que es un control */
+ok(/\.seg button,\.sim-bar button,summary,\.chip\[data-tip\],\.enlace,\[data-jug\],\.drop>button,\.drop-menu button\{cursor:pointer\}/.test(html),
+  "todo control lleva cursor:pointer");
+ok(/\.drop>button:hover/.test(html) && /:focus-visible/.test(html), "los controles se realzan al pasar el mouse y al enfocarlos");
 ok(!$("segModo"), "sin interruptor sencilla/técnica (adenda 3 §1)");
 ok(D.acto1.length === 3 && D.cierre.length === 2, `primera parte con tres secciones y cierre con dos (${D.acto1.length}, ${D.cierre.length})`);
 ok($("anexo") && !$("anexo").open, "el anexo existe y arranca cerrado");
@@ -64,24 +77,62 @@ if (sim()) {
   ok(sim().querySelectorAll('[data-flecha="va"]').length === 3 && sim().querySelectorAll('[data-flecha="viene"]').length === 3,
     "tocar una zona dibuja tres flechas de salida y tres de llegada");
   ok(/termina la posesión el \d+%/.test(sim().textContent), "dice cómo termina la jugada desde esa zona");
+  ok(/de cada 100 balones que pasan por esa zona/.test(sim().textContent),
+    "la vista de flujos dice qué son sus porcentajes (adenda 5 §5)");
+  /* adenda 5 §5: paso a paso, una acción por clic */
+  click(sim().querySelector('[data-sim="modo:jugada"]'));
+  ok(/toca una zona de la cancha/i.test(sim().textContent), "«paso a paso» empieza pidiendo la zona");
+  click(sim().querySelector('[data-simmapa] [data-z="9"]'));
+  const puntos = () => sim().querySelectorAll("[data-simmapa] [data-paso]").length;
+  const n0 = puntos();
+  let creci = 0, term = false;
+  for (let k = 0; k < 12; k++) {
+    const antes = puntos(), b = sim().querySelector('[data-sim="paso"]');
+    click(b);
+    if (/La posesión terminó en/.test(sim().textContent)) { term = true; break; }
+    if (puntos() === antes + 1) creci++;
+  }
+  ok(n0 === 1, `al elegir la zona hay un solo punto (${n0})`);
+  ok(creci >= 1 || term, "cada clic en «una acción más» añade una sola acción");
+  ok(/inventada por el modelo, no real/.test(sim().textContent), "la jugada paso a paso dice que es inventada por el modelo");
   const caminos = new Set();
-  for (let k = 0; k < 6; k++) { click(sim().querySelector('[data-sim="jugada"]')); caminos.add(sim().querySelector("[data-simnota]").textContent + sim().querySelectorAll("[data-simmapa] circle").length); }
-  ok(/inventada por el modelo, no real/.test(sim().textContent), "la jugada simulada dice que es inventada por el modelo");
-  ok(caminos.size >= 2, `«otra jugada» sortea jugadas distintas (${caminos.size} de 6)`);
-  click(sim().querySelector('[data-sim="larga"]'));
+  for (let k = 0; k < 8; k++) {
+    click(sim().querySelector('[data-sim="otra"]'));
+    click(sim().querySelector('[data-simmapa] [data-z="9"]'));
+    for (let j = 0; j < 4; j++) { const b = sim().querySelector('[data-sim="paso"]'); if (b) click(b); }
+    caminos.add(sim().querySelector("[data-simmapa]").innerHTML.length);
+  }
+  ok(caminos.size >= 2, `«otra jugada» empieza jugadas distintas (${caminos.size} de 8)`);
+  click(sim().querySelector('[data-sim="modo:larga"]'));
   ok(sim().querySelectorAll("text.pctz").length === 20, "«a la larga» pinta el reparto de las veinte zonas");
-  click(document.querySelector('#segHist button[data-k="larcamon"]'));
+  ok(/posesiones que ya duraron mucho/.test(sim().textContent), "«a la larga» dice qué son sus porcentajes (adenda 5 §5)");
+  verHist("larcamon");
   const bs = [...sim().querySelectorAll('[data-sim^="src:"]')].map(b => b.dataset.sim);
   ok(bs.includes("src:liga") && bs.includes("src:todos") && bs.length === 2 + D.historias.find(h => h.id === "larcamon").eras.length,
     `el simulador deja elegir la liga, cada club y todos sus clubes (${bs.length})`);
   click(sim().querySelector('[data-sim="src:todos"]'));
   ok(sim().querySelector('[data-sim="src:todos"]').classList.contains("on"), "«todos sus clubes» queda activo");
-  click(document.querySelector('#segHist button[data-k="jardine"]'));
+  verHist("jardine");
 }
+/* adenda 5 §5: el espacio de estados, explicado */
+ok(/80/.test($("a1-1").textContent) && /situaciones vivas/.test($("a1-1").textContent),
+  "1.1 dice cuántas situaciones vivas tiene la cadena");
+ok(/malla es de cinco por cuatro/.test($("a1-1").textContent) && /parámetros por observación/.test($("a1-1").textContent), "1.1 dice por qué la malla es de cinco por cuatro");
+ok(/de cada/.test($("a1-1").textContent) && /terminan ahí la posesión/.test($("a1-1").textContent),
+  "1.1 trae un ejemplo de probabilidad de paso");
+/* adenda 5 §1 y §2: primero la historia, después el método */
+const ordenActos = [...$("informe").querySelectorAll(".acto")].map(a => a.id);
+ok(ordenActos.join() === "acto2,acto3,acto1,cierre", `primero la historia y al final el método (${ordenActos.join()})`);
+ok(/Cómo lo hicimos, si te interesa/.test($("acto1").textContent), "el método se presenta como opcional");
+ok($("portada").querySelector(".quehicimos"), "la portada dice qué hicimos, en cinco líneas");
+ok(/posesiones/.test($("portada").querySelector(".quehicimos").textContent), "«qué hicimos» trae sus cifras");
+ok($("portada").querySelectorAll(".conclus a").length === (modo === "sin_relevos" ? 2 : 3), "la portada sube las conclusiones");
+ok([...$("portada").querySelectorAll(".conclus a")].every(a => document.getElementById(a.dataset.ancla)),
+  "cada conclusión enlaza a su evidencia");
 
 /* 3. cada historia */
 D.historias.forEach(h => {
-  click(document.querySelector(`#segHist button[data-k="${h.id}"]`));
+  verHist(h.id);
   const hj = D.historias.find(x => x.id === h.id);
   const secs = [...$("informe").querySelectorAll("section")];
   const cuerpo = secs.filter(s => /^a[23]-/.test(s.id));
@@ -122,7 +173,7 @@ D.historias.forEach(h => {
   if (s21.some(b => b.id === "serie"))
     ok(/Torneo a torneo/.test($("a2-1").textContent) && document.querySelector('#a2-1 [data-fig="serie"] svg'), `${h.id}: 2.1 dice que se sostiene torneo a torneo`);
   if (PROG) {
-    ok(/franja del área/.test($("a2-2").textContent), `${h.id}: 2.2 habla de llegar a la franja del área`);
+    ok(/última franja del campo/.test($("a2-2").textContent), `${h.id}: 2.2 habla de llegar a la última franja del campo`);
     const b22 = (hj.acto2.find(x => x.id === "a2-2").bloques || []);
     const conJug = b22.some(b => b.tipo === "fig" && b.id === "jugada");
     ok(conJug ? !!document.querySelector('#a2-2 [data-fig="jugada"] circle') : b22.some(b => b.tipo === "hueco"),
@@ -147,38 +198,45 @@ D.historias.forEach(h => {
   }
   /* portada */
   const port = [...document.querySelectorAll("#portada a")];
-  ok(port.length === 5 || modo === "sin_contexto", `${h.id}: portada con cinco frases (${port.length})`);
+  ok(port.length === (modo === "sin_relevos" ? 7 : 8) || modo === "sin_contexto", `${h.id}: portada con las conclusiones y las cinco frases (${port.length})`);
   ok(port.every(a => document.getElementById(a.dataset.ancla)), `${h.id}: cada frase de portada apunta a su sección`);
-  ok(document.querySelectorAll("[data-portada]").length === port.length * 2, `${h.id}: ninguna frase de portada se duplica en el anexo`);
+  ok(document.querySelectorAll("[data-portada]").length === document.querySelectorAll("#portada [data-portada]").length * 2,
+    `${h.id}: ninguna frase de portada se duplica en el anexo`);
+  ok(!$("informe").querySelector("[data-portada-solo]") && !/Miramos/.test($("a1-1").textContent),
+    `${h.id}: «qué hicimos» vive solo en la portada`);
   const eras = document.querySelectorAll("#eras .chip").length;
   ok(eras === h.eras.length && eras >= 2, `${h.id}: ${eras} clubes en la cabecera`);
-  /* adenda 4 §3: sub-selector de club */
-  const botones = [...document.querySelectorAll("#segClub button")];
-  ok(botones.length === 1 + h.eras.length, `${h.id}: sub-selector con «todos sus clubes» y ${h.eras.length} clubes`);
+  /* adenda 5 §4: el selector de club vive dentro de la sección */
   const otro = h.eras.find(e => e.club !== h.principal);
+  const conSel = [...$("informe").querySelectorAll("[data-selclub]")].map(e => e.dataset.selclub);
   if (otro) {
-    click(document.querySelector(`#segClub button[data-k="${otro.club}"]`));
-    ok($("a2-1").textContent.includes(otro.club), `${h.id}: al elegir ${otro.club}, 2.1 habla de ese club`);
-    if (PROG) ok(/solo se hizo en el club donde más dirigió/.test($("a2-2").textContent), `${h.id}: llegar al área dice que solo se midió en el club principal`);
-    ok(!!$("a2-0") && !!$("a3-1"), `${h.id}: la carrera y el bloque de relevos siguen a la vista`);
+    ok(conSel.length >= 1 && conSel.every(sid => $(sid) && $(sid).contains(document.querySelector(`[data-selclub="${sid}"]`))),
+      `${h.id}: cada selector de club está dentro de su sección (${conSel.length})`);
+    ok(!conSel.includes("a2-0") && !conSel.includes("a2-2"),
+      `${h.id}: la carrera y llegar a la última franja no llevan selector`);
+    const sid = conSel[0];
+    ok(selDe(sid)[0] === "" && selDe(sid).includes(otro.club), `${h.id}: el selector de ${sid} trae «todos sus clubes» y sus clubes`);
+    verClub(sid, otro.club);
+    ok($(sid).textContent.includes(otro.club), `${h.id}: al elegir ${otro.club} en ${sid}, la sección habla de ese club`);
     ok(document.querySelectorAll("#portada a").length === port.length, `${h.id}: la portada no cambia con el club`);
-    click(document.querySelector('#segClub button[data-k=""]'));
+    ok(!!$("a2-0") && !!$("a3-1"), `${h.id}: la carrera y el bloque de relevos siguen a la vista`);
+    verClub(sid, "");
   }
   const b24 = (hj.acto2.find(x => x.id === "a2-4").bloques || []);
   if (b24.some(b => b.tipo === "hueco" && /seis clubes/.test(b.html)))
     ok(/seis clubes/.test($("a2-4").textContent), `${h.id}: presión declarada fuera de los seis clubes medidos`);
 });
-click(document.querySelector('#segHist button[data-k="herrera"]'));
+verHist("herrera");
 ok(!/Hector/.test($("eras").textContent), "un homónimo no entra a la historia (igualdad exacta)");
-click(document.querySelector('#segHist button[data-k="jardine"]'));
+verHist("jardine");
 
-click(document.querySelector('#segHist button[data-k="larcamon"]'));
+verHist("larcamon");
 if (modo !== "sin_contexto") {
   ok(document.querySelectorAll('#a2-6 [data-fig="ctx4"] .lienzo .card').length === 4, "contexto en cuatro paneles (adenda 4 §4)");
   ok(/Los que más jugaron/.test($("a2-8").textContent), "2.7 nombra a los que más jugaron");
 }
 if (modo !== "sin_contexto") ok(document.querySelectorAll('#c-1 [data-fig="marcador"] .tema').length >= 5, "el marcador va agrupado por tema");
-click(document.querySelector('#segHist button[data-k="jardine"]'));
+verHist("jardine");
 
 /* 4. niveles y fuentes */
 const frases = [...$("informe").querySelectorAll(".fr")];
