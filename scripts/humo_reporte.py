@@ -553,12 +553,81 @@ def jz():
             "pares": pares}
 
 
+# ------------------------------------------------------------ red de pases ----
+RED_PARES = [("América", "Fernando Ortiz", "Andre Jardine"), ("América", "Andre Jardine", "Santiago Solari"),
+             ("Atlético San Luis", "Andre Jardine", "Gustavo Leal"), ("León", "Nicolas Larcamon", "Ariel Holan"),
+             ("León", "Nicolas Larcamon", "Eduardo Berizzo"), ("Cruz Azul", "Martin Anselmi", "Nicolas Larcamon"),
+             ("Toluca", "Ignacio Ambriz", "Renato Paiva"), ("Santos Laguna", "Eduardo Fentanes", "Ignacio Ambriz"),
+             ("Tigres UANL", "Miguel Herrera", "Veljko Paunovic"), ("Tijuana", "Juan Carlos Osorio", "Miguel Herrera"),
+             ("Monterrey", "Fernando Ortiz", "Domenec Torrent"),
+             ("Atlas", "Diego Cocca I", "Diego Cocca II")]
+
+
+def red():
+    """ADR-62 con sus casos límite: un relevo con hueco, uno sin φ_U, uno fuera de
+    las historias, pares en orden NO cronológico (el fallo 3) y H62-3 fallida."""
+    r0 = random.Random(62)
+    rel = []
+    for k, (club, a, b) in enumerate(RED_PARES):
+        hist = club != "Atlas"
+        if club == "Santos Laguna":
+            rel.append({"club": club, "a": a, "b": b, "n_pases_a": 900, "n_pases_b": 120,
+                        "hueco": "una de las dos etapas no llega a 2000 pases completados (900 y 120)",
+                        "de_una_historia": True, "en_f62": False})
+            continue
+        T = round(r0.uniform(.2, .6), 4)
+        dg = round(r0.uniform(-.05, .05), 4)
+        phi = None if club == "Monterrey" else round(r0.uniform(.3, .75), 4)
+        rel.append({"club": club, "a": a, "b": b, "n_pases_a": 12000, "n_pases_b": 9000,
+                    "n_jugadores_a": 30, "n_jugadores_b": 28, "n_jugadores_comunes": 12,
+                    "T_red": {"v": T, "p": 0.0, "nulo_p50": .08, "nulo_p90": .1, "supera_p90": True,
+                              "replicas": 2000, "q": 0.0, "rechaza": True},
+                    "gini": {"a": .3, "b": .3 + dg, "delta": dg, "p": .4, "ic95": [-.03, .03],
+                             "replicas": 2000, "q": .5, "rechaza": False},
+                    "phi_U": {"T_marginal": .2, "U": .1, "C": .1, "phi_U": phi},
+                    "portero": {"parte_a": .08, "parte_b": .07},
+                    "de_una_historia": hist, "en_f62": hist})
+    ev = [r for r in rel if "T_red" in r and r["de_una_historia"]]
+    n = len(ev)
+    p3 = sum(((r["phi_U"] or {}).get("phi_U") or 0) < .5 for r in ev)
+    p2 = sum(r["gini"]["ic95"][0] <= r["gini"]["delta"] <= r["gini"]["ic95"][1] for r in ev)
+    return {"adr": "ADR-62", "corrida": 1, "preinscripcion": "docs/preinscritos/ADR-62_BORRADOR.md",
+            "parametros": {"B": 2000, "seed": 1, "alpha": .05},
+            "aviso_phi_U": "φ_U descompone el cambio en la distribución marginal de recepción "
+                           "(unidad: el pasador), no la matriz de pares que mide T_red.",
+            "relevos": rel, "familia": {"m": 2 * n, "n_rechazados": n},
+            "predicciones": [
+                {"n": 1, "hip": "H62-1", "texto": "la red no se mueve más que sin cambiar de técnico",
+                 "valor": f"0 de {n}", "cumple": False},
+                {"n": 2, "hip": "H62-2", "texto": "la concentración no se separa del cero",
+                 "valor": f"{p2} de {n}", "cumple": p2 > n / 2},
+                {"n": 3, "hip": "H62-3", "texto": "φ_U < 0.5 en la mayoría", "valor": f"{p3} de {n}",
+                 "cumple": False, "nivel": "C"}],
+            "segundos": 1.0}
+
+
+def plr():
+    return {"adr": "ADR-62 adenda 1", "nivel": "B", "en_f62": False,
+            "placebos": {"n": 14, "p50": .2, "p90": .35, "valores": []},
+            "relevos": [{"club": c, "a": a, "b": b, "T_relevo": None if k % 3 == 0 else .3}
+                        for k, (c, a, b) in enumerate(RED_PARES)],
+            "resultado": {"n_comparables": 8, "n_superan_p90": 3, "mediana_T_relevo": .3,
+                          "mediana_T_placebo": .2, "diferencia_medianas": .1, "H62_1_aguanta": False}}
+
+
+def flr():
+    return {"adr": "ADR-62 adenda 1c · ADR-59 adenda 10 §6", "acta": "placebo_red_v1.json",
+            "n_relevos": len(RED_PARES), "n_invertidos": 4, "n_invertidos_sin_T": 2, "n_solapan": 0,
+            "sin_fechas": [], "relevos": []}
+
+
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
               "balon_parado_v2.json": bp, "contexto_v1.json": ctx,
               "jugadores_v1.json": jug, "metricas_v1.json": met,
               "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est,
               "placebo_v1.json": pla, "progresion_v1.json": prog, "supervivencia_v1.json": sup,
-              "simulador_v2.json": sim, "jugadores_zona_v1.json": jz}
+              "simulador_v2.json": sim, "jugadores_zona_v1.json": jz,
+              "red_pases_v1.json": red, "placebo_red_v1.json": plr, "placebo_red_fallo.json": flr}
 
 
 def escribe_sinteticos(d: Path):

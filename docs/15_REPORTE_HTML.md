@@ -303,3 +303,26 @@ porcentajes:
 
 Fuente: la liga, cada club del técnico o todos sus clubes (conteos sumados). Una fila sin
 conteos toma la de la liga.
+
+
+## 11. La red de pases (h2_47, ADR-62 adenda 1c y ADR-59 adenda 10)
+
+Sección **C.2** del cierre, común a las cinco historias, entre «¿Nos creen?» y «Límites»
+(que pasa a C.3 sin cambiar su id `c-2`). Lee tres JSON:
+
+- `red_pases_v1.json` — acta de la corrida única de F62. Intocable.
+- `placebo_red_v1.json` — acta de la corrida única del placebo, con el fallo de orden
+  dentro. Intocable. Solo se usa en el anexo, con la leyenda «no se lee».
+- `placebo_red_fallo.json` — lo escribe `52_fallo_orden.py`: cuántos pares estaban al
+  revés. No mide nada.
+
+El cuerpo dice, literal, «No sabemos si la red cambia más cuando cambia el técnico.»
+No usa ninguna de las dos frases del §5 de la adenda 1 de ADR-62. La figura `red_phi`
+es un punto por relevo (φ_U de 0 a 1, raya en la mitad), sin flechas.
+
+Tope propio y aparte: 220 palabras y una figura. No cuenta en el tope general.
+
+En el marcador, ADR-62 entra con H62-1 como **no evaluable** (código en `marcador()`),
+aunque el acta diga «falló».
+
+`51_placebo_red.py` está **inerte**: aborta al arrancar citando la adenda 1c.

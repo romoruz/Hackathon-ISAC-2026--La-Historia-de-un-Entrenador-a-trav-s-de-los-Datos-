@@ -2,6 +2,10 @@
 """
 51_placebo_red.py — ADR-62 adenda 1: el placebo que decide si H62-1 aguanta.
 
+*** INERTE desde ADR-62 adenda 1c: aborta al arrancar. Tenía el fallo de orden
+*** (`bl_a, bl_b = ia[-m:], ib[:m]` supone que la era a va antes que la b).
+*** Se deja el código como registro de lo que se corrió.
+
 El nulo por permutación de ADR-62 §4 destruye el orden temporal: compara dos
 bloques de tiempo CONTIGUOS (las eras) contra muestras mezcladas en el tiempo,
 así que recoge toda la deriva temporal y no solo el cambio de técnico. Por eso
@@ -102,7 +106,14 @@ def por_fecha(sub, f):
     return [i for _, i in sorted((f[i], i) for i in ids)]
 
 
+INERTE = ("ABORTA: ADR-62 adenda 1c. Este placebo se corrió una vez (reports/placebo_red_v1.json) y "
+          "tenía un fallo: no ordenaba cada par por fecha. No se corrige ni se vuelve a correr, porque "
+          "corregirlo solo serviría para correrlo otra vez y el criterio del §5 dependía del número de "
+          "relevos evaluables. H62-1 queda sin resolver.")
+
+
 def main():
+    sys.exit(INERTE)          # adenda 1c §4: inerte. El código de abajo queda como registro.
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--reports", default=str(RAIZ / "reports"))
     ap.add_argument("--out", default=str(RAIZ / "reports" / "placebo_red_v1.json"))

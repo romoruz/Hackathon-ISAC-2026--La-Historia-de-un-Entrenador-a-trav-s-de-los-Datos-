@@ -26,7 +26,9 @@ const selDe = sid => [...document.querySelectorAll(`[data-selclub="${sid}"] butt
 /* topes y jerga de la adenda 3 (§5 y §7) */
 /* adenda 9: el tope de palabras ESCALA con el número de clubes del técnico.
    Un tope fijo castigaba justo lo que la adenda 8 pide enseñar: los clubes lado a lado. */
-const TOPE = { base: 2900, porClub: 200, secciones: 18, figuras: 30 };
+const TOPE = { base: 2900, porClub: 200, secciones: 18, figuras: 30,
+  /* adenda 10 §7: la red de pases lleva su tope propio y NO cuenta en el general */
+  red: { palabras: 220, figuras: 1 } };
 const topePalabras = h => TOPE.base + TOPE.porClub * h.eras.length;
 const JERGA = [/ADR-\d/, /\bq =/, /\bp = 0\.\d/, /IC \[/, /N80/, /τ/, /λ/, /π/, /bootstrap/i, /Benjamini/, /BH al/,
   /\bf = 0\.\d/, /\bF\d\d\b/, /D\d\d-\d/, /h2_\d\d/, /\bera principal\b/i, /\bla base\b/i, /cuasi-estacionaria/i];
@@ -78,7 +80,8 @@ ok(/\.seg button,\.sim-bar button,summary,\.chip\[data-tip\],\.enlace,\[data-jug
   "todo control lleva cursor:pointer");
 ok(/\.drop>button:hover/.test(html) && /:focus-visible/.test(html), "los controles se realzan al pasar el mouse y al enfocarlos");
 ok(!$("segModo"), "sin interruptor sencilla/técnica (adenda 3 §1)");
-ok(D.acto1.length === 3 && D.cierre.length === 2, `primera parte con tres secciones y cierre con dos (${D.acto1.length}, ${D.cierre.length})`);
+ok(D.acto1.length === 3 && D.cierre.length === 3, `primera parte con tres secciones y cierre con tres (${D.acto1.length}, ${D.cierre.length})`);
+ok(D.cierre.map(s => s.id).join() === "c-1,c-red,c-2", `la red de pases va entre «¿Nos creen?» y «Límites» (${D.cierre.map(s => s.id).join()})`);
 ok($("anexo") && !$("anexo").open, "el anexo existe y arranca cerrado");
 ok($("glosario") && !$("glosario").open && $("glosDl").querySelectorAll("dt").length >= 5, "glosario plegado con sus términos");
 ok(document.querySelectorAll("#leyNv .nv").length === 3, "leyenda con los tres niveles");
@@ -178,8 +181,9 @@ D.historias.forEach(h => {
   }).map(s => s.id);
   ok(incompletas.length === 0, `${h.id}: toda sección trae frase y figura o las declara (${incompletas})`);
   /* topes */
-  const palabras = secs.map(s => s.textContent).join(" ").split(/\s+/).filter(Boolean).length;
-  const figuras = $("informe").querySelectorAll("[data-fig]").length;
+  const secsG = secs.filter(s => s.id !== "c-red");   /* adenda 10 §7: C.2 se cuenta aparte */
+  const palabras = secsG.map(s => s.textContent).join(" ").split(/\s+/).filter(Boolean).length;
+  const figuras = [...$("informe").querySelectorAll("[data-fig]")].filter(f => !f.closest("#c-red")).length;
   const tp = topePalabras(h);
   ok(palabras <= tp, `${h.id}: ${palabras} palabras en el cuerpo con ${h.eras.length} clubes (tope ${tp})`);
   ok(secs.length <= TOPE.secciones, `${h.id}: ${secs.length} secciones (tope ${TOPE.secciones})`);
@@ -311,6 +315,34 @@ if (modo !== "sin_contexto") {
 }
 if (modo !== "sin_contexto") ok(document.querySelectorAll('#c-1 [data-fig="marcador"] .tema').length >= 5, "el marcador va agrupado por tema");
 verHist("jardine");
+
+/* ADR-59 adenda 10: la red de pases, sin resolver */
+const red = $("c-red");
+ok(!!red, "cierre: la sección de la red de pases existe");
+if (red && !red.querySelector(".vacio code")) {
+  const tr = red.textContent.replace(/\s+/g, " ");
+  ok(/No sabemos si la red cambia más cuando cambia el técnico/.test(tr), "la red: dice, literal, que no se resolvió");
+  ok(/error nuestro/.test(tr), "la red: nombra el error como nuestro");
+  ok(/no quién lo causó/.test(tr) && /paso del tiempo/.test(tr), "la red: no separa al técnico del paso del tiempo");
+  ok(!/(se mueve|cambia) lo mismo|cambie o no|placebo|percentil/i.test(tr), "la red: sin las frases de retiro ni jerga (adenda 10 §3)");
+  ok([...red.querySelectorAll(".fr")].every(f => f.dataset.nivel === "C"), "la red: todo es descriptivo (nivel C)");
+  const pr = tr.split(/\s+/).filter(Boolean).length, fr = red.querySelectorAll("[data-fig]").length;
+  ok(pr <= TOPE.red.palabras && fr <= TOPE.red.figuras,
+    `la red: ${pr} palabras y ${fr} figura, con su tope aparte (${TOPE.red.palabras} y ${TOPE.red.figuras})`);
+  const sv = red.querySelector('[data-fig="red_phi"] svg[data-red]');
+  ok(!!sv && sv.querySelectorAll("circle").length === +sv.dataset.n && +sv.dataset.n > 0,
+    `la red: un punto por cambio de técnico (${sv ? sv.querySelectorAll("circle").length : 0})`);
+  ok(!!sv && !sv.querySelector("marker, [marker-end]"), "la red: sin flechas entre técnicos");
+  const xr = $("anexo").querySelector("#x-c-red");
+  ok(!!xr, "la red: su «cómo lo medimos» completo en el anexo");
+  if (xr) {
+    ok(/no se lee/.test(xr.textContent), "anexo: la prueba con el error va marcada como que no se lee");
+    ok(/Fallo tres/.test(xr.textContent) && /Fallo uno bis/.test(xr.textContent), "anexo: el catálogo de los fallos de la red");
+    ok(xr.querySelectorAll("table.tabla tbody tr").length >= 1, "anexo: la tabla de relevos de la corrida única");
+  }
+  const m62 = document.querySelectorAll('#c-1 [data-fig="marcador"] .tema');
+  if (modo !== "sin_contexto") ok([...m62].some(t => /red de pases/.test(t.textContent)), "el marcador trae la red de pases");
+}
 
 /* 4. niveles y fuentes */
 const frases = [...$("informe").querySelectorAll(".fr")];

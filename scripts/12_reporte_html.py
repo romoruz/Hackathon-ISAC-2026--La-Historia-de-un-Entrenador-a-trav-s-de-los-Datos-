@@ -67,6 +67,10 @@ FUENTES = {
     "sup":  ("supervivencia_v1.json", "python scripts/45_progresion.py"),
     "sim":  ("simulador_v2.json",     "python scripts/46_simulador.py"),
     "jz":   ("jugadores_zona_v1.json", "python scripts/47_jugadores_zona.py"),
+    # ADR-62: dos actas de corrida única (no se repiten) y el conteo del fallo 3
+    "red":  ("red_pases_v1.json",      "acta de la corrida única de ADR-62 (scripts/50_red_pases.py); no se repite"),
+    "plr":  ("placebo_red_v1.json",    "acta de la corrida única del placebo (ADR-62 adenda 1c); no se repite"),
+    "flr":  ("placebo_red_fallo.json", "python scripts/52_fallo_orden.py"),
 }
 
 # Las cinco historias (adenda 2 §2). El orden es el del selector.
@@ -594,6 +598,13 @@ def marcador(J) -> list[dict]:
     if J.get("prog"):
         out += [{"adr": 61, "n": p["n"], "texto": p["texto"], "cumple": p["cumple"]}
                 for p in J["prog"]["predicciones"]]
+    if J.get("red"):
+        # ADR-62 adenda 1c §3: H62-1 queda SIN RESOLVER. Entra como no evaluable,
+        # no como cumplida ni como fallida, diga lo que diga el acta.
+        out += [{"adr": 62, "n": p["n"],
+                 "texto": p["texto"] + (" (sin resolver: la prueba tenía un error, adenda 1c)" if p["n"] == 1 else ""),
+                 "cumple": None if p["n"] == 1 else p["cumple"]}
+                for p in J["red"]["predicciones"]]
     return out
 
 
@@ -1894,6 +1905,7 @@ def c_credibilidad(M: Modelo):
     mk = [p for p in todo if p["adr"] <= 58]
     m60 = [p for p in todo if p["adr"] == 60]
     m61 = [p for p in todo if p["adr"] == 61]
+    m62 = [p for p in todo if p["adr"] == 62]
     ok = sum(p["cumple"] for p in mk)
     por_adr = {}
     for p in mk:
@@ -1937,6 +1949,12 @@ def c_credibilidad(M: Modelo):
                     " no se pudo evaluar" if any(p["cumple"] is None for p in m61) else "") +
                    ". Una estaba informada por ADR-53 y otra replica ADR-21: valen menos.")]
           if m61 else []),
+        *([M.frase("C", "Red de pases (ADR-62), escritas antes de ver un solo pase: " +
+                   M.c(f"{sum(p['cumple'] is True for p in m62)} de {sum(p['cumple'] is not None for p in m62)}",
+                       "red_pases_v1 › predicciones") + " se cumplieron; " +
+                   M.c(str(sum(p['cumple'] is None for p in m62)), "red_pases_v1 › predicciones (sin resolver, adenda 1c)") +
+                   " queda sin resolver porque la prueba que la decidía tenía un error (lo contamos en el cierre).")]
+          if m62 else []),
         M.fig("fig9", "Predicciones preinscritas", "Punto lleno: se cumplió. Aro: falló. "
               "Punteado: no evaluable. Toca cada una para leerla.", todo),
     ]
@@ -2475,7 +2493,8 @@ def c32(M: Modelo, H):
 
 
 TEMA_ADR = {53: "duración de la posesión", 54: "presión", 55: "balón parado", 56: "contexto",
-            57: "contexto", 58: "jugadores y cambios", 60: "relevos", 61: "llegar al área y posesiones largas"}
+            57: "contexto", 58: "jugadores y cambios", 60: "relevos", 61: "llegar al área y posesiones largas",
+            62: "red de pases"}
 
 
 def c_nos_creen(M: Modelo):
@@ -2496,6 +2515,138 @@ def c_nos_creen(M: Modelo):
         M.fig("marcador", "Predicciones escritas antes de medir, por tema", "Lleno: se cumplió. Aro: falló. "
               "Punteado: no evaluable. El texto de cada una, en el anexo.",
               [{"tema": TEMA_ADR.get(p["adr"], "otras"), "n": p["n"], "cumple": p["cumple"]} for p in todo]),
+    ]
+
+
+# ---------------------------------------------------------------------------
+# C.2 · la red de pases (ADR-62, adenda 1c y ADR-59 adenda 10)
+# ---------------------------------------------------------------------------
+def _red_eval(J) -> list[dict]:
+    """Los relevos de F62: de las cinco historias y evaluables. Los mismos que
+    cuentan las predicciones del acta."""
+    return [r for r in J["red"]["relevos"] if "T_red" in r and r.get("de_una_historia")]
+
+
+def _uso(r) -> bool:
+    """φ_U ≥ 0.5, con la misma convención que el acta (None cuenta como < 0.5)."""
+    return ((r.get("phi_U") or {}).get("phi_U") or 0) >= .5
+
+
+def c_red(M: Modelo):
+    """Cuerpo de C.2. Todo nivel C. No usa ninguna de las dos frases del §5 de
+    la adenda 1 de ADR-62 (adenda 10 §3)."""
+    M.need("red", "flr")
+    J = M.J
+    ev = _red_eval(J)
+    n = len(ev)
+    sup = sum(bool(r["T_red"]["supera_p90"]) for r in ev)
+    uso = sum(_uso(r) for r in ev)
+    p3 = next((p for p in J["red"]["predicciones"] if p["n"] == 3), {})
+    fo = J["flr"]
+    Fr, Ff = "red_pases_v1", "placebo_red_fallo"
+    if p3.get("cumple") is False:
+        esp = "Esperábamos lo contrario."
+    elif p3.get("cumple") is True:
+        esp = "Esperábamos que pesara más quién llega o se va, y así fue en la mayoría."
+    else:
+        esp = "No se pudo comprobar lo que esperábamos."
+    filas = [{"par": f"{ape(r['a'])} · {ape(r['b'])}", "club": r["club"],
+              "phi": (r.get("phi_U") or {}).get("phi_U")} for r in ev]
+    filas = sorted([f for f in filas if f["phi"] is not None], key=lambda f: f["phi"])
+    return [
+        M.frase("C", "También miramos <b>quién le pasa el balón a quién</b> en " +
+                M.c(str(n), Fr + " › relevos (de las cinco historias, evaluables)") +
+                " cambios de técnico. Es lo único que escribimos antes de ver un solo pase."),
+        M.frase("C", "Una primera prueba marcó cambio en " +
+                M.c(f"{sup} de {n}", Fr + " › relevos[].T_red.supera_p90") +
+                ", pero era injusta: comparaba épocas seguidas contra partidos revueltos de cualquier "
+                "fecha, y así el paso del tiempo contaba como cambio de técnico."),
+        M.frase("C", "Una prueba más justa tuvo un error nuestro: en " +
+                M.c(str(fo["n_invertidos"]), Ff + " › n_invertidos") +
+                " cambios de técnico puso las épocas al revés. Repetirla corregida sería cambiar la regla "
+                "tras ver el resultado; no la repetimos. <b>No sabemos si la red cambia más cuando "
+                "cambia el técnico.</b>"),
+        M.frase("C", "Sí sabemos de qué está hecho el cambio: en " +
+                M.c(f"{uso} de {n}", Fr + " › relevos[].phi_U.phi_U (0.5 o más)") +
+                ", más de la mitad viene de que <b>los mismos jugadores eligen a otros compañeros</b>, "
+                "no de quién llega, se va o la toca más. " + esp),
+        M.frase("C", "Eso dice de qué está hecho el cambio, no quién lo causó: el técnico o el paso del "
+                "tiempo, con estos datos no se pueden separar.", adenda=10),
+        M.fig("red_phi", "De qué está hecho cada cambio", "Un punto por cambio de técnico.",
+              {"filas": filas, "n": len(filas)}),
+    ]
+
+
+def c_red_anexo(M: Modelo):
+    """Anexo de C.2: la corrida única completa, la prueba con el error marcada
+    como ilegible y el catálogo de fallos de la adenda 1c §5."""
+    M.need("red", "plr", "flr")
+    J = M.J
+    red, plr, fo = J["red"], J["plr"], J["flr"]
+    ev = _red_eval(J)
+    Fr, Fp, Ff = "red_pases_v1", "placebo_red_v1", "placebo_red_fallo"
+    fam = red.get("familia", {})
+
+    def fila(i, r):
+        F = f"{Fr} › relevos[{r['club']}, {ape(r['a'])}–{ape(r['b'])}]"
+        t, g, ph = r["T_red"], r["gini"], r.get("phi_U") or {}
+        return ("<tr><td>" + esc(r["club"]) + "</td><td>" + esc(ape(r["a"])) + " · " + esc(ape(r["b"])) +
+                "</td><td>" + M.c(f"{t['v']:.3f}", F + " › T_red.v") +
+                "</td><td>" + M.c(f"{t['nulo_p90']:.3f}", F + " › T_red.nulo_p90") +
+                "</td><td>" + M.c(f"{g['delta']:+.3f}", F + " › gini.delta") + " " +
+                M.c(f"[{g['ic95'][0]:+.3f}, {g['ic95'][1]:+.3f}]", F + " › gini.ic95") +
+                "</td><td>" + (M.c(f"{ph['phi_U']:.2f}", F + " › phi_U.phi_U")
+                               if ph.get("phi_U") is not None else "—") + "</td></tr>")
+
+    tabla = ("<div class='tabla-w'><table class='tabla'><thead><tr><th>club</th><th>técnicos</th><th>T de la red</th>"
+             "<th>techo del nulo (lo supera uno de cada diez)</th><th>ΔGini [IC 95%]</th><th>φ_U</th></tr></thead><tbody>" +
+             "".join(fila(i, r) for i, r in enumerate(ev)) + "</tbody></table></div>")
+    res = plr.get("resultado", {})
+
+    def veredicto(p):
+        c = p.get("cumple")
+        return ("como predicción, se cumplió" if c is True else
+                "como predicción, falló (hacía falta la mayoría)" if c is False else "no se pudo evaluar")
+    preds = {p["n"]: p for p in red["predicciones"]}
+    catalogo = (
+        "<ul class='lim'>"
+        "<li><b>Fallo uno.</b> El nulo por permutación ignoraba el orden temporal: comparaba épocas "
+        "contiguas contra mezclas de partidos de cualquier fecha. Visto después de la corrida única, "
+        "cuando todos los relevos salieron con p igual a cero. Respuesta: una prueba por tramos, "
+        "escrita antes de correrla (adenda 1).</li>"
+        "<li><b>Fallo uno bis.</b> Nuestro primer diagnóstico del fallo uno era falso (culpaba a la "
+        "composición del plantel, que ya estaba controlada). Visto al releer el código; corregido en "
+        "voz alta antes de actuar.</li>"
+        "<li><b>Fallo dos.</b> Bloques de tamaño desigual en la prueba por tramos. Visto antes de "
+        "correrla; corregido en la adenda 1b.</li>"
+        "<li><b>Fallo tres.</b> Pares en orden temporal invertido en la prueba por tramos. Visto "
+        "después de correrla. No se repite; la primera predicción queda sin resolver (adenda 1c).</li></ul>")
+    return [
+        M.frase("C", "Corrida única de ADR-62, con el nulo por permutación de partidos: " +
+                M.c(str(fam.get("m", "—")), Fr + " › familia.m") + " contrastes, " +
+                M.c(str(fam.get("n_rechazados", "—")), Fr + " › familia.n_rechazados") +
+                " rechazan con BH al 5%. <b>Ese nulo era injusto</b> (fallo uno): los rechazos miden "
+                "también la deriva temporal y no se leen como cambio de técnico."),
+        M.nota(tabla),
+        M.frase("C", "Segunda predicción (el Gini no se separa del cero en la mayoría): se cumplió en " +
+                M.cita(str(preds.get(2, {}).get("valor", "—")), Fr + " › predicciones[2].valor") +
+                "; " + veredicto(preds.get(2, {})) + ". Su intervalo sale del mismo nulo, así que comparte "
+                "el fallo uno: con un nulo que promedia la deriva, el intervalo es más estrecho de lo que "
+                "debería."),
+        M.frase("C", "Tercera predicción (φ_U menor que la mitad en la mayoría): se cumplió en " +
+                M.cita(str(preds.get(3, {}).get("valor", "—")), Fr + " › predicciones[3].valor") +
+                "; " + veredicto(preds.get(3, {})) + ". φ_U no depende del nulo, pero tampoco separa al "
+                "técnico del paso del tiempo. Aviso del acta: " +
+                M.cita(red.get("aviso_phi_U", "—"), Fr + " › aviso_phi_U")),
+        M.frase("C", "La prueba por tramos (adenda 1 y su corrección) se corrió una vez: " +
+                M.c(f"{res.get('n_superan_p90', '—')} de {res.get('n_comparables', '—')}",
+                    Fp + " › resultado.n_superan_p90 / n_comparables") +
+                " relevos superaron lo que se mueve la red sin cambiar de técnico. <b>Ese resultado tiene "
+                "el error dentro y no se lee</b>: en " + M.c(str(fo["n_invertidos"]), Ff + " › n_invertidos") +
+                " pares las épocas estaban al revés, y " +
+                M.c(str(fo["n_invertidos_sin_T"]), Ff + " › n_invertidos_sin_T") +
+                " de ellos se quedaron sin distancia. El acta se conserva tal cual."),
+        M.nota("<b>Los fallos de esta parte, uno por uno</b> (ADR-62 adenda 1c §5):" + catalogo),
     ]
 
 
@@ -2535,7 +2686,10 @@ CUERPO_A3 = [
 ANEXO_A3 = [("x-plantel", "¿Cambió el plantel o cambió el uso?", s32)]
 CUERPO_C = [
     ("c-1", "C.1", "credibilidad", "¿Nos creen?", c_nos_creen, [c_credibilidad]),
-    ("c-2", "C.2", "5.6", "Límites", c_limites_cortos, [c_limites]),
+    # ADR-59 adenda 10 §1: la red de pases va en el cuerpo, entre «¿Nos creen?» y «Límites».
+    # El id c-2 se queda en Límites para no mover anclas; x-c-3 es el catálogo pendiente.
+    ("c-red", "C.2", "5.3", "¿Cambia quién le pasa el balón a quién?", c_red, [c_red_anexo]),
+    ("c-2", "C.3", "5.6", "Límites", c_limites_cortos, [c_limites]),
 ]
 
 
@@ -3474,6 +3628,12 @@ body:not(.tecnica) .tec{display:none}
 .jzleg{font-size:.86rem;color:var(--tx2);margin-bottom:.7rem;display:flex;flex-wrap:wrap;
  gap:.5rem;align-items:center}
 .jzleg b{color:var(--tx)}
+.redeje{display:flex;justify-content:space-between;gap:1rem;font-size:.82rem;color:var(--tx2);margin-top:.2rem}
+.redeje span:last-child{text-align:right}
+.tabla-w{overflow-x:auto;margin:.6rem 0}
+.tabla{border-collapse:collapse;font-size:.84rem;min-width:100%}
+.tabla th,.tabla td{padding:.3rem .55rem;border-bottom:1px solid var(--ln,rgba(127,127,127,.25));text-align:left;white-space:nowrap}
+.tabla th{color:var(--tx2);font-weight:600}
 .lista .it-bar i.p90{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--tx2);
  border-radius:1px;z-index:2}
 .lista .it-bar{position:relative}
@@ -3834,6 +3994,21 @@ const FIG={
    (d.n_total>d.filas.length?`<p class="nota">y ${d.n_total-d.filas.length} más, en el anexo</p>`:"")+
    (d.p90!=null?leyenda(SW(C_FOCO,"cuánto cambió"),
     `<span class="leg">la marca vertical: lo que se mueve el 10% que más cambia sin cambiar de técnico</span>`):"");
+ },
+ red_phi(d){
+  /* ADR-59 adenda 10 §2.6: un punto por relevo sobre 0..1, con la raya de la mitad.
+     Sin flechas: φ_U no tiene dirección y el orden de los pares del acta no es cronológico.
+     Los rótulos de los extremos van en HTML, no en el SVG, para que en el teléfono no se encojan. */
+  const W=600,H=110,x0=20,x1=W-20,y=72,X=v=>x0+(x1-x0)*Math.max(0,Math.min(1,v));
+  const cnt={};
+  let g=`<svg viewBox="0 0 ${W} ${H}" data-red="1" data-n="${d.n}">
+   <line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="var(--tx3)" stroke-width="1"/>
+   <line x1="${X(.5)}" x2="${X(.5)}" y1="${y-50}" y2="${y+22}" stroke="var(--tx2)" stroke-dasharray="4 4"/>
+   <text x="${X(.5)}" y="${y-56}" text-anchor="middle" fill="var(--tx2)" font-size="13">mitad</text>`;
+  d.filas.forEach(f=>{const k=Math.round(f.phi*30);cnt[k]=(cnt[k]||0)+1;const dy=(cnt[k]-1)*14;
+   g+=`<g data-tip="<b>${esc(f.par)} · ${esc(f.club)}</b>${Math.round(100*f.phi)} de cada 100 partes del cambio vienen de que los mismos jugadores eligen a otros compañeros"><circle cx="${X(f.phi).toFixed(1)}" cy="${(y-dy).toFixed(1)}" r="6.5" fill="${f.phi>=.5?"var(--a1)":"var(--bg)"}" stroke="var(--a1)" stroke-width="1.8"/></g>`;});
+  return leyenda(SW(C_FOCO,"más de la mitad"),SW(C_FOCO,"menos de la mitad",true))+g+`</svg>`+
+   `<div class="redeje"><span>← quién llega, se va o la toca más</span><span>los mismos, con otros compañeros →</span></div>`;
  },
  fig2(d){
   if(d.falta)return vacio("Falta el parquet de transiciones de esta era; el mapa se pinta al generar el informe en la máquina del proyecto.",d.falta);
