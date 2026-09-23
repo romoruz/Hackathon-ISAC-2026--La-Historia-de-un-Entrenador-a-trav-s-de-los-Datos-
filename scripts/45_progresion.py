@@ -54,6 +54,7 @@ HISTORIAS = [("jardine", "Andre Jardine"), ("larcamon", "Nicolas Larcamon"),
 N_BOOT = 4000
 SEED = 20260923
 ALPHA = 0.05
+MIN_POSS_EXPL = 200        # ADR-61 adenda 1, D61A-3
 F_MAX = 0.01
 TOL_ET_ERA, TOL_ET_BASE = 0.005, 0.02
 TOL_POT = 1e-6
@@ -461,6 +462,8 @@ def main():
     ap.add_argument("--out-surv", default=str(RAIZ / "reports" / "supervivencia_v1.json"))
     ap.add_argument("--n-boot", type=int, default=N_BOOT)
     ap.add_argument("--solo-diagnostico", action="store_true")
+    ap.add_argument("--solo-principales", action="store_true",
+                    help="ADR-61 adenda 1 §5: vuelve al comportamiento de h2_35 (sin eras_todas)")
     a = ap.parse_args()
     t0 = time.time()
     rep = Path(a.reports)
@@ -508,6 +511,28 @@ def main():
             eras.append(r)
             print(f"  {club:<18s} {coach:<18s} L {r['L']['era']:.3f} vs {r['L']['base']:.3f} · "
                   f"τ {r['tau']['era']:.2f} vs {r['tau']['base']:.2f}", flush=True)
+        # ADR-61 adenda 1: las eras no principales, DESCRIPTIVAS y fuera de F61
+        todas = []
+        if not a.solo_principales:
+            pr = {(c, co) for _, c, co, _ in principales}
+            otras = sorted({(u["club"], u["coach"]) for u in met["unidades"]
+                            if u["coach"] in [co for _, co in HISTORIAS] and (u["club"], u["coach"]) not in pr})
+            hid_de = {co: h for h, co in HISTORIAS}
+            for club, coach in otras:
+                te = time.time()
+                r = mide_era(df, club, coach, rng, a.n_boot)
+                if r["n_poss"] < MIN_POSS_EXPL:          # D61A-3
+                    r["hueco"] = (f"solo {r['n_poss']} posesiones; el mínimo preinscrito es "
+                                  f"{MIN_POSS_EXPL}")
+                    for k in ("L", "tau"):
+                        r[k]["evaluable"] = False
+                for k in ("L", "tau"):
+                    r[k].pop("p", None)                   # sin p y sin q: no es una prueba
+                r.pop("jugada", None)                     # D61-7 sigue solo para la principal
+                r["hid"], r["principal"], r["exploratoria"] = hid_de[coach], False, True
+                todas.append(r)
+                print(f"  [descriptiva] {club:<18s} {coach:<18s} "
+                      f"L {r['L']['era']:.3f} vs {r['L']['base']:.3f} · {time.time() - te:.0f} s", flush=True)
         fam = [(i, k) for i, e in enumerate(eras) for k in ("L", "tau") if e[k]["evaluable"]]
         qs, rech = bh([eras[i][k]["p"] for i, k in fam]) if fam else ([], [])
         for (i, k), q, r in zip(fam, qs, rech):
@@ -515,6 +540,27 @@ def main():
         for e in eras:
             for k in ("L", "tau"):
                 e[k].setdefault("rechaza", False)
+        prev = Path(a.out)
+        if prev.exists():                                # D61A-1
+            vj = json.loads(prev.read_text(encoding="utf-8"))
+            for e in eras:
+                p0 = next((x for x in vj.get("eras", []) if x["club"] == e["club"] and x["coach"] == e["coach"]), None)
+                if p0 is None:
+                    continue
+                for k in ("L", "tau"):
+                    if not (p0[k]["evaluable"] and e[k]["evaluable"]):
+                        if p0[k]["evaluable"] != e[k]["evaluable"]:
+                            raise Aborta(f"D61A-1: {e['club']}·{e['coach']} {k} cambió de evaluable")
+                        continue
+                    for campo in ("era", "base", "D"):
+                        if abs(p0[k][campo] - e[k][campo]) > 1e-9:
+                            raise Aborta(f"D61A-1: {e['club']}·{e['coach']} {k}.{campo} se movió "
+                                         f"({p0[k][campo]} → {e[k][campo]})")
+                    if abs(p0[k]["p"] - e[k]["p"]) > 1e-9:
+                        raise Aborta(f"D61A-1: {e['club']}·{e['coach']} {k}.p se movió")
+            print("D61A-1: las cinco eras principales reproducen lo publicado")
+        if len(fam) != 10 and not a.solo_principales:   # D61A-2
+            raise Aborta(f"F61 pasó de 10 a {len(fam)} contrastes; la adenda 1 no puede tocar la familia")
         # liga: 1.6 y 1.7
         import polars as pl
         orden = h4["parametros"]["torneos_orden"]
@@ -552,6 +598,10 @@ def main():
                              "alpha": ALPHA, "lambda": 0},
               "verificacion_base": verif,
               "eras": eras, "familia": {"m": len(fam), "n_rechazados": int(sum(rech))},
+              "eras_todas": ([{**e, "principal": True, "exploratoria": False} for e in eras] + todas
+                             if not a.solo_principales else None),
+              "adenda1": {"min_poss": MIN_POSS_EXPL, "n_descriptivas": len(todas),
+                          "nota": "las eras no principales son descriptivas: sin p, sin q y fuera del marcador"},
               "predicciones": preds, "segundos": round(time.time() - t0, 1)}
     Path(a.out).write_text(json.dumps(salida, ensure_ascii=False, indent=1), encoding="utf-8")
     sv = {**comun, "fase": d0,
