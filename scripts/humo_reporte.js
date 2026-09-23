@@ -24,7 +24,10 @@ const verClub = (sid, club) => click(document.querySelector(`[data-selclub="${si
 const selDe = sid => [...document.querySelectorAll(`[data-selclub="${sid}"] button`)].map(b => b.dataset.k);
 
 /* topes y jerga de la adenda 3 (§5 y §7) */
-const TOPE = { palabras: 3000, secciones: 18, figuras: 22 };  /* adenda 7 §5 */
+/* adenda 9: el tope de palabras ESCALA con el número de clubes del técnico.
+   Un tope fijo castigaba justo lo que la adenda 8 pide enseñar: los clubes lado a lado. */
+const TOPE = { base: 2900, porClub: 200, secciones: 18, figuras: 30 };
+const topePalabras = h => TOPE.base + TOPE.porClub * h.eras.length;
 const JERGA = [/ADR-\d/, /\bq =/, /\bp = 0\.\d/, /IC \[/, /N80/, /τ/, /λ/, /π/, /bootstrap/i, /Benjamini/, /BH al/,
   /\bf = 0\.\d/, /\bF\d\d\b/, /D\d\d-\d/, /h2_\d\d/, /\bera principal\b/i, /\bla base\b/i, /cuasi-estacionaria/i];
 function jergaCuerpo() {
@@ -177,7 +180,8 @@ D.historias.forEach(h => {
   /* topes */
   const palabras = secs.map(s => s.textContent).join(" ").split(/\s+/).filter(Boolean).length;
   const figuras = $("informe").querySelectorAll("[data-fig]").length;
-  ok(palabras <= TOPE.palabras, `${h.id}: ${palabras} palabras en el cuerpo (tope ${TOPE.palabras})`);
+  const tp = topePalabras(h);
+  ok(palabras <= tp, `${h.id}: ${palabras} palabras en el cuerpo con ${h.eras.length} clubes (tope ${tp})`);
   ok(secs.length <= TOPE.secciones, `${h.id}: ${secs.length} secciones (tope ${TOPE.secciones})`);
   ok(figuras <= TOPE.figuras, `${h.id}: ${figuras} figuras en el cuerpo (tope ${TOPE.figuras})`);
   /* jerga */
@@ -249,6 +253,48 @@ D.historias.forEach(h => {
     });
     const alguna = secs2.find(x => x.id === "a2-1") || secs2[0];
     ok(alguna.textContent.includes(otro.club), `${h.id}: ${otro.club} aparece sin tocar nada`);
+  }
+  /* adenda 8 §1-§2: la figura trae los clubes dentro, con la misma escala */
+  if (otro) {
+    const mf = document.querySelector('#a2-1 [data-fig="zonas_clubes"] .mapfila');
+    ok(!!mf, `${h.id}: 2.1 trae un mapa por club`);
+    if (mf) {
+      const cl = [...mf.querySelectorAll(".mf-uno")].map(e => e.dataset.club);
+      ok(cl.length === h.eras.length && cl.every(c => h.eras.some(e => e.club === c)),
+        `${h.id}: 2.1 tiene los ${h.eras.length} mapas (${cl.join(" | ")})`);
+      const conMapa = mf.querySelectorAll("svg[data-cancha]").length;
+      ok(+mf.dataset.mapas === cl.length &&
+         (conMapa === 0 ? mf.querySelectorAll(".vacio").length === cl.length : +mf.dataset.escala > 0),
+        `${h.id}: 2.1 ${conMapa ? "comparte una sola escala (" + mf.dataset.escala + ")" : "declara el hueco de cada club"}`);
+      ok(/comparten la escala/.test($("a2-1").textContent), `${h.id}: 2.1 dice que la escala es común`);
+    }
+    const tc = document.querySelector('#a2-3 [data-fig="tarjetas_clubes"]');
+    ok(!!tc, `${h.id}: 2.3 trae las tarjetas por club`);
+    if (tc) {
+      const porTarjeta = [...tc.querySelectorAll(".card .bint")].map(b => b.querySelectorAll(".br").length);
+      ok(porTarjeta.length >= 3 && porTarjeta.every(n => n === h.eras.length),
+        `${h.id}: cada tarjeta de 2.3 tiene una barra por club (${porTarjeta.join(",")})`);
+    }
+  }
+  /* ADR-63 §5 y adenda 8 §3: los mismos jugadores con otro técnico */
+  const jz = $("a3-1");
+  const conJz = !!jz.querySelector('[data-fig="jz_mapas"]');
+  if (conJz) {
+    ok(/los mismos jugadores/i.test(jz.textContent), `${h.id}: 3.1 dice que compara jugadores consigo mismos`);
+    ok(/punto porcentual/.test(jz.textContent) && /no «el doble»/.test(jz.textContent),
+      `${h.id}: explica qué es un punto porcentual`);
+    ok(/no por qué/.test(jz.textContent) && /lesión/.test(jz.textContent),
+      `${h.id}: la frase de no-causalidad está`);
+    const leg = jz.querySelector(".jzleg");
+    ok(!!leg && /más presencia con/.test(leg.textContent) && !/positivo|negativo/.test(leg.textContent),
+      `${h.id}: la leyenda va encima y nombra a los dos técnicos`);
+    const mf2 = jz.querySelector('[data-fig="jz_mapas"] .mapfila');
+    ok(!!mf2 && +mf2.dataset.mapas === 2 && +mf2.dataset.escala > 0,
+      `${h.id}: los dos mapas del jugador comparten escala`);
+    ok(jz.querySelectorAll('[data-fig="jz_rank"] .item').length >= 3, `${h.id}: el ranking de quién cambió más`);
+  } else {
+    ok(!!jz.querySelector(".hueco") || !!jz.querySelector(".vacio"),
+      `${h.id}: si no hay jugadores comparables, se declara`);
   }
   const b24 = (hj.acto2.find(x => x.id === "a2-4").bloques || []);
   if (b24.some(b => b.tipo === "hueco" && /seis clubes/.test(b.html)))
@@ -337,8 +383,9 @@ if (modo === "sin_contexto") {
 }
 
 /* adenda 6 §2 y §3: etiquetas que no mienten */
-ok(!document.body.textContent.includes("todos sus clubes"),
-  "en ninguna parte se promete un agregado de «todos sus clubes»");
+ok(![$("informe"), document.querySelector("header"), $("anexo")]
+    .some(z => z && z.textContent.includes("todos sus clubes")),
+  "en ninguna parte visible se promete un agregado de «todos sus clubes»");
 ok(!$("informe").textContent.includes("percentil"), "«percentil» ya no está en el cuerpo");
 ok($("anexo").textContent.includes("percentil"), "«percentil» sigue en el anexo");
 

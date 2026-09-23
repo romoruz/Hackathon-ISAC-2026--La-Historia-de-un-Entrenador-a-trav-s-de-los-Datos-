@@ -505,12 +505,60 @@ def sim():
             "eras": eras, "nombres": {str(k): f"Jugador Nombre {k}" for k in range(1000, 1100)}}
 
 
+# ------------------------------------------------------- jugadores_zona ----
+def jz():
+    """ADR-63 con sus casos límite: una pareja con hueco por pocos jugadores y
+    otra sin nulo evaluable."""
+    def rep20(seed, pico):
+        r = random.Random(seed)
+        v = [r.uniform(.2, 1) for _ in range(20)]
+        v[pico] += 4
+        t = sum(v)
+        return [round(x / t, 6) for x in v]
+
+    pares = []
+    for k, (club, a, b) in enumerate([
+            ("América", "Andre Jardine", "Fernando Ortiz"),
+            ("América", "Fernando Ortiz", "Santiago Solari"),
+            ("Puebla", "Nicolas Larcamon", "Juan Reynoso"),
+            ("León", "Ariel Holan", "Nicolas Larcamon"),
+            ("Toluca", "Ignacio Ambriz", "Renato Paiva"),
+            ("Tigres UANL", "Miguel Herrera", "Veljko Paunovic"),
+            ("Tijuana", "Juan Carlos Osorio", "Miguel Herrera"),
+            ("Monterrey", "Fernando Ortiz", "Domenec Torrent"),
+            ("Santos Laguna", "Eduardo Fentanes", "Ignacio Ambriz"),
+            ("Cruz Azul", "Martin Anselmi", "Nicolas Larcamon")]):
+        if club == "Santos Laguna":       # caso límite: pocos jugadores
+            pares.append({"club": club, "a": a, "b": b, "n_jugadores": 3,
+                          "hueco": "solo 3 jugadores con al menos 200 toques en las dos etapas; "
+                                   "el mínimo preinscrito es 5"})
+            continue
+        js = []
+        for i in range(6 + k % 3):
+            pa, pb = rep20(100 * k + i, i % 20), rep20(500 + 100 * k + i, (i + 7) % 20)
+            T = sum(abs(x - y) for x, y in zip(pa, pb)) / 2
+            js.append({"player_id": 1000 + 10 * k + i, "nombre": f"Jugador Nombre {1000 + 10 * k + i}",
+                       "posicion_modal": ["GK", "CB", "LB", "DM", "CM", "RW", "CF", "AM"][i % 8],
+                       "toques_a": 300 + 10 * i, "toques_b": 260 + 12 * i,
+                       "p_a": pa, "p_b": pb, "dif": [round(x - y, 6) for x, y in zip(pa, pb)],
+                       "T": round(T, 6)})
+        js.sort(key=lambda j: -j["T"])
+        fila = {"club": club, "a": a, "b": b, "n_jugadores": len(js), "jugadores": js}
+        fila["nulo"] = ({"hueco": "solo 2 medias etapas comparables", "n": 2} if club == "Tijuana"
+                        else {"p50": .21, "p90": .38, "n": 24})
+        pares.append(fila)
+    return {"adr": "ADR-63", "nivel": "C",
+            "parametros": {"umbral_toques": 200, "min_jugadores": 5, "fases": "todas", "zonas": 20,
+                           "nulo": "mitades por fecha de la misma era, sin cambio de técnico"},
+            "pares": pares}
+
+
 SINTETICOS = {"did_h4_v1.json": h4, "did_presion_v1.json": pres,
               "balon_parado_v2.json": bp, "contexto_v1.json": ctx,
               "jugadores_v1.json": jug, "metricas_v1.json": met,
               "deriva_proveedor.json": der, "relevos_v1.json": rel, "estilos_v1.json": est,
               "placebo_v1.json": pla, "progresion_v1.json": prog, "supervivencia_v1.json": sup,
-              "simulador_v2.json": sim}
+              "simulador_v2.json": sim, "jugadores_zona_v1.json": jz}
 
 
 def escribe_sinteticos(d: Path):

@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-22 (h2_41: ADR-59 adenda 7, los clubes lado a lado sin selector, 2.2 compara sus clubes con ADR-61 adenda 1, la jugada de ejemplo al anexo; h2_40: ADR-61 adenda 1 y ADR-63 en los scripts; h2_39: ADR-59 adenda 6, los menús de la barra dejan de estar recortados, un botón por club sin «todos sus clubes», cuatro pies y el recorte al tope; h2_38: ADR-59 adenda 5, primero la historia y al final el método, barra fija con dos menús, selector de club dentro de la sección, espacio de estados explicado, simulador paso a paso, una sola línea de carrera, barras con intervalo en 2.2; h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-22 (h2_42: ADR-59 adendas 8 y 9 + ADR-63 en la página: las figuras traen los clubes dentro con escala compartida, la sección de jugadores en 3.1, y el tope de palabras escala con los clubes; h2_41: ADR-59 adenda 7, los clubes lado a lado sin selector, 2.2 compara sus clubes con ADR-61 adenda 1, la jugada de ejemplo al anexo; h2_40: ADR-61 adenda 1 y ADR-63 en los scripts; h2_39: ADR-59 adenda 6, los menús de la barra dejan de estar recortados, un botón por club sin «todos sus clubes», cuatro pies y el recorte al tope; h2_38: ADR-59 adenda 5, primero la historia y al final el método, barra fija con dos menús, selector de club dentro de la sección, espacio de estados explicado, simulador paso a paso, una sola línea de carrera, barras con intervalo en 2.2; h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -97,7 +97,7 @@ se borra" se cumple por construcción. Cada sección del cuerpo con anexo lleva 
 | `a2-6` | 2.5 | ¿Cambia según el partido? | 1 frase, tabla | `s26` |
 | `a2-7` | 2.6 | Balón parado | 1 frase, remate y gol | `s27` |
 | `a2-8` | 2.7 | Jugadores y minutos | 2 frases, anillos | `s28` |
-| `a3-1` | 3.1 | El club antes y después de él | `c31`: relevos contados, parte del uso (φ_U solo si estimable y estable), control, placebo, figura | `s31` |
+| `a3-1` | 3.1 | El club antes y después de él (+ **los mismos jugadores con otro técnico**, ADR-63) | `c31`: relevos contados, parte del uso (φ_U solo si estimable y estable), control, placebo, figura | `s31` |
 | `a3-2` | 3.2 | ¿Se lleva su estilo a otro club? | `c32` = extracto de `s33` + `s34` | `s33`, `s34` |
 | `c-1` | C.1 | ¿Nos creen? | `c_nos_creen` | `c_credibilidad` |
 | `c-2` | C.2 | Límites | cinco líneas | `c_limites` |
@@ -125,7 +125,7 @@ selector cambia la historia y repinta la página entera, anexo incluido.
   aria-label): `ADR-\d`, `q =`, `p = 0.`, `IC [`, `N80`, `τ`, `λ`, `π`, `bootstrap`,
   `Benjamini`, `BH al`, `f = 0.`, `F\d\d`, `D\d\d-\d`, `h2_\d\d`, "era principal",
   "la base", "cuasi-estacionaria". Permitidos en el anexo.
-- **Topes por historia** (humo): ≤ 3 000 palabras, ≤ 18 secciones y ≤ 22 figuras en el cuerpo (adenda 7 §5); ninguna lista se apila en una columna de más de doce.
+- **Topes por historia** (humo): ≤ **2 900 + 200 × nº de clubes** palabras (adenda 9), ≤ 18 secciones y ≤ 30 figuras (adenda 8 §4); ninguna lista se apila en una columna de más de doce.
 
 ### Navegación (adenda 5 §3)
 
@@ -148,6 +148,21 @@ navegador de verdad, porque jsdom no calcula disposición.
 Todo control lleva `cursor:pointer` y realce al pasar el mouse y al enfocar con el teclado;
 el humo lo comprueba sobre la hoja de estilo (ahí sí basta: no hay nada que la regla pueda
 romper).
+
+### La figura trae los clubes dentro (adenda 8 §1-§2)
+
+Donde hay dato por club, **la figura compara** en vez de repetirse: 2.1 dibuja un
+mapa 5 × 4 por club en fila (`mapasFila` → `.mapfila` → `.mf-uno[data-club]`), 2.3
+pone una barra por club en cada tarjeta, 2.4 rotula su figura por club y 2.7
+agrupa los medidores por club. 2.5 y 2.6 no lo hacen y lo declaran: cuatro paneles
+por tres clubes son doce cajas, y el embudo de 2.6 es de la liga, no del club.
+
+**Escala compartida.** `mapasFila` normaliza cada mapa a proporciones (suma 1) y
+pasa a todos el mismo `vmax`, que queda en `data-escala`. Dos mapas comparados con
+escalas distintas son una comparación falsa; el humo lo comprueba. **Cuando hay más de un mapa en la fila no se imprime el número de cada casilla**
+(va en el tooltip): en mapas comparados el número por celda estorba —lo que se lee
+es el patrón de color— y además contaba como palabra del tope. El mapa grande de
+diferencia (`mapaDif`) sí conserva sus números, que es donde importan.
 
 ### Los clubes, lado a lado (adenda 7 §1; sustituye a las pestañas)
 

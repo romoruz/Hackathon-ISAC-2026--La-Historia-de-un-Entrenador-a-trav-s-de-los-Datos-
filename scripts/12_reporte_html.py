@@ -66,6 +66,7 @@ FUENTES = {
     "prog": ("progresion_v1.json",    "python scripts/45_progresion.py"),
     "sup":  ("supervivencia_v1.json", "python scripts/45_progresion.py"),
     "sim":  ("simulador_v2.json",     "python scripts/46_simulador.py"),
+    "jz":   ("jugadores_zona_v1.json", "python scripts/47_jugadores_zona.py"),
 }
 
 # Las cinco historias (adenda 2 §2). El orden es el del selector.
@@ -2280,6 +2281,63 @@ def solo_principal(M: Modelo, H):
                    "era lo escrito antes de mirar.")]
 
 
+def _eras_orden(H):
+    return sorted(H["eras"], key=lambda e: e["t0"])
+
+
+def c21_mapas(M: Modelo, H):
+    """Adenda 8 §1: los mapas de zonas de todos sus clubes en fila, misma escala."""
+    J, c = M.J, H["coach"]
+    eras = _eras_orden(H)
+    if len(eras) < 2:
+        return []
+    items = []
+    for e in eras:
+        try:
+            z = zonas_de(J, e["club"], c)
+        except ZonasIlegibles as err:
+            z = {"falta": f"no pudimos leer sus acciones: {err}"}
+        it = {"club": e["club"], "principal": e["club"] == H["principal"]}
+        if z.get("m"):
+            it["m"] = z["m"]
+        else:
+            it["falta"] = z.get("falta") or "sin el parquet de este club"
+        items.append(it)
+    return [M.fig("zonas_clubes", f"Dónde vive el balón en cada club de {ape(c)}",
+                  "Porcentaje de las acciones en cada zona. Los mapas comparten la escala: el mismo "
+                  "tono significa lo mismo en todos.",
+                  {"clubes": items})]
+
+
+def c23_tarjetas(M: Modelo, H):
+    """Adenda 8 §1: cada tarjeta con una barra por club."""
+    M.need("met")
+    J, c = M.J, H["coach"]
+    eras = _eras_orden(H)
+    if len(eras) < 2:
+        return []
+    METS = [("prog_pases", "pases progresivos", "num"), ("npxg_favor", "npxG a favor", "num"),
+            ("obv_favor", "OBV a favor", "num"), ("field_tilt", "field tilt", "pp")]
+    fs = []
+    for k, t, u in METS:
+        cl = []
+        for e in eras:
+            uu = unidad_o_none(J, "met", e["club"], c)
+            d = (uu or {}).get("global", {}).get(k)
+            if not d:
+                continue
+            F = f"metricas_v1 › unidades[{e['club']}, {ape(c)}] › global › {k}"
+            M.c(f_num(d["dif"]), F + ".dif")
+            cl.append({"club": e["club"], "v": d["dif"], "ic": d["ic95"],
+                       "principal": e["club"] == H["principal"]})
+        if len(cl) >= 2:
+            fs.append({"k": k, "t": t, "u": u, "clubes": cl})
+    if not fs:
+        return []
+    return [M.fig("tarjetas_clubes", f"Con el balón, cada club de {ape(c)} contra la liga de sus torneos",
+                  "Una barra por club. La línea del centro es la liga.", fs)]
+
+
 def c22_fig(M: Modelo, H):
     """Adenda 7 §2: la figura del cuerpo son SUS clubes (ADR-61 adenda 1), no los
     cinco técnicos; y §3: la jugada de ejemplo baja al anexo."""
@@ -2358,6 +2416,53 @@ def c31(M: Modelo, H):
     return B
 
 
+def c_jugadores_zona(M: Modelo, H):
+    """ADR-63 §5 y adenda 8 §3: los mismos jugadores, con otro técnico. Nivel C."""
+    M.need("jz")
+    J, c = M.J, H["coach"]
+    clubes = {e["club"] for e in H["eras"]}
+    pares = [p for p in J["jz"]["pares"]
+             if p["club"] in clubes and (p["a"] == c or p["b"] == c) and p.get("jugadores")]
+    if not pares:
+        huecos = [p for p in J["jz"]["pares"] if p["club"] in clubes and (p["a"] == c or p["b"] == c)]
+        txt = (esc(huecos[0]["hueco"]) if huecos and huecos[0].get("hueco")
+               else "no hay ninguna pareja de técnicos con jugadores en común en sus clubes")
+        return [M.hueco(1, "Los mismos jugadores con otro técnico: " + txt + ".")]
+    par = max(pares, key=lambda p: len(p["jugadores"]))
+    otro = par["b"] if par["a"] == c else par["a"]
+    F = f"jugadores_zona_v1 › pares[{par['club']}, {ape(par['a'])}–{ape(par['b'])}]"
+    js = par["jugadores"]
+    top = js[0]
+    nulo = par.get("nulo") or {}
+    B = [
+        M.frase("C", "Aquí no comparamos equipos: comparamos a <b>los mismos jugadores</b> consigo "
+                "mismos. " + M.c(str(len(js)), F + " › n_jugadores") + " jugaron " +
+                en_(par["club"]) + " con los dos técnicos. El que más cambió de zonas fue " +
+                M.cita(top["nombre"], F + " › jugadores[0].nombre") + ": " +
+                M.c(f"{top['T'] * 100:.0f}", F + " › jugadores[0].T") + " de cada " +
+                M.c("100", "conteo") + " de sus balones."),
+        M.nota("<b>Un punto porcentual</b> es la resta de dos porcentajes. Si en una zona tocaba "
+               "uno de cada cinco balones con un técnico y uno de cada diez con el otro, la "
+               "diferencia son diez puntos porcentuales, no «el doble»."),
+        M.fig("jz_mapas", f"Con {ape(par['a'])} y con {ape(par['b'])}",
+              "Los dos mapas comparten la escala. El tercero es la resta.",
+              {"a": ape(par["a"]), "b": ape(par["b"]), "club": par["club"], "jugadores": js[:4]}),
+        M.fig("jz_rank", "Quién cambió más de zonas",
+              "De cada cien balones del jugador, cuántos cambiaron de zona.",
+              {"filas": [{"n": j["nombre"], "v": j["T"], "pos": j.get("posicion_modal")} for j in js[:8]],
+               "n_total": len(js), "p50": nulo.get("p50"), "p90": nulo.get("p90")}),
+    ]
+    if nulo.get("p50") is not None:
+        B.append(M.frase("C", "¿Es mucho? Sin cambiar de técnico, entre las dos mitades de una misma "
+                         "etapa, la mitad se mueve " + M.c(f"{nulo['p50'] * 100:.0f}", F + " › nulo.p50") +
+                         " o menos y solo uno de cada diez pasa de " +
+                         M.c(f"{nulo['p90'] * 100:.0f}", F + " › nulo.p90") + "."))
+    B.append(M.frase("C", "Esto describe dónde tocó el balón cada jugador, no por qué. Un cambio "
+                     "puede venir del técnico, del rival, de una lesión o de los fichajes; con estos "
+                     "datos no se puede separar.", adenda=8))
+    return B
+
+
 def c32(M: Modelo, H):
     """3.2 en el cuerpo: el mapa de estilos y la línea que viaja (fusión de 3.3 y 3.4)."""
     b33 = s33(M, H)
@@ -2414,9 +2519,9 @@ ANEXO_A1 = [("x-estimacion", "Cómo se estiman las probabilidades", a1_estimacio
             ("x-simular", "Por qué no simulamos partidos", a1_simular)]
 CUERPO_A2 = [
     ("a2-0", "2.0", "la historia", "Su carrera, club por club", c_carrera, []),
-    ("a2-1", "2.1", "5.1 ofensiva", "Con el balón: cuánto dura y dónde vive", (s21, dict(frases=1, figs=("fig2",)), consistencia), [s21]),
+    ("a2-1", "2.1", "5.1 ofensiva", "Con el balón: cuánto dura y dónde vive", (s21, dict(frases=1, figs=("fig2",)), c21_mapas, consistencia), [s21]),
     ("a2-2", "2.2", "5.1 ofensiva", "¿Llega a la última franja del campo sin perder el balón?", (s22, dict(frases=2, figs=()), c22_fig), [s22]),
-    ("a2-3", "2.3", "5.1 ofensiva", "Ocasiones y territorio", (s23, dict(frases=1, figs=("tarjetas",))), [s23]),
+    ("a2-3", "2.3", "5.1 ofensiva", "Ocasiones y territorio", (s23, dict(frases=1, figs=("tarjetas",)), c23_tarjetas), [s23]),
     ("a2-4", "2.4", "5.1 defensiva", "Sin el balón", (s24, dict(frases=1, figs=("concedido",))), [s24]),
     ("a2-6", "2.5", "5.2 variabilidad", "¿Cambia según el partido?", (s26, dict(frases=1, figs=("ctx4",), salta=1)), [s26]),
     ("a2-7", "2.6", "5.4", "Balón parado", (s27, dict(frases=1, figs=("fig7",))), [s27]),
@@ -2424,7 +2529,7 @@ CUERPO_A2 = [
 ]
 ANEXO_A2 = [("x-serie", "Torneo tras torneo, completo", s25)]
 CUERPO_A3 = [
-    ("a3-1", "3.1", "5.3", "El club antes y después de él", c31, [s31]),
+    ("a3-1", "3.1", "5.3", "El club antes y después de él", (c31, None, c_jugadores_zona), [s31]),
     ("a3-2", "3.2", "diferenciador", "¿Se lleva su estilo a otro club?", c32, [s33, s34]),
 ]
 ANEXO_A3 = [("x-plantel", "¿Cambió el plantel o cambió el uso?", s32)]
@@ -2450,13 +2555,18 @@ def _seccion3(M, H, sid, num, comp, tit, cuerpo, anexo, anx):
             fn, reglas, *extra = cuerpo
             est, val = _corre(M, H, fn)
             if est == "ok":
-                val = cuerpo_de(val, **reglas)
+                if reglas is not None:      # None: la función ya escribe el cuerpo (c31)
+                    val = cuerpo_de(val, **reglas)
                 for fx in extra:
                     if fx is top5_frase:   # la lista va justo después de la frase de rotación
                         i = next((k + 1 for k, b in enumerate(val) if b["tipo"] == "frase"), 0)
                         val = val[:i] + fx(M, H) + val[i:]
                     else:
-                        val = val + fx(M, H)
+                        try:
+                            val = val + fx(M, H)
+                        except FaltaInsumo as e:   # un extra sin su JSON declara su hueco
+                            val = val + [M.hueco(1, f"Falta <b>{FUENTES[e.clave][0]}</b>: "
+                                                    + esc(FUENTES[e.clave][1]) + ".")]
         else:
             est, val = _corre(M, H, cuerpo)
     except LecturaCambio as e:
@@ -3356,6 +3466,17 @@ body:not(.tecnica) .tec{display:none}
 .pc-resto{margin-top:1.3rem}
 .pc-resto-t{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
  color:var(--tx3);margin-bottom:.5rem}
+/* mapas en fila con escala compartida (adenda 8 §2) */
+.mapfila{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-start}
+.mf-uno{flex:1 1 220px;min-width:0}
+.mf-tit{font-size:.9rem;font-weight:700;color:var(--tx);margin-bottom:.35rem}
+.mf-tit span{display:block;font-family:var(--mono);font-size:.64rem;font-weight:400;color:var(--tx3)}
+.jzleg{font-size:.86rem;color:var(--tx2);margin-bottom:.7rem;display:flex;flex-wrap:wrap;
+ gap:.5rem;align-items:center}
+.jzleg b{color:var(--tx)}
+.lista .it-bar i.p90{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--tx2);
+ border-radius:1px;z-index:2}
+.lista .it-bar{position:relative}
 /* barras con intervalo (adenda 5 §6) */
 .bint{display:flex;flex-direction:column;gap:.55rem}
 .bint .br{display:grid;grid-template-columns:minmax(120px,210px) 1fr auto;gap:.7rem;align-items:center}
@@ -3439,6 +3560,10 @@ document.addEventListener("click",e=>{
  tip.style.left=(r.left+r.width/2)+"px";tip.style.top=(r.top+r.height/2)+"px";});
 
 /* ================= piezas conservadas ================= */
+const en_txt=c=>/^(el|la|los|las) /i.test(c)?"en "+c:"en el "+c;
+const POS={GK:"portero",CB:"central",LB:"lateral izquierdo",RB:"lateral derecho",DM:"contención",
+ CM:"medio",AM:"media punta",LW:"extremo izquierdo",RW:"extremo derecho",CF:"delantero",ST:"delantero"};
+const pos_txt=p=>POS[p]||String(p||"");
 const SW=(c,t,hueco)=>`<span class="leg"><i style="background:${hueco?"transparent":c};${hueco?`box-shadow:inset 0 0 0 2px ${c}`:""}"></i>${t}</span>`;
 const leyenda=(...xs)=>`<div class="leyenda">${xs.filter(Boolean).join("")}</div>`;
 const rampa=(c,lo,hi)=>`<span class="rampa">${lo}<u style="background:${c};
@@ -3486,7 +3611,7 @@ function pitch(inner,w=W_MAPA){
  return g+`</svg>`;
 }
 /* vmax compartido cuando dos mapas se comparan (15 §4.3) */
-function mapaSVG(m,c,tag,vmax){
+function mapaSVG(m,c,tag,vmax,W,sinNum){
  const plano=[];for(let ix=0;ix<NX;ix++)for(let iy=0;iy<NY;iy++)plano.push(m[ix][iy]);
  const tot=plano.reduce((a,b)=>a+b,0)||1,ent=enteros100(plano.map(v=>v/tot));
  return pitch((s)=>{
@@ -3497,13 +3622,29 @@ function mapaSVG(m,c,tag,vmax){
    g+=`<g class="celda" data-z="${ix*NY+iy}" data-tip="${tt}"><rect x="${x+2.5}" y="${y+2.5}" width="${cw*s-5}" height="${ch*s-5}" rx="8"
     fill="${c}" fill-opacity="${(.06+.8*v).toFixed(2)}" stroke="#fff"
     stroke-opacity="${(.14+.32*v).toFixed(2)}" stroke-width="1.2"/>
-    <text x="${x+cw*s/2}" y="${y+ch*s/2+4.5}" fill="${v>.55?"#0b0b0e":"#fff"}" font-size="12.5"
+${sinNum?"":`<text x="${x+cw*s/2}" y="${y+ch*s/2+4.5}" fill="${v>.55?"#0b0b0e":"#fff"}" font-size="12.5"
     font-weight="700" text-anchor="middle" pointer-events="none" font-family="var(--mono)"
-    class="pctz">${p}%</text></g>`;
+    class="pctz">${p}%</text>`}</g>`;
   }
-  return g;});
+  return g;},W);
 }
 /* mapa con signo: más (--a1) o menos (--neg) que antes, rango común vm */
+/* ===== adenda 8 §1-§2: varios mapas en fila, con ESCALA COMPARTIDA =====
+   Cada mapa se normaliza a proporciones (suma 1) y todos usan el mismo máximo,
+   así el color significa lo mismo en los tres. Normalizar cada uno por su cuenta
+   y ponerlos juntos sería una comparación falsa. */
+function mapasFila(items,tag,W){
+ const norm=m=>{const t=m.flat().reduce((a,b)=>a+b,0)||1;return m.map(col=>col.map(v=>v/t));};
+ const ns=items.map(it=>it.m?norm(it.m):null);
+ const vmax=Math.max(...ns.filter(Boolean).map(n=>Math.max(...n.flat())),1e-9);
+ const an=W||Math.max(220,Math.min(330,Math.floor(900/Math.max(items.length,1))));
+ return `<div class="mapfila" data-escala="${vmax.toFixed(6)}" data-mapas="${items.length}">${
+  items.map((it,i)=>`<div class="mf-uno" data-club="${esc(it.club)}">
+   <div class="mf-tit">${esc(it.club)}${it.principal?"<span>donde más dirigió</span>":""}</div>
+   ${ns[i]?mapaSVG(ns[i],C_FOCO,tag,vmax,an,items.length>1)
+    :`<div class="vacio">${esc(it.falta||"sin datos de este club")}</div>`}</div>`).join("")}</div>`;
+}
+
 function mapaDif(v,vm){
  return pitch((s)=>{let g="";
   for(let ix=0;ix<NX;ix++)for(let iy=0;iy<NY;iy++){
@@ -3646,6 +3787,53 @@ const FIG={
   const fs=Array.isArray(d)?d:d.filas;
   return linea(fs.map(p=>({t:p.t,v:p.v,sd:p.sd,tip:`${p.v.toFixed(2)} acciones por posesión (± ${p.sd.toFixed(2)} entre clubes)`})),v=>v.toFixed(1))+
    (Array.isArray(d)?"":leyenda(SW(C_FOCO,d.linea),`<span class="leg"><i style="background:var(--a1);opacity:.25"></i>${esc(d.banda)}</span>`));
+ },
+ zonas_clubes(d){
+  /* adenda 8 §1: un mapa por club, en fila y con la misma escala */
+  return mapasFila(d.clubes,"de las acciones del club")+
+   leyenda(rampa(C_FOCO,"pocas acciones","muchas"),
+    `<span class="leg">misma escala en todos; el porcentaje de cada casilla, al pasar el mouse</span>`);
+ },
+ tarjetas_clubes(d){
+  /* adenda 8 §1: una barra por club en cada tarjeta, con su intervalo */
+  const fmt=(v,u)=>u==="pp"?ppt(v):fmtS(v,2);
+  return `<div class="grid g2f">${d.map(t=>{
+   const todos=t.clubes.flatMap(c=>[c.v,c.ic[0],c.ic[1]]).concat([0]);
+   const mx=Math.max(...todos.map(Math.abs),1e-9)*1.15,X=v=>50+50*v/mx;
+   return `<div class="card flat"><div class="eq">${esc(t.t)}</div><div class="bint">${
+    t.clubes.map(c=>{const lo=X(c.ic[0]),hi=X(c.ic[1]);
+     return `<div class="br" data-tip="<b>${esc(c.club)} · ${esc(t.t)}</b>${esc(fmt(c.v,t.u))} contra la liga [${esc(fmt(c.ic[0],t.u))}, ${esc(fmt(c.ic[1],t.u))}]">
+      <div><div class="br-n">${esc(c.club)}${c.principal?' <span class="br-pr">donde más dirigió</span>':""}</div></div>
+      <div class="br-t"><i class="z" style="left:50%"></i><i class="ic" style="left:${Math.min(lo,hi).toFixed(1)}%;width:${Math.abs(hi-lo).toFixed(1)}%"></i><i class="vv${c.ic[0]*c.ic[1]>0?"":" abierta"}" style="left:${X(c.v).toFixed(1)}%"></i></div>
+      <div class="br-v">${esc(fmt(c.v,t.u))}</div></div>`;}).join("")}</div></div>`;}).join("")}</div>`+
+   leyenda(SW(C_FOCO,"se separa de la liga"),SW("var(--tx2)","no se separa",true),
+    `<span class="leg">la línea del centro es la liga del mismo torneo</span>`);
+ },
+ jz_mapas(d,fid){
+  /* ADR-63 §5: dos mapas del mismo jugador con la MISMA escala, y su resta */
+  const on=ESTADO[fid]??String(d.jugadores[0].player_id);
+  const j=d.jugadores.find(x=>String(x.player_id)===on)||d.jugadores[0];
+  const cua=v=>{const m=[];for(let ix=0;ix<NX;ix++){m.push([]);for(let iy=0;iy<NY;iy++)m[ix].push(v[ix*NY+iy]);}return m;};
+  const sel=d.jugadores.length>1?seg(fid,d.jugadores.map(x=>[String(x.player_id),x.nombre])):"";
+  const vm=Math.max(...j.dif.map(Math.abs),1e-9);
+  return sel+`<div class="jzleg"><b>${esc(d.a)}</b> contra <b>${esc(d.b)}</b> ${en_txt(d.club)} · `+
+   `${SW(C_FOCO,"más presencia con "+esc(d.a))}${SW(C_NEG,"más presencia con "+esc(d.b))}</div>`+
+   mapasFila([{club:d.a,m:cua(j.p_a)},{club:d.b,m:cua(j.p_b)}],"de los balones que tocó")+
+   `<div class="mf-tit" style="margin-top:.9rem">La diferencia, en un solo mapa</div>`+
+   mapaDif(j.dif,vm)+
+   leyenda(`<span class="leg">${esc(j.nombre)}${j.posicion_modal?" · "+esc(pos_txt(j.posicion_modal)):""} · ${j.toques_a} y ${j.toques_b} toques</span>`,
+    `<span class="leg">cada casilla, en puntos porcentuales: la resta de los dos porcentajes</span>`);
+ },
+ jz_rank(d){
+  const mx=Math.max(...d.filas.map(f=>f.v),d.p90||0,1e-9)*1.1;
+  const X=v=>(100*v/mx).toFixed(1);
+  return `<div class="lista">${d.filas.map(f=>`<div class="item" data-tip="<b>${esc(f.n)}</b>${(100*f.v).toFixed(0)} de cada 100 balones cambiaron de zona">
+   <div class="it-tx"><div class="it-nom">${esc(f.n)}</div>${f.pos?`<div class="it-sub">${esc(pos_txt(f.pos))}</div>`:""}</div>
+   <div class="it-bar">${d.p90!=null?`<i class="p90" style="left:${X(d.p90)}%"></i>`:""}<i style="background:var(--a1);width:${X(f.v)}%"></i></div>
+   <div class="it-val">${(100*f.v).toFixed(0)}</div></div>`).join("")}</div>`+
+   (d.n_total>d.filas.length?`<p class="nota">y ${d.n_total-d.filas.length} más, en el anexo</p>`:"")+
+   (d.p90!=null?leyenda(SW(C_FOCO,"cuánto cambió"),
+    `<span class="leg">la marca vertical: lo que se mueve el 10% que más cambia sin cambiar de técnico</span>`):"");
  },
  fig2(d){
   if(d.falta)return vacio("Falta el parquet de transiciones de esta era; el mapa se pinta al generar el informe en la máquina del proyecto.",d.falta);
