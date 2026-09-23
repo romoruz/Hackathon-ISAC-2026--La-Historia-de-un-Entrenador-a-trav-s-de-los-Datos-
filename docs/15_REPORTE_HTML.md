@@ -3,7 +3,7 @@
 > `scripts/12_reporte_html.py` produce **el entregable**: la única pieza que el
 > jurado va a ver. Leer esto ANTES de tocar el script.
 >
-> Última revisión 2026-09-22 (h2_39: ADR-59 adenda 6, los menús de la barra dejan de estar recortados, un botón por club sin «todos sus clubes», cuatro pies y el recorte al tope; h2_38: ADR-59 adenda 5, primero la historia y al final el método, barra fija con dos menús, selector de club dentro de la sección, espacio de estados explicado, simulador paso a paso, una sola línea de carrera, barras con intervalo en 2.2; h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
+> Última revisión 2026-09-22 (h2_41: ADR-59 adenda 7, los clubes lado a lado sin selector, 2.2 compara sus clubes con ADR-61 adenda 1, la jugada de ejemplo al anexo; h2_40: ADR-61 adenda 1 y ADR-63 en los scripts; h2_39: ADR-59 adenda 6, los menús de la barra dejan de estar recortados, un botón por club sin «todos sus clubes», cuatro pies y el recorte al tope; h2_38: ADR-59 adenda 5, primero la historia y al final el método, barra fija con dos menús, selector de club dentro de la sección, espacio de estados explicado, simulador paso a paso, una sola línea de carrera, barras con intervalo en 2.2; h2_37: ADR-59 adenda 4, la carrera y las tres preguntas, sub-selector de club, simulador de flujos y jugadas, figuras de contexto, relevos, estilos y marcador; h2_36: ADR-59 adenda 3, cuerpo corto en lenguaje llano, anexo completo, simulador, sin interruptor; h2_35: ADR-61 en 1.2, 1.6, 1.7, 2.1 y 2.2; h2_34: control y placebo de la adenda 1 de ADR-60 en 3.1; h2_33: ADR-60 en 3.1 a 3.4; estructura de h2_31, ADR-59 adenda 2). Sustituye a la versión
 > del 2026-08-26, que describía el tablero con simulador (retirado en h2_29).
 
 ---
@@ -40,6 +40,7 @@ reports/relevos_v1.json         T, composición contra uso, predicciones (ADR-60
 reports/estilos_v1.json         mapa de estilos y distancias (ADR-60 §5; scripts/43_mapa_estilos.py)
 reports/placebo_v1.json         placebo exploratorio de T, nivel C (ADR-60 adenda 1 §4; scripts/44_placebo_T.py)
 reports/progresion_v1.json      llegada a la franja del área, cuasi-estacionaria por era, jugada, predicciones (ADR-61; scripts/45_progresion.py)
+reports/jugadores_zona_v1.json  toques por jugador y zona, y la resta entre dos técnicos del mismo club (ADR-63; scripts/47_jugadores_zona.py) — la página lo pinta desde h2_42
 reports/simulador_v2.json       conteos 20 × 24 del juego abierto de la liga y de cada era de las cinco historias, y nombres de jugadores (adenda 4 §5-§6; scripts/46_simulador.py)
 reports/supervivencia_v1.json   diagnóstico de fase, cuasi-estacionaria de la liga, supervivencia por torneo (ADR-61; scripts/45_progresion.py)
 data/processed_api_<club>/transitions.parquet   mapa de zonas de la era principal
@@ -90,7 +91,7 @@ se borra" se cumple por construcción. Cada sección del cuerpo con anexo lleva 
 | `a1-3` | 1.3 | Por qué comparamos contra la liga del mismo torneo | `a1_deriva` | — |
 | `a2-0` | 2.0 | Su carrera, club por club | `c_carrera`: línea de tiempo por club + las tres preguntas por plantilla, nivel C (adenda 4 §2) | — |
 | `a2-1` | 2.1 | Con el balón | frase de portada, mapa de zonas, ejemplo + **una sola línea de carrera** con todos sus clubes y una raya en cada cambio (`serie_por_torneo`) | `s21` |
-| `a2-2` | 2.2 | ¿Llega a la **última franja del campo** sin perder el balón? | llegada y τ, barras con intervalo, jugada, nota de «solo el club donde más dirigió» | `s22` (con P4) |
+| `a2-2` | 2.2 | ¿Llega a la **última franja del campo** sin perder el balón? | llegada y τ del club principal + barras con intervalo de **sus clubes** (`eras_todas`, ADR-61 adenda 1), las no principales marcadas descriptivas; sin jugada | `s22` (los cinco técnicos y la jugada, completos) |
 | `a2-3` | 2.3 | Ocasiones y territorio | 2 frases, tarjetas | `s23` |
 | `a2-4` | 2.4 | Sin el balón | 2 frases, npxG concedido | `s24` (con presión) |
 | `a2-6` | 2.5 | ¿Cambia según el partido? | 1 frase, tabla | `s26` |
@@ -124,7 +125,7 @@ selector cambia la historia y repinta la página entera, anexo incluido.
   aria-label): `ADR-\d`, `q =`, `p = 0.`, `IC [`, `N80`, `τ`, `λ`, `π`, `bootstrap`,
   `Benjamini`, `BH al`, `f = 0.`, `F\d\d`, `D\d\d-\d`, `h2_\d\d`, "era principal",
   "la base", "cuasi-estacionaria". Permitidos en el anexo.
-- **Topes por historia** (humo): ≤ 2 700 palabras, ≤ 16 secciones y ≤ 18 figuras en el cuerpo (adenda 5 §9); ninguna lista se apila en una columna de más de doce.
+- **Topes por historia** (humo): ≤ 3 000 palabras, ≤ 18 secciones y ≤ 22 figuras en el cuerpo (adenda 7 §5); ninguna lista se apila en una columna de más de doce.
 
 ### Navegación (adenda 5 §3)
 
@@ -148,9 +149,18 @@ Todo control lleva `cursor:pointer` y realce al pasar el mouse y al enfocar con 
 el humo lo comprueba sobre la hoja de estilo (ahí sí basta: no hay nada que la regla pueda
 romper).
 
-### Selector de club, dentro de la sección (adenda 5 §4; sustituye al sub-selector global)
+### Los clubes, lado a lado (adenda 7 §1; sustituye a las pestañas)
 
-Las pestañas son **un botón por club**, en orden cronológico, y el del club donde más
+**No hay selector de club.** Cada sección con dato por club se pinta en dos zonas:
+arriba, una fila con la MISMA frase de cada club (`.porclub` → `.pc-col[data-club]`),
+en orden cronológico y con el club donde más dirigió marcado; debajo, a ancho
+completo, el resto de esa sección para ese club, bajo el rótulo "lo que sigue es de
+&lt;club&gt;". Repetir figuras y ejemplos por columna triplicaba la página (3 600
+palabras y 27 figuras con tres clubes) y dejaba columnas vacías al lado de una
+larga; por eso las columnas llevan solo la frase. El humo comprueba que no queda
+ningún `[data-selclub]` y que hay una columna por club.
+
+**Texto histórico (adenda 6 §2, ya sustituida).** Las pestañas eran **un botón por club**, en orden cronológico, y el del club donde más
 dirigió lo dice («Puebla · donde más dirigió»). **No hay opción «todos sus clubes»**
 (adenda 6 §2): no existe un agregado de varias eras y no puede existir, porque cada era se
 compara contra la liga de sus mismos torneos (ADR-53). Un test comprueba que la cadena

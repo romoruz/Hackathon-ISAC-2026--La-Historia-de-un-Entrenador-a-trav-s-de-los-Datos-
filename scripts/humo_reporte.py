@@ -432,7 +432,19 @@ def prog():
               "puntos": [{"hid": e["hid"], "D_L": e["L"]["D"], "rel_E_T": .05 * k} for k, e in enumerate(eras)]}]
     return {"adr": "ADR-61", "reglas_preinscritas": {"D61-1": "franja ix 4"},
             "parametros": {"franja_ix": 4, "franja": "franja del área: ix = 4, de 96 a 120", "n_boot": 4000},
-            "eras": eras, "familia": {"m": 9, "n_rechazados": 1}, "predicciones": preds}
+            "eras": eras, "familia": {"m": 9, "n_rechazados": 1}, "predicciones": preds,
+            # ADR-61 adenda 1: las no principales, descriptivas (sin p ni q) y con un hueco
+            "eras_todas": [{**e, "principal": True, "exploratoria": False} for e in eras] + [
+                {**{k: v for k, v in eras[i].items() if k not in ("jugada",)},
+                 "club": otro, "principal": False, "exploratoria": True,
+                 **({"hueco": "solo 120 posesiones; el mínimo preinscrito es 200",
+                     "L": {**eras[i]["L"], "evaluable": False},
+                     "tau": {**eras[i]["tau"], "evaluable": False}} if otro == "Tijuana" else
+                    {"L": {k: v for k, v in eras[i]["L"].items() if k not in ("p", "q", "rechaza")},
+                     "tau": {k: v for k, v in eras[i]["tau"].items() if k not in ("p", "q", "rechaza")}})}
+                for i, (hid, coach) in enumerate(HIST)
+                for otro in [c for c, co in ERAS if co == coach and c != _principal(coach)[0]]],
+            "adenda1": {"min_poss": 200, "n_descriptivas": 7}}
 
 
 def sup():

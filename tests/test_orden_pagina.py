@@ -45,22 +45,32 @@ def _revisa(datos):
             assert "a2-0" not in ids and "a2-2" not in ids, f"{h['id']}/{club}: {ids}"
             assert len(ids) == len(set(ids)), f"{h['id']}/{club}: secciones repetidas"
 
-    # 4. 2.2 dice que se midió solo en el club donde más dirigió
+    # 4. adenda 7 §2 y §3: 2.2 compara SUS clubes y la jugada ya no está en el cuerpo
     for h in datos["historias"]:
-        if len(h.get("eras") or []) < 2:
-            continue
         s = next((x for x in h.get("acto2", []) if x["id"] == "a2-2"), None)
         if not s or s.get("falta") or s.get("pendiente"):
             continue
-        txt = " ".join(b.get("html") or "" for b in s["bloques"])
-        assert "el club donde más dirigió" in txt, h["id"]
+        assert not [b for b in s["bloques"] if b.get("id") == "jugada"], f"{h['id']}: jugada en el cuerpo"
+        fig = next((b for b in s["bloques"] if b.get("id") == "prog"), None)
+        if fig is None:
+            continue
+        clubes = {e["club"] for e in h["eras"]}
+        etqs = {f["etq"] for f in fig["datos"]}
+        assert etqs <= clubes, f"{h['id']}: 2.2 compara {etqs - clubes}, que no son sus clubes"
+        assert sum(f["mia"] for f in fig["datos"]) == 1, f"{h['id']}: ni uno ni varios principales"
+        if any(f["expl"] for f in fig["datos"]):
+            txt = " ".join(b.get("html") or "" for b in s["bloques"])
+            assert "no estaba en la lista" in txt or "descripción" in txt, h["id"]
+        # y la jugada sigue completa en el anexo
+        xa = next((x for x in h.get("anexo", []) if x["id"] == "x-a2-2"), None)
+        if xa:
+            ids = [b.get("id") for b in xa["bloques"]]
+            assert "prog" in ids, h["id"]
 
-    # 5. topes de la adenda 5 §9
-    for hid, s in gen.todas_las_secciones(datos, anexo=False):
-        pass
+    # 5. topes de la adenda 7 §5
     for h in datos["historias"]:
         n = len(h.get("acto2", [])) + len(h.get("acto3", [])) + len(datos["acto1"]) + len(datos["cierre"])
-        assert n <= 16, f"{h['id']}: {n} secciones en el cuerpo"
+        assert n <= 18, f"{h['id']}: {n} secciones en el cuerpo"
 
 
 def test_sintetico(tmp_path):

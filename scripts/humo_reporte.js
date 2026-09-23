@@ -24,7 +24,7 @@ const verClub = (sid, club) => click(document.querySelector(`[data-selclub="${si
 const selDe = sid => [...document.querySelectorAll(`[data-selclub="${sid}"] button`)].map(b => b.dataset.k);
 
 /* topes y jerga de la adenda 3 (§5 y §7) */
-const TOPE = { palabras: 2700, secciones: 16, figuras: 18 };  /* adenda 5 §9 */
+const TOPE = { palabras: 3000, secciones: 18, figuras: 22 };  /* adenda 7 §5 */
 const JERGA = [/ADR-\d/, /\bq =/, /\bp = 0\.\d/, /IC \[/, /N80/, /τ/, /λ/, /π/, /bootstrap/i, /Benjamini/, /BH al/,
   /\bf = 0\.\d/, /\bF\d\d\b/, /D\d\d-\d/, /h2_\d\d/, /\bera principal\b/i, /\bla base\b/i, /cuasi-estacionaria/i];
 function jergaCuerpo() {
@@ -194,10 +194,18 @@ D.historias.forEach(h => {
     ok(/Torneo a torneo/.test($("a2-1").textContent) && document.querySelector('#a2-1 [data-fig="serie"] svg'), `${h.id}: 2.1 dice que se sostiene torneo a torneo`);
   if (PROG) {
     ok(/última franja del campo/.test($("a2-2").textContent), `${h.id}: 2.2 habla de llegar a la última franja del campo`);
-    const b22 = (hj.acto2.find(x => x.id === "a2-2").bloques || []);
-    const conJug = b22.some(b => b.tipo === "fig" && b.id === "jugada");
-    ok(conJug ? !!document.querySelector('#a2-2 [data-fig="jugada"] circle') : b22.some(b => b.tipo === "hueco"),
-      `${h.id}: jugada de ejemplo ${conJug ? "dibujada" : "declarada"}`);
+    /* adenda 7 §3: la jugada de ejemplo YA NO está en el cuerpo; vive en el anexo */
+    ok(!document.querySelector('#a2-2 [data-fig="jugada"]'), `${h.id}: la jugada no está en el cuerpo`);
+    ok(!!$("anexo").querySelector('#x-a2-2 [data-fig="jugada"]') || !!$("anexo").querySelector('#x-a2-2 .hueco'),
+      `${h.id}: la jugada, o su hueco, sigue completa en el anexo`);
+    /* adenda 7 §2: la figura del cuerpo son SUS clubes, no los cinco técnicos */
+    const brs = [...document.querySelectorAll('#a2-2 [data-fig="prog"] .bint .br .br-n')].map(e => e.textContent);
+    const susClubes = h.eras.map(e => e.club);
+    ok(brs.length > 0 && brs.every(t => susClubes.some(c => t.includes(c))),
+      `${h.id}: 2.2 compara sus clubes (${brs.join(" | ")})`);
+    ok(brs.some(t => /donde más dirigió/.test(t)), `${h.id}: 2.2 marca el club donde más dirigió`);
+    ok([...$("anexo").querySelectorAll('#x-a2-2 [data-fig="prog"] .br-n')].length >= 5,
+      `${h.id}: la comparación de los cinco técnicos sigue en el anexo`);
   } else {
     ok(/progresion_v1\.json/.test($("a2-2").textContent) && document.querySelector("#a2-2 code"), `${h.id}: 2.2 sin insumo: muestra el comando`);
   }
@@ -226,28 +234,21 @@ D.historias.forEach(h => {
     `${h.id}: «qué hicimos» vive solo en la portada`);
   const eras = document.querySelectorAll("#eras .chip").length;
   ok(eras === h.eras.length && eras >= 2, `${h.id}: ${eras} clubes en la cabecera`);
-  /* adenda 5 §4: el selector de club vive dentro de la sección */
+  /* adenda 7 §1: los clubes lado a lado, sin ningún selector */
   const otro = h.eras.find(e => e.club !== h.principal);
-  const conSel = [...$("informe").querySelectorAll("[data-selclub]")].map(e => e.dataset.selclub);
+  ok(!$("informe").querySelector("[data-selclub]"), `${h.id}: no queda ningún selector de club en el cuerpo`);
   if (otro) {
-    ok(conSel.length >= 1 && conSel.every(sid => $(sid) && $(sid).contains(document.querySelector(`[data-selclub="${sid}"]`))),
-      `${h.id}: cada selector de club está dentro de su sección (${conSel.length})`);
-    ok(!conSel.includes("a2-0") && !conSel.includes("a2-2"),
-      `${h.id}: la carrera y llegar a la última franja no llevan selector`);
-    const sid = conSel[0];
-    /* adenda 6 §2: un botón por club, ninguno promete un agregado */
-    ok(selDe(sid).includes("") && selDe(sid).includes(otro.club) && selDe(sid).length === h.eras.length,
-      `${h.id}: el selector de ${sid} trae un botón por club (${selDe(sid).length} de ${h.eras.length})`);
-    const pr = document.querySelector(`[data-selclub="${sid}"] button[data-k=""]`);
-    ok(/donde más dirigió/.test(pr.textContent) && pr.textContent.includes(h.principal),
-      `${h.id}: el botón por defecto nombra el club donde más dirigió`);
-    ok(!document.querySelector(`[data-selclub="${sid}"]`).textContent.includes("todos"),
-      `${h.id}: el selector no ofrece «todos»`);
-    verClub(sid, otro.club);
-    ok($(sid).textContent.includes(otro.club), `${h.id}: al elegir ${otro.club} en ${sid}, la sección habla de ese club`);
-    ok(document.querySelectorAll("#portada a").length === port.length, `${h.id}: la portada no cambia con el club`);
-    ok(!!$("a2-0") && !!$("a3-1"), `${h.id}: la carrera y el bloque de relevos siguen a la vista`);
-    verClub(sid, "");
+    const secs2 = [...$("informe").querySelectorAll("[data-porclub]")];
+    ok(secs2.length >= 3, `${h.id}: hay secciones con los clubes lado a lado (${secs2.length})`);
+    secs2.forEach(sec => {
+      const cols = [...sec.querySelectorAll(".pc-col")].map(c => c.dataset.club);
+      ok(cols.length === +sec.dataset.porclub && cols.every(c => h.eras.some(e => e.club === c)),
+        `${h.id}/${sec.id}: una columna por club (${cols.join(" | ")})`);
+      ok(/donde más dirigió/.test(sec.querySelector(".porclub").textContent),
+        `${h.id}/${sec.id}: se dice cuál es el club donde más dirigió`);
+    });
+    const alguna = secs2.find(x => x.id === "a2-1") || secs2[0];
+    ok(alguna.textContent.includes(otro.club), `${h.id}: ${otro.club} aparece sin tocar nada`);
   }
   const b24 = (hj.acto2.find(x => x.id === "a2-4").bloques || []);
   if (b24.some(b => b.tipo === "hueco" && /seis clubes/.test(b.html)))
