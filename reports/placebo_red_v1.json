@@ -1,0 +1,1221 @@
+{
+ "adr": "ADR-62 adenda 1",
+ "nivel": "B",
+ "en_f62": false,
+ "parametros": {
+  "m_min": 5,
+  "min_pases_bloque": 30,
+  "min_comunes": 8,
+  "m": "min(k_a//2, k_b//2), igual en el relevo y en los placebos (adenda 1b)",
+  "criterio": "H62-1 aguanta si T_relevo > p90(placebos) en > 50% de los relevos"
+ },
+ "placebos": {
+  "n": 84,
+  "p50": 0.38427002271773,
+  "p90": 0.4832018555466409,
+  "valores": [
+   0.268432,
+   0.272087,
+   0.272087,
+   0.276047,
+   0.283856,
+   0.288106,
+   0.288106,
+   0.297455,
+   0.297455,
+   0.30587,
+   0.306858,
+   0.308485,
+   0.314633,
+   0.314633,
+   0.318466,
+   0.318466,
+   0.318476,
+   0.320454,
+   0.321426,
+   0.323563,
+   0.326071,
+   0.327174,
+   0.337503,
+   0.341853,
+   0.343727,
+   0.343727,
+   0.347252,
+   0.349975,
+   0.350667,
+   0.350976,
+   0.354259,
+   0.360454,
+   0.361686,
+   0.361686,
+   0.364686,
+   0.365048,
+   0.371732,
+   0.372737,
+   0.372737,
+   0.374549,
+   0.381749,
+   0.383798,
+   0.384742,
+   0.384742,
+   0.384985,
+   0.38585,
+   0.388763,
+   0.399926,
+   0.402873,
+   0.402873,
+   0.402873,
+   0.404863,
+   0.405419,
+   0.415753,
+   0.416271,
+   0.417434,
+   0.418754,
+   0.427305,
+   0.427305,
+   0.427796,
+   0.430144,
+   0.430144,
+   0.433968,
+   0.440929,
+   0.445518,
+   0.449174,
+   0.45273,
+   0.455063,
+   0.455259,
+   0.457031,
+   0.457032,
+   0.458156,
+   0.463605,
+   0.463605,
+   0.478797,
+   0.48509,
+   0.48509,
+   0.489275,
+   0.491224,
+   0.495027,
+   0.50443,
+   0.504699,
+   0.508897,
+   0.51522
+  ]
+ },
+ "relevos": [
+  {
+   "club": "América",
+   "a": "Andre Jardine",
+   "b": "Fernando Ortiz",
+   "n_partidos_a": 100,
+   "n_partidos_b": 43,
+   "m": 21,
+   "T_red_eras_completas": 0.4539009261190615,
+   "T_relevo": null,
+   "n_comunes_relevo": 5,
+   "placebos": [
+    {
+     "coach": "Andre Jardine",
+     "m": 21,
+     "T": 0.5088970593858572,
+     "n_comunes": 12
+    },
+    {
+     "coach": "Fernando Ortiz",
+     "m": 21,
+     "T": 0.3472516591229442,
+     "n_comunes": 18
+    }
+   ]
+  },
+  {
+   "club": "América",
+   "a": "Andre Jardine",
+   "b": "Santiago Solari",
+   "n_partidos_a": 100,
+   "n_partidos_b": 25,
+   "m": 12,
+   "T_red_eras_completas": 0.5683352138269023,
+   "T_relevo": null,
+   "n_comunes_relevo": 2,
+   "placebos": [
+    {
+     "coach": "Andre Jardine",
+     "m": 12,
+     "T": 0.3235630504352971,
+     "n_comunes": 9
+    },
+    {
+     "coach": "Santiago Solari",
+     "m": 12,
+     "T": 0.48508961721076366,
+     "n_comunes": 20
+    }
+   ]
+  },
+  {
+   "club": "América",
+   "a": "Fernando Ortiz",
+   "b": "Santiago Solari",
+   "n_partidos_a": 43,
+   "n_partidos_b": 25,
+   "m": 12,
+   "T_red_eras_completas": 0.4692571306263238,
+   "T_relevo": 0.43462464288655356,
+   "n_comunes_relevo": 12,
+   "placebos": [
+    {
+     "coach": "Fernando Ortiz",
+     "m": 12,
+     "T": 0.4552592590695263,
+     "n_comunes": 16
+    },
+    {
+     "coach": "Santiago Solari",
+     "m": 12,
+     "T": 0.48508961721076366,
+     "n_comunes": 20
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Atlas",
+   "a": "Benat San Jose",
+   "b": "Benjamin Mora",
+   "n_partidos_a": 34,
+   "n_partidos_b": 31,
+   "m": 15,
+   "T_red_eras_completas": 0.41700886688336053,
+   "T_relevo": 0.33341493127803734,
+   "n_comunes_relevo": 8,
+   "placebos": [
+    {
+     "coach": "Benat San Jose",
+     "m": 15,
+     "T": 0.36168646808069094,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Benjamin Mora",
+     "m": 15,
+     "T": 0.43014364287656215,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Atlas",
+   "a": "Benat San Jose",
+   "b": "Diego Cocca I",
+   "n_partidos_a": 34,
+   "n_partidos_b": 51,
+   "m": 17,
+   "T_red_eras_completas": 0.26783625730994154,
+   "T_relevo": null,
+   "n_comunes_relevo": 7,
+   "placebos": [
+    {
+     "coach": "Benat San Jose",
+     "m": 17,
+     "T": 0.3717317446873305,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Diego Cocca I",
+     "m": 17,
+     "T": 0.38174897252041773,
+     "n_comunes": 14
+    }
+   ]
+  },
+  {
+   "club": "Atlas",
+   "a": "Benat San Jose",
+   "b": "Diego Cocca II",
+   "n_partidos_a": 34,
+   "n_partidos_b": 30,
+   "m": 15,
+   "T_red_eras_completas": 0.4622455512575416,
+   "T_relevo": 0.602005300545436,
+   "n_comunes_relevo": 12,
+   "placebos": [
+    {
+     "coach": "Benat San Jose",
+     "m": 15,
+     "T": 0.36168646808069094,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Diego Cocca II",
+     "m": 15,
+     "T": 0.5046992999659319,
+     "n_comunes": 16
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Atlas",
+   "a": "Benjamin Mora",
+   "b": "Diego Cocca I",
+   "n_partidos_a": 31,
+   "n_partidos_b": 51,
+   "m": 15,
+   "T_red_eras_completas": 0.28208790938954953,
+   "T_relevo": 0.505117021017427,
+   "n_comunes_relevo": 13,
+   "placebos": [
+    {
+     "coach": "Benjamin Mora",
+     "m": 15,
+     "T": 0.43014364287656215,
+     "n_comunes": 17
+    },
+    {
+     "coach": "Diego Cocca I",
+     "m": 15,
+     "T": 0.4054189258470956,
+     "n_comunes": 14
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Andre Jardine",
+   "b": "Domenec Torrent",
+   "n_partidos_a": 48,
+   "n_partidos_b": 34,
+   "m": 17,
+   "T_red_eras_completas": 0.5126116411220388,
+   "T_relevo": 0.4554488186913929,
+   "n_comunes_relevo": 9,
+   "placebos": [
+    {
+     "coach": "Andre Jardine",
+     "m": 17,
+     "T": 0.46360493609454845,
+     "n_comunes": 10
+    },
+    {
+     "coach": "Domenec Torrent",
+     "m": 17,
+     "T": 0.28810638106381065,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Andre Jardine",
+   "b": "Gustavo Leal",
+   "n_partidos_a": 48,
+   "n_partidos_b": 34,
+   "m": 17,
+   "T_red_eras_completas": 0.2869757595147818,
+   "T_relevo": 0.27555056143572887,
+   "n_comunes_relevo": 15,
+   "placebos": [
+    {
+     "coach": "Andre Jardine",
+     "m": 17,
+     "T": 0.46360493609454845,
+     "n_comunes": 10
+    },
+    {
+     "coach": "Gustavo Leal",
+     "m": 17,
+     "T": 0.34372674545530413,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Domenec Torrent",
+   "b": "Guillermo Abascal",
+   "n_partidos_a": 34,
+   "n_partidos_b": 29,
+   "m": 14,
+   "T_red_eras_completas": 0.40887086798069183,
+   "T_relevo": 0.4034881390812526,
+   "n_comunes_relevo": 14,
+   "placebos": [
+    {
+     "coach": "Domenec Torrent",
+     "m": 14,
+     "T": 0.30587006180758863,
+     "n_comunes": 16
+    },
+    {
+     "coach": "Guillermo Abascal",
+     "m": 14,
+     "T": 0.3146327779304515,
+     "n_comunes": 14
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Domenec Torrent",
+   "b": "Gustavo Leal",
+   "n_partidos_a": 34,
+   "n_partidos_b": 34,
+   "m": 17,
+   "T_red_eras_completas": 0.4791435089968657,
+   "T_relevo": 0.48702202519195537,
+   "n_comunes_relevo": 10,
+   "placebos": [
+    {
+     "coach": "Domenec Torrent",
+     "m": 17,
+     "T": 0.28810638106381065,
+     "n_comunes": 17
+    },
+    {
+     "coach": "Gustavo Leal",
+     "m": 17,
+     "T": 0.34372674545530413,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Atlético San Luis",
+   "a": "Guillermo Abascal",
+   "b": "Gustavo Leal",
+   "n_partidos_a": 29,
+   "n_partidos_b": 34,
+   "m": 14,
+   "T_red_eras_completas": 0.5475115675654345,
+   "T_relevo": null,
+   "n_comunes_relevo": 6,
+   "placebos": [
+    {
+     "coach": "Guillermo Abascal",
+     "m": 14,
+     "T": 0.3146327779304515,
+     "n_comunes": 14
+    },
+    {
+     "coach": "Gustavo Leal",
+     "m": 14,
+     "T": 0.3542594706522605,
+     "n_comunes": 17
+    }
+   ]
+  },
+  {
+   "club": "Cruz Azul",
+   "a": "Martin Anselmi",
+   "b": "Nicolas Larcamon",
+   "n_partidos_a": 37,
+   "n_partidos_b": 33,
+   "m": 16,
+   "T_red_eras_completas": 0.30043880244462945,
+   "T_relevo": 0.29641744716788265,
+   "n_comunes_relevo": 15,
+   "placebos": [
+    {
+     "coach": "Martin Anselmi",
+     "m": 16,
+     "T": 0.276046715342554,
+     "n_comunes": 16
+    },
+    {
+     "coach": "Nicolas Larcamon",
+     "m": 16,
+     "T": 0.34997473951254476,
+     "n_comunes": 16
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Guadalajara",
+   "a": "Fernando Gago",
+   "b": "Gabriel Milito",
+   "n_partidos_a": 28,
+   "n_partidos_b": 34,
+   "m": 14,
+   "T_red_eras_completas": 0.5609574963403002,
+   "T_relevo": 0.442313628646396,
+   "n_comunes_relevo": 11,
+   "placebos": [
+    {
+     "coach": "Fernando Gago",
+     "m": 14,
+     "T": 0.31846618584370323,
+     "n_comunes": 20
+    },
+    {
+     "coach": "Gabriel Milito",
+     "m": 14,
+     "T": 0.3604542191338754,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Guadalajara",
+   "a": "Fernando Gago",
+   "b": "Veljko Paunovic",
+   "n_partidos_a": 28,
+   "n_partidos_b": 34,
+   "m": 14,
+   "T_red_eras_completas": 0.3603173487703394,
+   "T_relevo": 0.3016652861004947,
+   "n_comunes_relevo": 12,
+   "placebos": [
+    {
+     "coach": "Fernando Gago",
+     "m": 14,
+     "T": 0.31846618584370323,
+     "n_comunes": 20
+    },
+    {
+     "coach": "Veljko Paunovic",
+     "m": 14,
+     "T": 0.3214257180749679,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Juárez",
+   "a": "Hernan Cristante",
+   "b": "Ricardo Ferretti",
+   "n_partidos_a": 31,
+   "n_partidos_b": 34,
+   "m": 15,
+   "T_red_eras_completas": 0.4713341428161648,
+   "T_relevo": null,
+   "n_comunes_relevo": 4,
+   "placebos": [
+    {
+     "coach": "Hernan Cristante",
+     "m": 15,
+     "T": 0.32717392262370765,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Ricardo Ferretti",
+     "m": 15,
+     "T": 0.45703106417392136,
+     "n_comunes": 16
+    }
+   ]
+  },
+  {
+   "club": "Juárez",
+   "a": "Martin Varini",
+   "b": "Mauricio Barbieri",
+   "n_partidos_a": 34,
+   "n_partidos_b": 26,
+   "m": 13,
+   "T_red_eras_completas": 0.5334491727381909,
+   "T_relevo": null,
+   "n_comunes_relevo": 6,
+   "placebos": [
+    {
+     "coach": "Martin Varini",
+     "m": 13,
+     "T": 0.3068575458958305,
+     "n_comunes": 13
+    },
+    {
+     "coach": "Mauricio Barbieri",
+     "m": 13,
+     "T": 0.4339676929670114,
+     "n_comunes": 17
+    }
+   ]
+  },
+  {
+   "club": "León",
+   "a": "Ariel Holan",
+   "b": "Nicolas Larcamon",
+   "n_partidos_a": 32,
+   "n_partidos_b": 34,
+   "m": 16,
+   "T_red_eras_completas": 0.30413468317216646,
+   "T_relevo": 0.42102214266131244,
+   "n_comunes_relevo": 10,
+   "placebos": [
+    {
+     "coach": "Ariel Holan",
+     "m": 16,
+     "T": 0.30848532856377364,
+     "n_comunes": 18
+    },
+    {
+     "coach": "Nicolas Larcamon",
+     "m": 16,
+     "T": 0.374548835453818,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Benat San Jose",
+   "b": "Gabriel Caballero",
+   "n_partidos_a": 26,
+   "n_partidos_b": 28,
+   "m": 13,
+   "T_red_eras_completas": 0.4688327351291647,
+   "T_relevo": 0.37568122152655214,
+   "n_comunes_relevo": 19,
+   "placebos": [
+    {
+     "coach": "Benat San Jose",
+     "m": 13,
+     "T": 0.3506674652870809,
+     "n_comunes": 18
+    },
+    {
+     "coach": "Gabriel Caballero",
+     "m": 13,
+     "T": 0.3887629609508912,
+     "n_comunes": 20
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Gabriel Caballero",
+   "b": "Ismael Rescalvo",
+   "n_partidos_a": 28,
+   "n_partidos_b": 31,
+   "m": 14,
+   "T_red_eras_completas": 0.4906249969151433,
+   "T_relevo": 0.4390400947400239,
+   "n_comunes_relevo": 13,
+   "placebos": [
+    {
+     "coach": "Gabriel Caballero",
+     "m": 14,
+     "T": 0.38584990965092525,
+     "n_comunes": 21
+    },
+    {
+     "coach": "Ismael Rescalvo",
+     "m": 14,
+     "T": 0.4048632724063025,
+     "n_comunes": 18
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Mazatlán",
+   "a": "Ismael Rescalvo",
+   "b": "Victor Manuel Vucetich",
+   "n_partidos_a": 31,
+   "n_partidos_b": 34,
+   "m": 15,
+   "T_red_eras_completas": 0.4872442122829728,
+   "T_relevo": 0.567171872492221,
+   "n_comunes_relevo": 15,
+   "placebos": [
+    {
+     "coach": "Ismael Rescalvo",
+     "m": 15,
+     "T": 0.36504818122845417,
+     "n_comunes": 18
+    },
+    {
+     "coach": "Victor Manuel Vucetich",
+     "m": 15,
+     "T": 0.5152204853430886,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Monterrey",
+   "a": "Domenec Torrent",
+   "b": "Fernando Ortiz",
+   "n_partidos_a": 25,
+   "n_partidos_b": 38,
+   "m": 12,
+   "T_red_eras_completas": 0.37328359923689464,
+   "T_relevo": null,
+   "n_comunes_relevo": 6,
+   "placebos": [
+    {
+     "coach": "Domenec Torrent",
+     "m": 12,
+     "T": 0.2974546887312845,
+     "n_comunes": 17
+    },
+    {
+     "coach": "Fernando Ortiz",
+     "m": 12,
+     "T": 0.41627066536601853,
+     "n_comunes": 18
+    }
+   ]
+  },
+  {
+   "club": "Monterrey",
+   "a": "Domenec Torrent",
+   "b": "Martin Demichelis",
+   "n_partidos_a": 25,
+   "n_partidos_b": 29,
+   "m": 12,
+   "T_red_eras_completas": 0.3252537305604364,
+   "T_relevo": 0.2825509359395444,
+   "n_comunes_relevo": 14,
+   "placebos": [
+    {
+     "coach": "Domenec Torrent",
+     "m": 12,
+     "T": 0.2974546887312845,
+     "n_comunes": 17
+    },
+    {
+     "coach": "Martin Demichelis",
+     "m": 12,
+     "T": 0.35097552893449946,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Monterrey",
+   "a": "Fernando Ortiz",
+   "b": "Martin Demichelis",
+   "n_partidos_a": 38,
+   "n_partidos_b": 29,
+   "m": 14,
+   "T_red_eras_completas": 0.4318958323220853,
+   "T_relevo": 0.3842189227959094,
+   "n_comunes_relevo": 18,
+   "placebos": [
+    {
+     "coach": "Fernando Ortiz",
+     "m": 14,
+     "T": 0.3837976235518822,
+     "n_comunes": 18
+    },
+    {
+     "coach": "Martin Demichelis",
+     "m": 14,
+     "T": 0.4273053833997731,
+     "n_comunes": 20
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Monterrey",
+   "a": "Fernando Ortiz",
+   "b": "Victor Manuel Vucetich",
+   "n_partidos_a": 38,
+   "n_partidos_b": 45,
+   "m": 19,
+   "T_red_eras_completas": 0.41229891105721683,
+   "T_relevo": 0.465832152732906,
+   "n_comunes_relevo": 13,
+   "placebos": [
+    {
+     "coach": "Fernando Ortiz",
+     "m": 19,
+     "T": 0.4491741791990185,
+     "n_comunes": 21
+    },
+    {
+     "coach": "Victor Manuel Vucetich",
+     "m": 19,
+     "T": 0.41743444619927483,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Monterrey",
+   "a": "Martin Demichelis",
+   "b": "Victor Manuel Vucetich",
+   "n_partidos_a": 29,
+   "n_partidos_b": 45,
+   "m": 14,
+   "T_red_eras_completas": 0.40647439491748255,
+   "T_relevo": null,
+   "n_comunes_relevo": 6,
+   "placebos": [
+    {
+     "coach": "Martin Demichelis",
+     "m": 14,
+     "T": 0.4273053833997731,
+     "n_comunes": 20
+    },
+    {
+     "coach": "Victor Manuel Vucetich",
+     "m": 14,
+     "T": 0.320453830394327,
+     "n_comunes": 12
+    }
+   ]
+  },
+  {
+   "club": "Necaxa",
+   "a": "Eduardo Fentanes",
+   "b": "Jaime Lozano",
+   "n_partidos_a": 41,
+   "n_partidos_b": 30,
+   "m": 15,
+   "T_red_eras_completas": 0.4618676861576941,
+   "T_relevo": null,
+   "n_comunes_relevo": 4,
+   "placebos": [
+    {
+     "coach": "Eduardo Fentanes",
+     "m": 15,
+     "T": 0.4912242877107723,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Jaime Lozano",
+     "m": 15,
+     "T": 0.45703155008732144,
+     "n_comunes": 14
+    }
+   ]
+  },
+  {
+   "club": "Pumas UNAM",
+   "a": "Andres Lillini",
+   "b": "Gustavo Lema",
+   "n_partidos_a": 51,
+   "n_partidos_b": 43,
+   "m": 21,
+   "T_red_eras_completas": 0.4753652779968569,
+   "T_relevo": 0.42310735431035784,
+   "n_comunes_relevo": 11,
+   "placebos": [
+    {
+     "coach": "Andres Lillini",
+     "m": 21,
+     "T": 0.4892746715929427,
+     "n_comunes": 19
+    },
+    {
+     "coach": "Gustavo Lema",
+     "m": 21,
+     "T": 0.4550631210849673,
+     "n_comunes": 18
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Pumas UNAM",
+   "a": "Efrain Valdez",
+   "b": "Gustavo Lema",
+   "n_partidos_a": 41,
+   "n_partidos_b": 43,
+   "m": 20,
+   "T_red_eras_completas": 0.5189854013749231,
+   "T_relevo": 0.5729612650049885,
+   "n_comunes_relevo": 10,
+   "placebos": [
+    {
+     "coach": "Efrain Valdez",
+     "m": 20,
+     "T": 0.4277955964784546,
+     "n_comunes": 16
+    },
+    {
+     "coach": "Gustavo Lema",
+     "m": 20,
+     "T": 0.3849851976107582,
+     "n_comunes": 17
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Querétaro",
+   "a": "Benjamin Mora",
+   "b": "Mauro Gerk",
+   "n_partidos_a": 34,
+   "n_partidos_b": 85,
+   "m": 17,
+   "T_red_eras_completas": 0.4256228396483991,
+   "T_relevo": null,
+   "n_comunes_relevo": 3,
+   "placebos": [
+    {
+     "coach": "Benjamin Mora",
+     "m": 17,
+     "T": 0.39992630223536085,
+     "n_comunes": 16
+    },
+    {
+     "coach": "Mauro Gerk",
+     "m": 17,
+     "T": null,
+     "n_comunes": 3,
+     "hueco": "solo 3 jugadores comunes"
+    }
+   ]
+  },
+  {
+   "club": "Santos Laguna",
+   "a": "Eduardo Fentanes",
+   "b": "Ignacio Ambriz",
+   "n_partidos_a": 41,
+   "n_partidos_b": 28,
+   "m": 14,
+   "T_red_eras_completas": 0.5897946567251592,
+   "T_relevo": 0.5553580062072085,
+   "n_comunes_relevo": 11,
+   "placebos": [
+    {
+     "coach": "Eduardo Fentanes",
+     "m": 14,
+     "T": 0.3418525253099222,
+     "n_comunes": 11
+    },
+    {
+     "coach": "Ignacio Ambriz",
+     "m": 14,
+     "T": 0.4950274251210256,
+     "n_comunes": 18
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Guido Pizarro",
+   "b": "Miguel Herrera",
+   "n_partidos_a": 40,
+   "n_partidos_b": 51,
+   "m": 20,
+   "T_red_eras_completas": 0.5701972805466041,
+   "T_relevo": null,
+   "n_comunes_relevo": 7,
+   "placebos": [
+    {
+     "coach": "Guido Pizarro",
+     "m": 20,
+     "T": 0.4409290125068686,
+     "n_comunes": 23
+    },
+    {
+     "coach": "Miguel Herrera",
+     "m": 20,
+     "T": 0.4527304414882339,
+     "n_comunes": 19
+    }
+   ]
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Guido Pizarro",
+   "b": "Robert Siboldi",
+   "n_partidos_a": 40,
+   "n_partidos_b": 36,
+   "m": 18,
+   "T_red_eras_completas": 0.4713347101468881,
+   "T_relevo": 0.6371357717465502,
+   "n_comunes_relevo": 12,
+   "placebos": [
+    {
+     "coach": "Guido Pizarro",
+     "m": 18,
+     "T": 0.4581562093381416,
+     "n_comunes": 22
+    },
+    {
+     "coach": "Robert Siboldi",
+     "m": 18,
+     "T": 0.27208699875482045,
+     "n_comunes": 19
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Guido Pizarro",
+   "b": "Veljko Paunovic",
+   "n_partidos_a": 40,
+   "n_partidos_b": 27,
+   "m": 13,
+   "T_red_eras_completas": 0.43481671166532143,
+   "T_relevo": 0.4851125064560873,
+   "n_comunes_relevo": 13,
+   "placebos": [
+    {
+     "coach": "Guido Pizarro",
+     "m": 13,
+     "T": 0.4787970783303545,
+     "n_comunes": 17
+    },
+    {
+     "coach": "Veljko Paunovic",
+     "m": 13,
+     "T": 0.4028730527797002,
+     "n_comunes": 19
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Miguel Herrera",
+   "b": "Robert Siboldi",
+   "n_partidos_a": 51,
+   "n_partidos_b": 36,
+   "m": 18,
+   "T_red_eras_completas": 0.3546046315722254,
+   "T_relevo": 0.379260429666506,
+   "n_comunes_relevo": 17,
+   "placebos": [
+    {
+     "coach": "Miguel Herrera",
+     "m": 18,
+     "T": 0.5044298198772952,
+     "n_comunes": 18
+    },
+    {
+     "coach": "Robert Siboldi",
+     "m": 18,
+     "T": 0.27208699875482045,
+     "n_comunes": 19
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Miguel Herrera",
+   "b": "Veljko Paunovic",
+   "n_partidos_a": 51,
+   "n_partidos_b": 27,
+   "m": 13,
+   "T_red_eras_completas": 0.38131840195176303,
+   "T_relevo": 0.3357246683471637,
+   "n_comunes_relevo": 11,
+   "placebos": [
+    {
+     "coach": "Miguel Herrera",
+     "m": 13,
+     "T": 0.4187537993118502,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Veljko Paunovic",
+     "m": 13,
+     "T": 0.4028730527797002,
+     "n_comunes": 19
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Tigres UANL",
+   "a": "Robert Siboldi",
+   "b": "Veljko Paunovic",
+   "n_partidos_a": 36,
+   "n_partidos_b": 27,
+   "m": 13,
+   "T_red_eras_completas": 0.32709521749549475,
+   "T_relevo": 0.33307683345840156,
+   "n_comunes_relevo": 18,
+   "placebos": [
+    {
+     "coach": "Robert Siboldi",
+     "m": 13,
+     "T": 0.3184757355336012,
+     "n_comunes": 19
+    },
+    {
+     "coach": "Veljko Paunovic",
+     "m": 13,
+     "T": 0.4028730527797002,
+     "n_comunes": 19
+    }
+   ],
+   "supera_p90_placebo": false
+  },
+  {
+   "club": "Tijuana",
+   "a": "Juan Carlos Osorio",
+   "b": "Miguel Herrera",
+   "n_partidos_a": 28,
+   "n_partidos_b": 45,
+   "m": 14,
+   "T_red_eras_completas": 0.5314372232804843,
+   "T_relevo": 0.8297677852584948,
+   "n_comunes_relevo": 12,
+   "placebos": [
+    {
+     "coach": "Juan Carlos Osorio",
+     "m": 14,
+     "T": 0.3727367709946874,
+     "n_comunes": 22
+    },
+    {
+     "coach": "Miguel Herrera",
+     "m": 14,
+     "T": 0.44551761746986923,
+     "n_comunes": 14
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Tijuana",
+   "a": "Juan Carlos Osorio",
+   "b": "Sebastian Abreu",
+   "n_partidos_a": 28,
+   "n_partidos_b": 34,
+   "m": 14,
+   "T_red_eras_completas": 0.4471752033153825,
+   "T_relevo": 0.49945515815705266,
+   "n_comunes_relevo": 14,
+   "placebos": [
+    {
+     "coach": "Juan Carlos Osorio",
+     "m": 14,
+     "T": 0.3727367709946874,
+     "n_comunes": 22
+    },
+    {
+     "coach": "Sebastian Abreu",
+     "m": 14,
+     "T": 0.2838558043512784,
+     "n_comunes": 15
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Tijuana",
+   "a": "Miguel Herrera",
+   "b": "Sebastian Abreu",
+   "n_partidos_a": 45,
+   "n_partidos_b": 34,
+   "m": 17,
+   "T_red_eras_completas": 0.44019595501846254,
+   "T_relevo": 0.5810323143226066,
+   "n_comunes_relevo": 8,
+   "placebos": [
+    {
+     "coach": "Miguel Herrera",
+     "m": 17,
+     "T": 0.3260708228743636,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Sebastian Abreu",
+     "m": 17,
+     "T": 0.2684315735624711,
+     "n_comunes": 16
+    }
+   ],
+   "supera_p90_placebo": true
+  },
+  {
+   "club": "Toluca",
+   "a": "Antonio Mohamed",
+   "b": "Ignacio Ambriz",
+   "n_partidos_a": 51,
+   "n_partidos_b": 64,
+   "m": 25,
+   "T_red_eras_completas": 0.5904759205996118,
+   "T_relevo": null,
+   "n_comunes_relevo": 3,
+   "placebos": [
+    {
+     "coach": "Antonio Mohamed",
+     "m": 25,
+     "T": 0.41575310168652135,
+     "n_comunes": 24
+    },
+    {
+     "coach": "Ignacio Ambriz",
+     "m": 25,
+     "T": 0.3646863434941523,
+     "n_comunes": 14
+    }
+   ]
+  },
+  {
+   "club": "Toluca",
+   "a": "Antonio Mohamed",
+   "b": "Renato Paiva",
+   "n_partidos_a": 51,
+   "n_partidos_b": 34,
+   "m": 17,
+   "T_red_eras_completas": 0.4552468635131268,
+   "T_relevo": null,
+   "n_comunes_relevo": 6,
+   "placebos": [
+    {
+     "coach": "Antonio Mohamed",
+     "m": 17,
+     "T": 0.3375028624018403,
+     "n_comunes": 15
+    },
+    {
+     "coach": "Renato Paiva",
+     "m": 17,
+     "T": 0.38474242188357777,
+     "n_comunes": 14
+    }
+   ]
+  },
+  {
+   "club": "Toluca",
+   "a": "Ignacio Ambriz",
+   "b": "Renato Paiva",
+   "n_partidos_a": 64,
+   "n_partidos_b": 34,
+   "m": 17,
+   "T_red_eras_completas": 0.4102074634210342,
+   "T_relevo": 0.3250176477954008,
+   "n_comunes_relevo": 17,
+   "placebos": [
+    {
+     "coach": "Ignacio Ambriz",
+     "m": 17,
+     "T": null,
+     "n_comunes": 4,
+     "hueco": "solo 4 jugadores comunes"
+    },
+    {
+     "coach": "Renato Paiva",
+     "m": 17,
+     "T": 0.38474242188357777,
+     "n_comunes": 14
+    }
+   ],
+   "supera_p90_placebo": false
+  }
+ ],
+ "resultado": {
+  "n_comparables": 30,
+  "n_superan_p90": 11,
+  "mediana_T_relevo": 0.43683236881328874,
+  "mediana_T_placebo": 0.38427002271773,
+  "diferencia_medianas": 0.052562346095558765,
+  "H62_1_aguanta": false
+ },
+ "segundos": 1.0
+}
